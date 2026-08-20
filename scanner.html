@@ -2,34 +2,46 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+  <!-- スマホの画面サイズにぴったり合わせる重要設定 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PayPayごっこ - スマホアプリ</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
-    body { font-family: 'Helvetica Neue', Arial, sans-serif; text-align: center; background: #f0f2f5; margin: 0; padding: 20px; }
-    .container { max-width: 380px; margin: 0 auto; }
+    * { box-sizing: border-box; }
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; text-align: center; background: #f0f2f5; margin: 0; padding: 15px; }
+    
+    /* 横幅を少し広げ、スマホ全体にフィットさせる */
+    .container { max-width: 440px; margin: 0 auto; width: 100%; }
     
     /* ログイン画面 */
-    .card { background: white; padding: 30px 20px; border-radius: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-    h1 { color: #ff0033; font-size: 24px; margin-top: 0; margin-bottom: 20px; font-weight: bold; }
-    input { width: 85%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; text-align: center; box-sizing: border-box; }
-    .login-btn { width: 85%; padding: 12px; background: #ff0033; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
+    .card { background: white; padding: 35px 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-top: 20px; }
+    h1 { color: #ff0033; font-size: 28px; margin-top: 0; margin-bottom: 25px; font-weight: bold; }
+    
+    /* 入力フォームとボタンを大きく */
+    input { width: 100%; padding: 16px; margin-bottom: 15px; border: 2px solid #ddd; border-radius: 12px; font-size: 18px; text-align: center; font-weight: bold; }
+    input:focus { border-color: #ff0033; outline: none; }
+    .login-btn { width: 100%; padding: 16px; background: #ff0033; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 18px; margin-top: 10px; }
 
-    /* メインアプリ画面（ログイン前は隠す） */
+    /* メインアプリ画面 */
     #app-view { display: none; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .logout-btn { background: #666; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 5px; }
+    #user-display { font-weight: bold; color: #333; font-size: 16px; }
+    .logout-btn { background: #666; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; }
 
-    .balance-card { background: linear-gradient(135deg, #ff0033, #ff4d4d); color: white; padding: 24px; border-radius: 18px; box-shadow: 0 6px 16px rgba(255, 0, 51, 0.25); margin-bottom: 20px; }
-    .balance-title { font-size: 13px; opacity: 0.9; letter-spacing: 1px; }
-    .balance-amount { font-size: 38px; font-weight: bold; margin: 8px 0; }
+    /* 残高カード */
+    .balance-card { background: linear-gradient(135deg, #ff0033, #ff4d4d); color: white; padding: 28px 20px; border-radius: 20px; box-shadow: 0 6px 18px rgba(255, 0, 51, 0.25); margin-bottom: 20px; }
+    .balance-title { font-size: 15px; opacity: 0.9; letter-spacing: 1px; }
+    .balance-amount { font-size: 46px; font-weight: bold; margin: 10px 0; }
 
-    #reader { width: 100%; background: white; border-radius: 16px; overflow: hidden; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-    #message { font-size: 16px; color: #ff0033; font-weight: bold; min-height: 24px; margin-bottom: 15px; }
+    /* カメラ表示枠 */
+    #reader { width: 100%; background: white; border-radius: 20px; overflow: hidden; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: none; }
+    #message { font-size: 18px; color: #ff0033; font-weight: bold; min-height: 28px; margin-bottom: 15px; }
 
-    .history-card { background: white; padding: 18px; border-radius: 16px; text-align: left; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-    .history-card h3 { margin-top: 0; font-size: 15px; color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+    /* 履歴エリア */
+    .history-card { background: white; padding: 20px; border-radius: 20px; text-align: left; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .history-card h3 { margin-top: 0; font-size: 17px; color: #333; border-bottom: 2px solid #f0f0f0; padding-bottom: 12px; }
     ul { list-style: none; padding: 0; margin: 0; }
-    li { padding: 10px 0; border-bottom: 1px solid #f9f9f9; display: flex; justify-content: space-between; font-size: 14px; }
+    li { padding: 12px 0; border-bottom: 1px solid #f9f9f9; display: flex; justify-content: space-between; font-size: 15px; }
     .plus { color: #00875a; font-weight: bold; }
     .minus { color: #de350b; font-weight: bold; }
   </style>
@@ -38,7 +50,7 @@
 
 <div class="container">
 
-  <!-- 1. ログイン画面（初期表示） -->
+  <!-- 1. ログイン画面 -->
   <div id="login-view" class="card">
     <h1>PayPay ログイン</h1>
     <input type="text" id="username-input" placeholder="ユーザー名">
@@ -47,10 +59,10 @@
     <button class="login-btn" onclick="login()">ログイン / 新規登録</button>
   </div>
 
-  <!-- 2. アプリ本体画面（ログイン完了まで隠す） -->
+  <!-- 2. アプリ画面 -->
   <div id="app-view">
     <div class="header">
-      <span id="user-display" style="font-weight: bold; color: #333;"></span>
+      <span id="user-display"></span>
       <button class="logout-btn" onclick="logout()">ログアウト</button>
     </div>
 
@@ -71,16 +83,14 @@
 </div>
 
 <script>
-   let currentUser = "";
+  let currentUser = "";
   let currentBalance = 0;
   let isProcessing = false;
   let html5QrcodeScanner = null;
 
-  // 画面を開いた時に自動ログインをチェック
   window.addEventListener('DOMContentLoaded', () => {
     const savedUser = localStorage.getItem("session_user");
     if (savedUser) {
-      // 過去にログインした記録があれば自動ログイン
       autoLogin(savedUser);
     }
   });
@@ -118,7 +128,6 @@
       return;
     }
 
-    // ログイン状態を保存
     localStorage.setItem("session_user", user);
     autoLogin(user);
   }
@@ -127,7 +136,6 @@
     if (html5QrcodeScanner) {
       html5QrcodeScanner.clear();
     }
-    // ログイン記憶を消去
     localStorage.removeItem("session_user");
     currentUser = "";
     document.getElementById('app-view').style.display = 'none';
@@ -137,7 +145,8 @@
   }
 
   function startCamera() {
-    html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 220 });
+    // カメラの読み取り枠サイズ（qrbox）も250pxと少し大きめに変更
+    html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
     html5QrcodeScanner.render(onScanSuccess);
   }
 
@@ -236,7 +245,6 @@
       document.getElementById('message').innerText = "❌ 残高が足りません！";
     }
   }
-
 </script>
 
 </body>
