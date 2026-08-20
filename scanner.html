@@ -71,10 +71,32 @@
 </div>
 
 <script>
-  let currentUser = "";
+   let currentUser = "";
   let currentBalance = 0;
   let isProcessing = false;
   let html5QrcodeScanner = null;
+
+  // 画面を開いた時に自動ログインをチェック
+  window.addEventListener('DOMContentLoaded', () => {
+    const savedUser = localStorage.getItem("session_user");
+    if (savedUser) {
+      // 過去にログインした記録があれば自動ログイン
+      autoLogin(savedUser);
+    }
+  });
+
+  function autoLogin(user) {
+    currentUser = user;
+    currentBalance = parseInt(localStorage.getItem("balance_" + currentUser) || "1000");
+
+    document.getElementById('login-view').style.display = 'none';
+    document.getElementById('app-view').style.display = 'block';
+
+    document.getElementById('user-display').innerText = `👤 ${currentUser}`;
+    document.getElementById('balance').innerText = currentBalance;
+
+    startCamera();
+  }
 
   function login() {
     const user = document.getElementById('username-input').value.trim();
@@ -96,24 +118,17 @@
       return;
     }
 
-    currentUser = user;
-    currentBalance = parseInt(localStorage.getItem("balance_" + currentUser) || "1000");
-
-    // ログイン画面を非表示にし、アプリ画面を表示する
-    document.getElementById('login-view').style.display = 'none';
-    document.getElementById('app-view').style.display = 'block';
-
-    document.getElementById('user-display').innerText = `👤 ${currentUser}`;
-    document.getElementById('balance').innerText = currentBalance;
-
-    // 画面が切り替わってからカメラを起動する
-    startCamera();
+    // ログイン状態を保存
+    localStorage.setItem("session_user", user);
+    autoLogin(user);
   }
 
   function logout() {
     if (html5QrcodeScanner) {
-      html5QrcodeScanner.clear(); // カメラを一時停止
+      html5QrcodeScanner.clear();
     }
+    // ログイン記憶を消去
+    localStorage.removeItem("session_user");
     currentUser = "";
     document.getElementById('app-view').style.display = 'none';
     document.getElementById('login-view').style.display = 'block';
@@ -221,6 +236,7 @@
       document.getElementById('message').innerText = "❌ 残高が足りません！";
     }
   }
+
 </script>
 
 </body>
