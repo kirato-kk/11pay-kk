@@ -100,50 +100,6 @@
     }
   }
 
-// ==========================================
-// ★ コードの一番下（</script> の直前）にそのまま追加 ★
-// ==========================================
-
-// 1. エラー音用の設定
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-function playErrorSound() {
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-
-  const playBuzzer = (delay) => {
-    setTimeout(() => {
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'sawtooth'; // 濁った低い音
-      osc.frequency.setValueAtTime(120, audioCtx.currentTime); // 120Hz（低音）
-
-      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
-
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.25);
-    }, delay);
-  };
-
-  playBuzzer(0); // 1回目の「ブー」
-  playBuzzer(300); // 2回目の「ブー」
-}
-
-// 2. 残高不足チェック機能（判定＋音）
-function checkBalanceAndSound(type, amount, currentBalance) {
-  if (type === "PAY" && currentBalance < amount) {
-    playErrorSound(); // ブーブー音を再生
-    setTimeout(() => {
-      alert(`❌ 残高不足です！\n必要額: ${amount.toLocaleString()}円\n現在の残高: ${currentBalance.toLocaleString()}円`);
-      location.reload();
-    }, 600);
-    return false; // 残高不足
-  }
-  return true; // OK
-}
 
 
   // 履歴を追加する関数
@@ -221,6 +177,51 @@ function checkBalanceAndSound(type, amount, currentBalance) {
   let html5QrcodeScanner = new Html5QrcodeScanner(
     "reader", { fps: 10, qrbox: 220 });
   html5QrcodeScanner.render(onScanSuccess);
+
+// ==========================================
+// ★ コードの一番下（</script> の直前）にそのまま追加 ★
+// ==========================================
+
+// 1. エラー音用の設定
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playErrorSound() {
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+
+  const playBuzzer = (delay) => {
+    setTimeout(() => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sawtooth'; // 濁った低い音
+      osc.frequency.setValueAtTime(120, audioCtx.currentTime); // 120Hz（低音）
+
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.25);
+    }, delay);
+  };
+
+  playBuzzer(0); // 1回目の「ブー」
+  playBuzzer(300); // 2回目の「ブー」
+}
+
+// 2. 残高不足チェック機能（判定＋音）
+function checkBalanceAndSound(type, amount, currentBalance) {
+  if (type === "PAY" && currentBalance < amount) {
+    playErrorSound(); // ブーブー音を再生
+    setTimeout(() => {
+      alert(`❌ 残高不足です！\n必要額: ${amount.toLocaleString()}円\n現在の残高: ${currentBalance.toLocaleString()}円`);
+      location.reload();
+    }, 600);
+    return false; // 残高不足
+  }
+  return true; // OK
+}
 
 
 
