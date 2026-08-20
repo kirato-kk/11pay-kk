@@ -97,7 +97,7 @@
 
   function autoLogin(user) {
     currentUser = user;
-    currentBalance = parseInt(localStorage.getItem("balance_" + currentUser) || "3000");
+    currentBalance = parseInt(localStorage.getItem("balance_" + currentUser) || "1000");
 
     document.getElementById('login-view').style.display = 'none';
     document.getElementById('app-view').style.display = 'block';
