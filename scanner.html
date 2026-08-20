@@ -8,6 +8,12 @@
     body { font-family: 'Helvetica Neue', Arial, sans-serif; text-align: center; background: #f0f2f5; margin: 0; padding: 20px; }
     .container { max-width: 380px; margin: 0 auto; }
     
+    /* ログインカード */
+    .login-card { background: white; padding: 20px; border-radius: 18px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .login-card h3 { margin-top: 0; font-size: 16px; color: #333; margin-bottom: 15px; }
+    .login-card input { width: 85%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; text-align: center; }
+    .login-btn { width: 90%; padding: 12px; background: #ff0033; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px; }
+
     /* PayPay風残高カード */
     .balance-card { background: linear-gradient(135deg, #ff0033, #ff4d4d); color: white; padding: 24px; border-radius: 18px; box-shadow: 0 6px 16px rgba(255, 0, 51, 0.25); margin-bottom: 20px; }
     .balance-title { font-size: 13px; opacity: 0.9; letter-spacing: 1px; }
@@ -31,11 +37,20 @@
 
 <div class="container">
 
+  <!-- 【追加箇所 1】 ログイン画面 -->
+  <div id="login-card" class="login-card">
+    <h3>アカウントログイン</h3>
+    <input type="text" id="username-input" placeholder="ユーザー名">
+    <input type="password" id="password-input" placeholder="パスワード">
+    <br>
+    <button class="login-btn" onclick="login()">ログイン / アカウント作成</button>
+  </div>
+
   <!-- 残高表示 -->
   <div class="balance-card">
     <div class="balance-title">PayPay残高</div>
     <div class="balance-amount"><span id="balance">1000</span> 円</div>
-    <div class="notice">※チャージは発券機（index.html）からスキャン</div>
+    <div class="notice" id="user-display">※ログインしてください</div>
   </div>
 
   <!-- 通知メッセージ -->
@@ -55,6 +70,49 @@
 <script>
   let currentBalance = 1000;
   let isProcessing = false;
+  let currentUser = ""; // 【追加箇所 2】 ログイン中のユーザー名
+
+  // 【追加箇所 2】 ログイン処理
+  function login() {
+    const user = document.getElementById('username-input').value.trim();
+    const pass = document.getElementById('password-input').value.trim();
+
+    if (!user || !pass) {
+      alert("ユーザー名とパスワードの両方を入力してください！");
+      return;
+    }
+
+    const savedPass = localStorage.getItem("pass_" + user);
+
+    if (savedPass === null) {
+      // はじめてのユーザー（新規作成）
+      localStorage.setItem("pass_" + user, pass);
+      localStorage.setItem("balance_" + user, 1000);
+      alert(`🎉 ${user} さんのアカウントを作成しました！（初期残高: 1000円）`);
+    } else if (savedPass !== pass) {
+      // パスワード間違い
+      alert("❌ パスワードが違います！");
+      return;
+    }
+
+    // ログイン成功
+    currentUser = user;
+    currentBalance = parseInt(localStorage.getItem("balance_" + currentUser));
+
+    document.getElementById('balance').innerText = currentBalance;
+    document.getElementById('user-display').innerText = `👤 ユーザー: ${currentUser}`;
+    document.getElementById('message').innerText = `👋 ${currentUser} さんでログインしました`;
+    
+    // ログインカードを隠す
+    document.getElementById('login-card').style.display = 'none';
+  }
+
+  // 残高をブラウザに保存する処理
+  function saveBalance() {
+    if (currentUser) {
+      localStorage.setItem("balance_" + currentUser, currentBalance);
+    }
+  }
 
   // Web Audio APIによる効果音
   function playPaySound() {
@@ -104,13 +162,20 @@
   function onScanSuccess(decodedText) {
     if (isProcessing) return;
 
-    // --- チャージ処理 (CHARGE_金額) ---
+    if (!currentUser) {
+      alert("先にログインしてください！");
+      return;
+    }
+
+    // --- チャージ処理 ---
     if (decodedText.startsWith("CHARGE_")) {
       let amount = parseInt(decodedText.replace("CHARGE_", ""));
       if (isNaN(amount) || amount <= 0) return;
 
       isProcessing = true;
       currentBalance += amount;
+      
+      saveBalance(); // 【追加箇所 3】 残高を保存
       document.getElementById('balance').innerText = currentBalance;
       document.getElementById('message').innerText = `💰 ${amount}円 チャージ完了！`;
       
@@ -124,7 +189,7 @@
       return;
     }
 
-    // --- 支払い処理 (PAY_金額) ---
+    // --- 支払い処理 ---
     let payAmount = 0;
     let matches = decodedText.match(/\d+/);
     if (matches) {
@@ -137,6 +202,7 @@
       isProcessing = true;
       currentBalance -= payAmount;
       
+      saveBalance(); // 【追加箇所 3】 残高を保存
       document.getElementById('balance').innerText = currentBalance;
       document.getElementById('message').innerText = `「ペイペイ♪」 ${payAmount}円 支払いました！`;
       
