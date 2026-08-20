@@ -8,23 +8,24 @@
     body { font-family: 'Helvetica Neue', Arial, sans-serif; text-align: center; background: #f0f2f5; margin: 0; padding: 20px; }
     .container { max-width: 380px; margin: 0 auto; }
     
-    /* ログインカード */
-    .login-card { background: white; padding: 20px; border-radius: 18px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-    .login-card h3 { margin-top: 0; font-size: 16px; color: #333; margin-bottom: 15px; }
-    .login-card input { width: 85%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; text-align: center; }
-    .login-btn { width: 90%; padding: 12px; background: #ff0033; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px; }
+    /* ログイン画面 */
+    .card { background: white; padding: 30px 20px; border-radius: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    h1 { color: #ff0033; font-size: 24px; margin-top: 0; margin-bottom: 20px; font-weight: bold; }
+    input { width: 85%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; text-align: center; box-sizing: border-box; }
+    .login-btn { width: 85%; padding: 12px; background: #ff0033; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
 
-    /* PayPay風残高カード */
+    /* メインアプリ画面（ログイン前は隠す） */
+    #app-view { display: none; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .logout-btn { background: #666; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+
     .balance-card { background: linear-gradient(135deg, #ff0033, #ff4d4d); color: white; padding: 24px; border-radius: 18px; box-shadow: 0 6px 16px rgba(255, 0, 51, 0.25); margin-bottom: 20px; }
     .balance-title { font-size: 13px; opacity: 0.9; letter-spacing: 1px; }
     .balance-amount { font-size: 38px; font-weight: bold; margin: 8px 0; }
-    .notice { font-size: 12px; background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 12px; display: inline-block; }
 
-    /* カメラとメッセージ */
     #reader { width: 100%; background: white; border-radius: 16px; overflow: hidden; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
     #message { font-size: 16px; color: #ff0033; font-weight: bold; min-height: 24px; margin-bottom: 15px; }
 
-    /* 履歴エリア */
     .history-card { background: white; padding: 18px; border-radius: 16px; text-align: left; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
     .history-card h3 { margin-top: 0; font-size: 15px; color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px; }
     ul { list-style: none; padding: 0; margin: 0; }
@@ -37,84 +38,98 @@
 
 <div class="container">
 
-  <!-- 【追加箇所 1】 ログイン画面 -->
-  <div id="login-card" class="login-card">
-    <h3>アカウントログイン</h3>
+  <!-- 1. ログイン画面（初期表示） -->
+  <div id="login-view" class="card">
+    <h1>PayPay ログイン</h1>
     <input type="text" id="username-input" placeholder="ユーザー名">
     <input type="password" id="password-input" placeholder="パスワード">
     <br>
-    <button class="login-btn" onclick="login()">ログイン / アカウント作成</button>
+    <button class="login-btn" onclick="login()">ログイン / 新規登録</button>
   </div>
 
-  <!-- 残高表示 -->
-  <div class="balance-card">
-    <div class="balance-title">PayPay残高</div>
-    <div class="balance-amount"><span id="balance">1000</span> 円</div>
-    <div class="notice" id="user-display">※ログインしてください</div>
-  </div>
+  <!-- 2. アプリ本体画面（ログイン完了まで隠す） -->
+  <div id="app-view">
+    <div class="header">
+      <span id="user-display" style="font-weight: bold; color: #333;"></span>
+      <button class="logout-btn" onclick="logout()">ログアウト</button>
+    </div>
 
-  <!-- 通知メッセージ -->
-  <div id="message"></div>
+    <div class="balance-card">
+      <div class="balance-title">PayPay残高</div>
+      <div class="balance-amount"><span id="balance">0</span> 円</div>
+    </div>
 
-  <!-- カメラエリア -->
-  <div id="reader"></div>
+    <div id="message"></div>
+    <div id="reader"></div>
 
-  <!-- 履歴 -->
-  <div class="history-card">
-    <h3>取引履歴</h3>
-    <ul id="history-list"></ul>
+    <div class="history-card">
+      <h3>取引履歴</h3>
+      <ul id="history-list"></ul>
+    </div>
   </div>
 
 </div>
 
 <script>
-  let currentBalance = 1000;
+  let currentUser = "";
+  let currentBalance = 0;
   let isProcessing = false;
-  let currentUser = ""; // 【追加箇所 2】 ログイン中のユーザー名
+  let html5QrcodeScanner = null;
 
-  // 【追加箇所 2】 ログイン処理
   function login() {
     const user = document.getElementById('username-input').value.trim();
     const pass = document.getElementById('password-input').value.trim();
 
     if (!user || !pass) {
-      alert("ユーザー名とパスワードの両方を入力してください！");
+      alert("ユーザー名とパスワードを入力してください！");
       return;
     }
 
     const savedPass = localStorage.getItem("pass_" + user);
 
     if (savedPass === null) {
-      // はじめてのユーザー（新規作成）
       localStorage.setItem("pass_" + user, pass);
       localStorage.setItem("balance_" + user, 1000);
-      alert(`🎉 ${user} さんのアカウントを作成しました！（初期残高: 1000円）`);
+      alert(`🎉 ${user} さんのアカウントを作成しました！`);
     } else if (savedPass !== pass) {
-      // パスワード間違い
       alert("❌ パスワードが違います！");
       return;
     }
 
-    // ログイン成功
     currentUser = user;
-    currentBalance = parseInt(localStorage.getItem("balance_" + currentUser));
+    currentBalance = parseInt(localStorage.getItem("balance_" + currentUser) || "1000");
 
+    // ログイン画面を非表示にし、アプリ画面を表示する
+    document.getElementById('login-view').style.display = 'none';
+    document.getElementById('app-view').style.display = 'block';
+
+    document.getElementById('user-display').innerText = `👤 ${currentUser}`;
     document.getElementById('balance').innerText = currentBalance;
-    document.getElementById('user-display').innerText = `👤 ユーザー: ${currentUser}`;
-    document.getElementById('message').innerText = `👋 ${currentUser} さんでログインしました`;
-    
-    // ログインカードを隠す
-    document.getElementById('login-card').style.display = 'none';
+
+    // 画面が切り替わってからカメラを起動する
+    startCamera();
   }
 
-  // 残高をブラウザに保存する処理
-  function saveBalance() {
-    if (currentUser) {
-      localStorage.setItem("balance_" + currentUser, currentBalance);
+  function logout() {
+    if (html5QrcodeScanner) {
+      html5QrcodeScanner.clear(); // カメラを一時停止
     }
+    currentUser = "";
+    document.getElementById('app-view').style.display = 'none';
+    document.getElementById('login-view').style.display = 'block';
+    document.getElementById('username-input').value = "";
+    document.getElementById('password-input').value = "";
   }
 
-  // Web Audio APIによる効果音
+  function startCamera() {
+    html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 220 });
+    html5QrcodeScanner.render(onScanSuccess);
+  }
+
+  function saveBalance() {
+    localStorage.setItem("balance_" + currentUser, currentBalance);
+  }
+
   function playPaySound() {
     try {
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -158,24 +173,16 @@
     list.insertBefore(li, list.firstChild);
   }
 
-  // QRスキャン判定処理
   function onScanSuccess(decodedText) {
     if (isProcessing) return;
 
-    if (!currentUser) {
-      alert("先にログインしてください！");
-      return;
-    }
-
-    // --- チャージ処理 ---
     if (decodedText.startsWith("CHARGE_")) {
       let amount = parseInt(decodedText.replace("CHARGE_", ""));
       if (isNaN(amount) || amount <= 0) return;
 
       isProcessing = true;
       currentBalance += amount;
-      
-      saveBalance(); // 【追加箇所 3】 残高を保存
+      saveBalance();
       document.getElementById('balance').innerText = currentBalance;
       document.getElementById('message').innerText = `💰 ${amount}円 チャージ完了！`;
       
@@ -189,20 +196,16 @@
       return;
     }
 
-    // --- 支払い処理 ---
     let payAmount = 0;
     let matches = decodedText.match(/\d+/);
-    if (matches) {
-      payAmount = parseInt(matches[0]);
-    }
+    if (matches) payAmount = parseInt(matches[0]);
 
     if (payAmount <= 0) return;
 
     if (currentBalance >= payAmount) {
       isProcessing = true;
       currentBalance -= payAmount;
-      
-      saveBalance(); // 【追加箇所 3】 残高を保存
+      saveBalance();
       document.getElementById('balance').innerText = currentBalance;
       document.getElementById('message').innerText = `「ペイペイ♪」 ${payAmount}円 支払いました！`;
       
@@ -218,10 +221,6 @@
       document.getElementById('message').innerText = "❌ 残高が足りません！";
     }
   }
-
-  let html5QrcodeScanner = new Html5QrcodeScanner(
-    "reader", { fps: 10, qrbox: 220 });
-  html5QrcodeScanner.render(onScanSuccess);
 </script>
 
 </body>
