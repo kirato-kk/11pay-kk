@@ -2,145 +2,248 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+  <!-- スマホの画面サイズにぴったり合わせる重要設定 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PayPayごっこ - スキャナー & 履歴</title>
+  <title>ElevenPay</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
     * { box-sizing: border-box; }
-    body { font-family: 'Helvetica Neue', Arial, sans-serif; text-align: center; padding: 20px; background-color: #f4f6f9; margin: 0; }
-    .container { max-width: 440px; margin: 0 auto; }
-    .card { background: white; padding: 25px 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-top: 10px; }
-    h1 { color: #333; font-size: 22px; margin-top: 0; margin-bottom: 15px; }
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; text-align: center; background: #f0f2f5; margin: 0; padding: 15px; }
     
-    .user-badge { background: #eef6ff; color: #007bff; padding: 8px 15px; border-radius: 20px; font-weight: bold; display: inline-block; margin-bottom: 15px; }
-    #reader { width: 100%; border-radius: 12px; overflow: hidden; margin-bottom: 15px; }
+    /* 横幅を少し広げ、スマホ全体にフィットさせる */
+    .container { max-width: 440px; margin: 0 auto; width: 100%; }
+    
+    /* ログイン画面 */
+    .card { background: white; padding: 35px 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-top: 20px; }
+    h1 { color: #ff0033; font-size: 28px; margin-top: 0; margin-bottom: 25px; font-weight: bold; }
+    
+    /* 入力フォームとボタンを大きく */
+    input { width: 100%; padding: 16px; margin-bottom: 15px; border: 2px solid #ddd; border-radius: 12px; font-size: 18px; text-align: center; font-weight: bold; }
+    input:focus { border-color: #ff0033; outline: none; }
+    .login-btn { width: 100%; padding: 16px; background: #ff0033; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 18px; margin-top: 10px; }
 
-    .main-btn { width: 100%; padding: 14px; font-size: 16px; color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; background: #007bff; margin-top: 10px; }
-    .secondary-btn { width: 100%; padding: 14px; font-size: 16px; color: #333; border: 1px solid #ccc; border-radius: 12px; cursor: pointer; font-weight: bold; background: #f8f9fa; margin-top: 10px; }
-    
-    /* 履歴リスト表示用 */
-    .history-list { text-align: left; margin-top: 15px; max-height: 250px; overflow-y: auto; }
-    .history-item { padding: 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
-    .history-item .type-charge { color: #007bff; font-weight: bold; }
-    .history-item .type-pay { color: #ff0033; font-weight: bold; }
-    .history-item .date { font-size: 11px; color: #888; }
-    .hidden { display: none; }
+    /* メインアプリ画面 */
+    #app-view { display: none; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 5px; }
+    #user-display { font-weight: bold; color: #333; font-size: 16px; }
+    .logout-btn { background: #666; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; }
+
+    /* 残高カード */
+    .balance-card { background: linear-gradient(135deg, #ff0033, #ff4d4d); color: white; padding: 28px 20px; border-radius: 20px; box-shadow: 0 6px 18px rgba(255, 0, 51, 0.25); margin-bottom: 20px; }
+    .balance-title { font-size: 15px; opacity: 0.9; letter-spacing: 1px; }
+    .balance-amount { font-size: 46px; font-weight: bold; margin: 10px 0; }
+
+    /* カメラ表示枠 */
+    #reader { width: 100%; background: white; border-radius: 20px; overflow: hidden; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: none; }
+    #message { font-size: 18px; color: #ff0033; font-weight: bold; min-height: 28px; margin-bottom: 15px; }
+
+    /* 履歴エリア */
+    .history-card { background: white; padding: 20px; border-radius: 20px; text-align: left; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .history-card h3 { margin-top: 0; font-size: 17px; color: #333; border-bottom: 2px solid #f0f0f0; padding-bottom: 12px; }
+    ul { list-style: none; padding: 0; margin: 0; }
+    li { padding: 12px 0; border-bottom: 1px solid #f9f9f9; display: flex; justify-content: space-between; font-size: 15px; }
+    .plus { color: #00875a; font-weight: bold; }
+    .minus { color: #de350b; font-weight: bold; }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <div class="card">
-    <h1>📱 読み取り & 利用履歴</h1>
-    
-    <!-- ログインユーザー表示 -->
-    <div class="user-badge" id="user-display">ログイン中: 未設定</div>
 
-    <!-- カメラ読み取りエリア -->
+  <!-- 1. ログイン画面 -->
+  <div id="login-view" class="card">
+    <h1>11Pay ログイン</h1>
+    <input type="text" id="username-input" placeholder="ユーザー名">
+    <input type="password" id="password-input" placeholder="パスワード">
+    <br>
+    <button class="login-btn" onclick="login()">ログイン / 新規登録</button>
+  </div>
+
+  <!-- 2. アプリ画面 -->
+  <div id="app-view">
+    <div class="header">
+      <span id="user-display"></span>
+      <button class="logout-btn" onclick="logout()">ログアウト</button>
+    </div>
+
+    <div class="balance-card">
+      <div class="balance-title">PayPay残高</div>
+      <div class="balance-amount"><span id="balance">0</span> 円</div>
+    </div>
+
+    <div id="message"></div>
     <div id="reader"></div>
 
-    <button class="secondary-btn" onclick="toggleHistory()">📜 利用履歴を見る/隠す</button>
-
-    <!-- 履歴表示エリア -->
-    <div id="history-area" class="history-list hidden">
-      <div style="font-weight: bold; margin-bottom: 8px; font-size: 14px; color: #555;">直近の取引履歴</div>
-      <div id="history-items">履歴はありません</div>
+    <div class="history-card">
+      <h3>取引履歴</h3>
+      <ul id="history-list"></ul>
     </div>
   </div>
+
 </div>
 
 <script>
-  // ログインユーザーの取得（初期値: ゲスト）
-  const currentUser = localStorage.getItem("paypay_login_user") || "ゲスト";
-  document.getElementById("user-display").innerText = `ログイン中: ${currentUser}`;
+  let currentUser = "";
+  let currentBalance = 0;
+  let isProcessing = false;
+  let html5QrcodeScanner = null;
 
-  // カメラ起動処理
-  const html5QrCode = new Html5Qrcode("reader");
-  html5QrCode.start(
-    { facingMode: "environment" },
-    { fps: 10, qrbox: { width: 200, height: 200 } },
-    onScanSuccess
-  );
+  window.addEventListener('DOMContentLoaded', () => {
+    const savedUser = localStorage.getItem("session_user");
+    if (savedUser) {
+      autoLogin(savedUser);
+    }
+  });
 
-  // QR読み取り成功時
+  function autoLogin(user) {
+    currentUser = user;
+    currentBalance = parseInt(localStorage.getItem("balance_" + currentUser) || "1000");
+
+    document.getElementById('login-view').style.display = 'none';
+    document.getElementById('app-view').style.display = 'block';
+
+    document.getElementById('user-display').innerText = `👤 ${currentUser}`;
+    document.getElementById('balance').innerText = currentBalance;
+
+    startCamera();
+  }
+
+  function login() {
+    const user = document.getElementById('username-input').value.trim();
+    const pass = document.getElementById('password-input').value.trim();
+
+    if (!user || !pass) {
+      alert("ユーザー名とパスワードを入力してください");
+      return;
+    }
+
+    const savedPass = localStorage.getItem("pass_" + user);
+
+    if (savedPass === null) {
+      localStorage.setItem("pass_" + user, pass);
+      localStorage.setItem("balance_" + user, 1000);
+      alert(`${user} さんのアカウントを作成しました！`);
+    } else if (savedPass !== pass) {
+      alert("パスワードが違います！");
+      return;
+    }
+
+    localStorage.setItem("session_user", user);
+    autoLogin(user);
+  }
+
+  function logout() {
+    if (html5QrcodeScanner) {
+      html5QrcodeScanner.clear();
+    }
+    localStorage.removeItem("session_user");
+    currentUser = "";
+    document.getElementById('app-view').style.display = 'none';
+    document.getElementById('login-view').style.display = 'block';
+    document.getElementById('username-input').value = "";
+    document.getElementById('password-input').value = "";
+  }
+
+  function startCamera() {
+    // カメラの読み取り枠サイズ（qrbox）も250pxと少し大きめに変更
+    html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+    html5QrcodeScanner.render(onScanSuccess);
+  }
+
+  function saveBalance() {
+    localStorage.setItem("balance_" + currentUser, currentBalance);
+  }
+
+  function playPaySound() {
+    try {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc1 = audioCtx.createOscillator();
+      const gain1 = audioCtx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(1046.50, audioCtx.currentTime);
+      gain1.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gain1.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+      osc1.connect(gain1);
+      gain1.connect(audioCtx.destination);
+      osc1.start();
+      osc1.stop(audioCtx.currentTime + 0.15);
+
+      setTimeout(() => {
+        const osc2 = audioCtx.createOscillator();
+        const gain2 = audioCtx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(1567.98, audioCtx.currentTime);
+        gain2.gain.setValueAtTime(0.4, audioCtx.currentTime);
+        gain2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+        osc2.connect(gain2);
+        gain2.connect(audioCtx.destination);
+        osc2.start();
+        osc2.stop(audioCtx.currentTime + 0.3);
+      }, 120);
+    } catch(e) {}
+  }
+
+  function addHistory(title, amount, isPlus) {
+    const list = document.getElementById('history-list');
+    const li = document.createElement('li');
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const sign = isPlus ? "+" : "-";
+    const className = isPlus ? "plus" : "minus";
+
+    li.innerHTML = `
+      <span>${time} ${title}</span>
+      <span class="${className}">${sign}${amount}円</span>
+    `;
+    list.insertBefore(li, list.firstChild);
+  }
+
   function onScanSuccess(decodedText) {
-    html5QrCode.stop(); // 一旦カメラ停止
-
-    let type = "";
-    let amount = 0;
+    if (isProcessing) return;
 
     if (decodedText.startsWith("CHARGE_")) {
-      type = "CHARGE";
-      amount = parseInt(decodedText.replace("CHARGE_", ""));
-    } else if (decodedText.startsWith("PAY_")) {
-      type = "PAY";
-      amount = parseInt(decodedText.replace("PAY_", ""));
+      let amount = parseInt(decodedText.replace("CHARGE_", ""));
+      if (isNaN(amount) || amount <= 0) return;
+
+      isProcessing = true;
+      currentBalance += amount;
+      saveBalance();
+      document.getElementById('balance').innerText = currentBalance;
+      document.getElementById('message').innerText = `${amount}円 チャージ完了！`;
+      
+      playPaySound();
+      addHistory("チャージ", amount, true);
+
+      setTimeout(() => {
+        document.getElementById('message').innerText = "";
+        isProcessing = false;
+      }, 3000);
+      return;
+    }
+
+    let payAmount = 0;
+    let matches = decodedText.match(/\d+/);
+    if (matches) payAmount = parseInt(matches[0]);
+
+    if (payAmount <= 0) return;
+
+    if (currentBalance >= payAmount) {
+      isProcessing = true;
+      currentBalance -= payAmount;
+      saveBalance();
+      document.getElementById('balance').innerText = currentBalance;
+      document.getElementById('message').innerText = ` ${payAmount}円 支払いました！`;
+      
+      playPaySound();
+      addHistory("店舗支払い", payAmount, false);
+
+      setTimeout(() => {
+        document.getElementById('message').innerText = "";
+        isProcessing = false;
+      }, 3000);
+
     } else {
-      alert("無効なQRコードです！");
-      location.reload();
-      return;
+      document.getElementById('message').innerText = "残高が足りません！";
     }
-
-    // 履歴保存処理
-    saveHistory(currentUser, type, amount);
-
-    // アラート表示後に画面リロードして再始動
-    const label = type === "CHARGE" ? "チャージ" : "お支払い";
-    alert(`【${label}完了】\nユーザー: ${currentUser}\n金額: ${amount.toLocaleString()}円`);
-    location.reload();
-  }
-
-  // 履歴をlocalStorageに保存（ユーザー別）
-  function saveHistory(user, type, amount) {
-    const key = `history_${user}`;
-    let history = JSON.parse(localStorage.getItem(key)) || [];
-
-    const now = new Date();
-    const dateStr = `${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
-
-    history.unshift({
-      date: dateStr,
-      type: type,
-      amount: amount
-    });
-
-    localStorage.setItem(key, JSON.stringify(history));
-  }
-
-  // 履歴表示の切り替え
-  function toggleHistory() {
-    const area = document.getElementById("history-area");
-    area.classList.toggle("hidden");
-
-    if (!area.classList.contains("hidden")) {
-      renderHistory();
-    }
-  }
-
-  // 履歴一覧の描画
-  function renderHistory() {
-    const key = `history_${currentUser}`;
-    const history = JSON.parse(localStorage.getItem(key)) || [];
-    const container = document.getElementById("history-items");
-
-    if (history.length === 0) {
-      container.innerHTML = "<div style='color:#999; font-size:13px;'>履歴はありません</div>";
-      return;
-    }
-
-    container.innerHTML = history.map(item => `
-      <div class="history-item">
-        <div>
-          <span class="${item.type === 'CHARGE' ? 'type-charge' : 'type-pay'}">
-            ${item.type === 'CHARGE' ? '＋ チャージ' : '－ お支払い'}
-          </span>
-          <div class="date">${item.date}</div>
-        </div>
-        <div style="font-weight: bold; font-size: 16px;">
-          ${item.amount.toLocaleString()}円
-        </div>
-      </div>
-    `).join('');
   }
 </script>
 
