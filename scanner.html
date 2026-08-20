@@ -2,46 +2,31 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <!-- スマホの画面サイズにぴったり合わせる重要設定 -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ElevenPay</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
-    * { box-sizing: border-box; }
-    body { font-family: 'Helvetica Neue', Arial, sans-serif; text-align: center; background: #f0f2f5; margin: 0; padding: 15px; }
+    body { font-family: sans-serif; text-align: center; background: #f0f2f5; margin: 0; padding: 20px; }
+    .container { max-width: 400px; margin: 0 auto; }
     
-    /* 横幅を少し広げ、スマホ全体にフィットさせる */
-    .container { max-width: 440px; margin: 0 auto; width: 100%; }
+    /* PayPay風残高カード */
+    .balance-card { background: linear-gradient(135deg, #ff0033, #ff4d4d); color: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(255, 0, 51, 0.3); margin-bottom: 15px; }
+    .balance-title { font-size: 14px; opacity: 0.9; }
+    .balance-amount { font-size: 36px; font-weight: bold; margin: 10px 0; }
     
-    /* ログイン画面 */
-    .card { background: white; padding: 35px 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-top: 20px; }
-    h1 { color: #ff0033; font-size: 28px; margin-top: 0; margin-bottom: 25px; font-weight: bold; }
-    
-    /* 入力フォームとボタンを大きく */
-    input { width: 100%; padding: 16px; margin-bottom: 15px; border: 2px solid #ddd; border-radius: 12px; font-size: 18px; text-align: center; font-weight: bold; }
-    input:focus { border-color: #ff0033; outline: none; }
-    .login-btn { width: 100%; padding: 16px; background: #ff0033; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 18px; margin-top: 10px; }
+    /* チャージエリア */
+    .charge-box { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; display: flex; justify-content: center; gap: 10px; }
+    .charge-box input { width: 120px; padding: 8px; font-size: 16px; border: 1px solid #ccc; border-radius: 6px; text-align: center; }
+    .charge-btn { background: #007bff; color: white; border: none; padding: 8px 16px; font-size: 14px; border-radius: 6px; cursor: pointer; font-weight: bold; }
 
-    /* メインアプリ画面 */
-    #app-view { display: none; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 5px; }
-    #user-display { font-weight: bold; color: #333; font-size: 16px; }
-    .logout-btn { background: #666; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; }
-
-    /* 残高カード */
-    .balance-card { background: linear-gradient(135deg, #ff0033, #ff4d4d); color: white; padding: 28px 20px; border-radius: 20px; box-shadow: 0 6px 18px rgba(255, 0, 51, 0.25); margin-bottom: 20px; }
-    .balance-title { font-size: 15px; opacity: 0.9; letter-spacing: 1px; }
-    .balance-amount { font-size: 46px; font-weight: bold; margin: 10px 0; }
-
-    /* カメラ表示枠 */
-    #reader { width: 100%; background: white; border-radius: 20px; overflow: hidden; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: none; }
-    #message { font-size: 18px; color: #ff0033; font-weight: bold; min-height: 28px; margin-bottom: 15px; }
+    /* カメラとメッセージ */
+    #reader { width: 100%; background: white; border-radius: 12px; overflow: hidden; margin-bottom: 15px; }
+    #message { font-size: 18px; color: #ff0033; font-weight: bold; min-height: 24px; margin-bottom: 15px; }
 
     /* 履歴エリア */
-    .history-card { background: white; padding: 20px; border-radius: 20px; text-align: left; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    .history-card h3 { margin-top: 0; font-size: 17px; color: #333; border-bottom: 2px solid #f0f0f0; padding-bottom: 12px; }
+    .history-card { background: white; padding: 15px; border-radius: 12px; text-align: left; }
+    .history-card h3 { margin-top: 0; font-size: 16px; color: #333; border-bottom: 1px solid #eee; padding-bottom: 8px; }
     ul { list-style: none; padding: 0; margin: 0; }
-    li { padding: 12px 0; border-bottom: 1px solid #f9f9f9; display: flex; justify-content: space-between; font-size: 15px; }
+    li { padding: 8px 0; border-bottom: 1px solid #f9f9f9; display: flex; justify-content: space-between; font-size: 14px; }
     .plus { color: #00875a; font-weight: bold; }
     .minus { color: #de350b; font-weight: bold; }
   </style>
@@ -50,117 +35,46 @@
 
 <div class="container">
 
-  <!-- 1. ログイン画面 -->
-  <div id="login-view" class="card">
-    <h1>11Pay ログイン</h1>
-    <input type="text" id="username-input" placeholder="ユーザー名">
-    <input type="password" id="password-input" placeholder="パスワード">
-    <br>
-    <button class="login-btn" onclick="login()">ログイン / 新規登録</button>
+  <!-- 残高表示 -->
+  <div class="balance-card">
+    <div class="balance-title">PayPay残高</div>
+    <div class="balance-amount"><span id="balance">1000</span> 円</div>
   </div>
 
-  <!-- 2. アプリ画面 -->
-  <div id="app-view">
-    <div class="header">
-      <span id="user-display"></span>
-      <button class="logout-btn" onclick="logout()">ログアウト</button>
-    </div>
+  <!-- 入金（チャージ）機能 -->
+  <div class="charge-box">
+    <input type="number" id="charge-input" value="1000" step="100" min="100">
+    <button class="charge-btn" onclick="chargeMoney()">チャージ</button>
+  </div>
 
-    <div class="balance-card">
-      <div class="balance-title">PayPay残高</div>
-      <div class="balance-amount"><span id="balance">0</span> 円</div>
-    </div>
+  <!-- 通知メッセージ -->
+  <div id="message"></div>
 
-    <div id="message"></div>
-    <div id="reader"></div>
+  <!-- カメラエリア -->
+  <div id="reader"></div>
 
-    <div class="history-card">
-      <h3>取引履歴</h3>
-      <ul id="history-list"></ul>
-    </div>
+  <!-- 支払い・チャージ履歴 -->
+  <div class="history-card">
+    <h3>取引履歴</h3>
+    <ul id="history-list"></ul>
   </div>
 
 </div>
 
 <script>
-  let currentUser = "";
-  let currentBalance = 0;
+  let currentBalance = 1000;
   let isProcessing = false;
-  let html5QrcodeScanner = null;
 
-  window.addEventListener('DOMContentLoaded', () => {
-    const savedUser = localStorage.getItem("session_user");
-    if (savedUser) {
-      autoLogin(savedUser);
-    }
-  });
-
-  function autoLogin(user) {
-    currentUser = user;
-    currentBalance = parseInt(localStorage.getItem("balance_" + currentUser) || "1000");
-
-    document.getElementById('login-view').style.display = 'none';
-    document.getElementById('app-view').style.display = 'block';
-
-    document.getElementById('user-display').innerText = `👤 ${currentUser}`;
-    document.getElementById('balance').innerText = currentBalance;
-
-    startCamera();
-  }
-
-  function login() {
-    const user = document.getElementById('username-input').value.trim();
-    const pass = document.getElementById('password-input').value.trim();
-
-    if (!user || !pass) {
-      alert("ユーザー名とパスワードを入力してください");
-      return;
-    }
-
-    const savedPass = localStorage.getItem("pass_" + user);
-
-    if (savedPass === null) {
-      localStorage.setItem("pass_" + user, pass);
-      localStorage.setItem("balance_" + user, 1000);
-      alert(`${user} さんのアカウントを作成しました！`);
-    } else if (savedPass !== pass) {
-      alert("パスワードが違います！");
-      return;
-    }
-
-    localStorage.setItem("session_user", user);
-    autoLogin(user);
-  }
-
-  function logout() {
-    if (html5QrcodeScanner) {
-      html5QrcodeScanner.clear();
-    }
-    localStorage.removeItem("session_user");
-    currentUser = "";
-    document.getElementById('app-view').style.display = 'none';
-    document.getElementById('login-view').style.display = 'block';
-    document.getElementById('username-input').value = "";
-    document.getElementById('password-input').value = "";
-  }
-
-  function startCamera() {
-    // カメラの読み取り枠サイズ（qrbox）も250pxと少し大きめに変更
-    html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
-    html5QrcodeScanner.render(onScanSuccess);
-  }
-
-  function saveBalance() {
-    localStorage.setItem("balance_" + currentUser, currentBalance);
-  }
-
+  // Web Audio APIを使ってピロリーン♪という決済音を作る関数
   function playPaySound() {
     try {
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      
+      // 1音目（高め）
       const osc1 = audioCtx.createOscillator();
       const gain1 = audioCtx.createGain();
       osc1.type = 'sine';
-      osc1.frequency.setValueAtTime(1046.50, audioCtx.currentTime);
+      osc1.frequency.setValueAtTime(1046.50, audioCtx.currentTime); // C6
       gain1.gain.setValueAtTime(0.3, audioCtx.currentTime);
       gain1.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
       osc1.connect(gain1);
@@ -168,11 +82,12 @@
       osc1.start();
       osc1.stop(audioCtx.currentTime + 0.15);
 
+      // 2音目（さらに高め）
       setTimeout(() => {
         const osc2 = audioCtx.createOscillator();
         const gain2 = audioCtx.createGain();
         osc2.type = 'sine';
-        osc2.frequency.setValueAtTime(1567.98, audioCtx.currentTime);
+        osc2.frequency.setValueAtTime(1567.98, audioCtx.currentTime); // G6
         gain2.gain.setValueAtTime(0.4, audioCtx.currentTime);
         gain2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
         osc2.connect(gain2);
@@ -180,73 +95,12 @@
         osc2.start();
         osc2.stop(audioCtx.currentTime + 0.3);
       }, 120);
-    } catch(e) {}
-  }
-
-  function addHistory(title, amount, isPlus) {
-    const list = document.getElementById('history-list');
-    const li = document.createElement('li');
-    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const sign = isPlus ? "+" : "-";
-    const className = isPlus ? "plus" : "minus";
-
-    li.innerHTML = `
-      <span>${time} ${title}</span>
-      <span class="${className}">${sign}${amount}円</span>
-    `;
-    list.insertBefore(li, list.firstChild);
-  }
-
-  function onScanSuccess(decodedText) {
-    if (isProcessing) return;
-
-    if (decodedText.startsWith("CHARGE_")) {
-      let amount = parseInt(decodedText.replace("CHARGE_", ""));
-      if (isNaN(amount) || amount <= 0) return;
-
-      isProcessing = true;
-      currentBalance += amount;
-      saveBalance();
-      document.getElementById('balance').innerText = currentBalance;
-      document.getElementById('message').innerText = `${amount}円 チャージ完了！`;
-      
-      playPaySound();
-      addHistory("チャージ", amount, true);
-
-      setTimeout(() => {
-        document.getElementById('message').innerText = "";
-        isProcessing = false;
-      }, 3000);
-      return;
-    }
-
-    let payAmount = 0;
-    let matches = decodedText.match(/\d+/);
-    if (matches) payAmount = parseInt(matches[0]);
-
-    if (payAmount <= 0) return;
-
-    if (currentBalance >= payAmount) {
-      isProcessing = true;
-      currentBalance -= payAmount;
-      saveBalance();
-      document.getElementById('balance').innerText = currentBalance;
-      document.getElementById('message').innerText = ` ${payAmount}円 支払いました！`;
-      
-      playPaySound();
-      addHistory("店舗支払い", payAmount, false);
-
-      setTimeout(() => {
-        document.getElementById('message').innerText = "";
-        isProcessing = false;
-      }, 3000);
-
-    } else {
-      document.getElementById('message').innerText = "残高が足りません！";
+    } catch(e) {
+      console.log("Audio Error:", e);
     }
   }
 
-  // ==========================================
+// ==========================================
 // ★ コードの一番下（</script> の直前）にそのまま追加 ★
 // ==========================================
 
@@ -283,13 +137,92 @@ function checkBalanceAndSound(type, amount, currentBalance) {
   if (type === "PAY" && currentBalance < amount) {
     playErrorSound(); // ブーブー音を再生
     setTimeout(() => {
-      alert(`残高不足です！\n必要額: ${amount.toLocaleString()}円\n現在の残高: ${currentBalance.toLocaleString()}円`);
+      alert(`❌ 残高不足です！\n必要額: ${amount.toLocaleString()}円\n現在の残高: ${currentBalance.toLocaleString()}円`);
       location.reload();
     }, 600);
     return false; // 残高不足
   }
   return true; // OK
 }
+
+
+  // 履歴を追加する関数
+  function addHistory(title, amount, isPlus) {
+    const list = document.getElementById('history-list');
+    const li = document.createElement('li');
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    const sign = isPlus ? "+" : "-";
+    const className = isPlus ? "plus" : "minus";
+
+    li.innerHTML = `
+      <span>${time} ${title}</span>
+      <span class="${className}">${sign}${amount}円</span>
+    `;
+    list.insertBefore(li, list.firstChild); // 最新を上に追加
+  }
+
+  // チャージ（入金）処理
+  function chargeMoney() {
+    const amountInput = document.getElementById('charge-input');
+    const amount = parseInt(amountInput.value);
+
+    if (isNaN(amount) || amount <= 0) return;
+
+    currentBalance += amount;
+    document.getElementById('balance').innerText = currentBalance;
+    document.getElementById('message').innerText = `💰 ${amount}円 チャージしました！`;
+    
+    addHistory("チャージ", amount, true);
+
+    setTimeout(() => {
+      document.getElementById('message').innerText = "";
+    }, 3000);
+  }
+
+  // QRスキャン成功時
+  function onScanSuccess(decodedText) {
+    if (isProcessing) return;
+
+    // "PAY_500" のような文字列から数字を取り出す
+    let payAmount = 0;
+    let matches = decodedText.match(/\d+/);
+    if (matches) {
+      payAmount = parseInt(matches[0]);
+    }
+
+    if (payAmount <= 0) return;
+
+    if (currentBalance >= payAmount) {
+      isProcessing = true;
+      currentBalance -= payAmount;
+      
+      // 画面更新
+      document.getElementById('balance').innerText = currentBalance;
+      document.getElementById('message').innerText = `「ペイペイ♪」 ${payAmount}円 支払いました！`;
+      
+      // 音を鳴らす
+      playPaySound();
+
+      // 履歴追加
+      addHistory("店舗支払い", payAmount, false);
+
+      // 3秒間の連続スキャン防止
+      setTimeout(() => {
+        document.getElementById('message').innerText = "";
+        isProcessing = false;
+      }, 3000);
+
+    } else {
+      document.getElementById('message').innerText = "❌ 残高が足りません！";
+    }
+  }
+
+  let html5QrcodeScanner = new Html5QrcodeScanner(
+    "reader", { fps: 10, qrbox: 220 });
+  html5QrcodeScanner.render(onScanSuccess);
+
+
 
 
 </script>
