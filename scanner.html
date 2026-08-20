@@ -1,74 +1,181 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>PayPayごっこ - レジ画面</title>
+  <title>PayPayごっこ - レジ＆ウォレット</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
-    body { font-family: sans-serif; text-align: center; padding-top: 20px; }
-    #reader { width: 300px; margin: 0 auto; }
-    .balance-box { background: #ff0033; color: white; padding: 15px; border-radius: 10px; width: 250px; margin: 20px auto; }
-    .balance-amount { font-size: 28px; font-weight: bold; }
-    #message { font-size: 20px; color: #ff0033; font-weight: bold; margin-top: 15px; }
+    body { font-family: sans-serif; text-align: center; background: #f0f2f5; margin: 0; padding: 20px; }
+    .container { max-width: 400px; margin: 0 auto; }
+    
+    /* PayPay風残高カード */
+    .balance-card { background: linear-gradient(135deg, #ff0033, #ff4d4d); color: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(255, 0, 51, 0.3); margin-bottom: 15px; }
+    .balance-title { font-size: 14px; opacity: 0.9; }
+    .balance-amount { font-size: 36px; font-weight: bold; margin: 10px 0; }
+    
+    /* チャージエリア */
+    .charge-box { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; display: flex; justify-content: center; gap: 10px; }
+    .charge-box input { width: 120px; padding: 8px; font-size: 16px; border: 1px solid #ccc; border-radius: 6px; text-align: center; }
+    .charge-btn { background: #007bff; color: white; border: none; padding: 8px 16px; font-size: 14px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+
+    /* カメラとメッセージ */
+    #reader { width: 100%; background: white; border-radius: 12px; overflow: hidden; margin-bottom: 15px; }
+    #message { font-size: 18px; color: #ff0033; font-weight: bold; min-height: 24px; margin-bottom: 15px; }
+
+    /* 履歴エリア */
+    .history-card { background: white; padding: 15px; border-radius: 12px; text-align: left; }
+    .history-card h3 { margin-top: 0; font-size: 16px; color: #333; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+    ul { list-style: none; padding: 0; margin: 0; }
+    li { padding: 8px 0; border-bottom: 1px solid #f9f9f9; display: flex; justify-content: space-between; font-size: 14px; }
+    .plus { color: #00875a; font-weight: bold; }
+    .minus { color: #de350b; font-weight: bold; }
   </style>
 </head>
 <body>
 
-  <h1>PayPayごっこ レジ</h1>
+<div class="container">
 
-  <!-- 残高表示エリア -->
-  <div class="balance-box">
-    <div>現在の残高</div>
+  <!-- 残高表示 -->
+  <div class="balance-card">
+    <div class="balance-title">PayPay残高</div>
     <div class="balance-amount"><span id="balance">1000</span> 円</div>
   </div>
+
+  <!-- 入金（チャージ）機能 -->
+  <div class="charge-box">
+    <input type="number" id="charge-input" value="1000" step="100" min="100">
+    <button class="charge-btn" onclick="chargeMoney()">チャージ</button>
+  </div>
+
+  <!-- 通知メッセージ -->
+  <div id="message"></div>
 
   <!-- カメラエリア -->
   <div id="reader"></div>
 
-  <!-- 結果メッセージ -->
-  <div id="message"></div>
+  <!-- 支払い・チャージ履歴 -->
+  <div class="history-card">
+    <h3>取引履歴</h3>
+    <ul id="history-list"></ul>
+  </div>
 
-  <script>
-    // 初期残高
-    let currentBalance = 1000;
-    let isProcessing = false;
+</div>
 
-    function onScanSuccess(decodedText, decodedResult) {
-      // 連続で読み込むのを防ぐフラグ
-      if (isProcessing) return;
+<script>
+  let currentBalance = 1000;
+  let isProcessing = false;
 
-      // QRコードの文字（例: USER_12345_PAY_100）から「100」の数字部分を取り出す簡易処理
-      // ※末尾の数字を金額として読み取ります
-      let payAmount = 100; // デフォルト100円
-      let matches = decodedText.match(/\d+$/); // 末尾の数字を検索
-      if (matches) {
-        payAmount = parseInt(matches[0]);
-      }
+  // Web Audio APIを使ってピロリーン♪という決済音を作る関数
+  function playPaySound() {
+    try {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      
+      // 1音目（高め）
+      const osc1 = audioCtx.createOscillator();
+      const gain1 = audioCtx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(1046.50, audioCtx.currentTime); // C6
+      gain1.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gain1.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+      osc1.connect(gain1);
+      gain1.connect(audioCtx.destination);
+      osc1.start();
+      osc1.stop(audioCtx.currentTime + 0.15);
 
-      // 残高チェック＆決済処理
-      if (currentBalance >= payAmount) {
-        isProcessing = true;
-        currentBalance -= payAmount;
-        
-        // 画面の数字を更新
-        document.getElementById('balance').innerText = currentBalance;
-        document.getElementById('message').innerText = `「ペイペイ♪」 ${payAmount}円 支払いました！`;
+      // 2音目（さらに高め）
+      setTimeout(() => {
+        const osc2 = audioCtx.createOscillator();
+        const gain2 = audioCtx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(1567.98, audioCtx.currentTime); // G6
+        gain2.gain.setValueAtTime(0.4, audioCtx.currentTime);
+        gain2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+        osc2.connect(gain2);
+        gain2.connect(audioCtx.destination);
+        osc2.start();
+        osc2.stop(audioCtx.currentTime + 0.3);
+      }, 120);
+    } catch(e) {
+      console.log("Audio Error:", e);
+    }
+  }
 
-        // 3秒後に次のスキャンを受け付ける
-        setTimeout(() => {
-          document.getElementById('message').innerText = "";
-          isProcessing = false;
-        }, 3000);
+  // 履歴を追加する関数
+  function addHistory(title, amount, isPlus) {
+    const list = document.getElementById('history-list');
+    const li = document.createElement('li');
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    const sign = isPlus ? "+" : "-";
+    const className = isPlus ? "plus" : "minus";
 
-      } else {
-        document.getElementById('message').innerText = "残高が足りません！";
-      }
+    li.innerHTML = `
+      <span>${time} ${title}</span>
+      <span class="${className}">${sign}${amount}円</span>
+    `;
+    list.insertBefore(li, list.firstChild); // 最新を上に追加
+  }
+
+  // チャージ（入金）処理
+  function chargeMoney() {
+    const amountInput = document.getElementById('charge-input');
+    const amount = parseInt(amountInput.value);
+
+    if (isNaN(amount) || amount <= 0) return;
+
+    currentBalance += amount;
+    document.getElementById('balance').innerText = currentBalance;
+    document.getElementById('message').innerText = `💰 ${amount}円 チャージしました！`;
+    
+    addHistory("チャージ", amount, true);
+
+    setTimeout(() => {
+      document.getElementById('message').innerText = "";
+    }, 3000);
+  }
+
+  // QRスキャン成功時
+  function onScanSuccess(decodedText) {
+    if (isProcessing) return;
+
+    // "PAY_500" のような文字列から数字を取り出す
+    let payAmount = 0;
+    let matches = decodedText.match(/\d+/);
+    if (matches) {
+      payAmount = parseInt(matches[0]);
     }
 
-    let html5QrcodeScanner = new Html5QrcodeScanner(
-      "reader", { fps: 10, qrbox: 250 });
-    html5QrcodeScanner.render(onScanSuccess);
-  </script>
+    if (payAmount <= 0) return;
+
+    if (currentBalance >= payAmount) {
+      isProcessing = true;
+      currentBalance -= payAmount;
+      
+      // 画面更新
+      document.getElementById('balance').innerText = currentBalance;
+      document.getElementById('message').innerText = `「ペイペイ♪」 ${payAmount}円 支払いました！`;
+      
+      // 音を鳴らす
+      playPaySound();
+
+      // 履歴追加
+      addHistory("店舗支払い", payAmount, false);
+
+      // 3秒間の連続スキャン防止
+      setTimeout(() => {
+        document.getElementById('message').innerText = "";
+        isProcessing = false;
+      }, 3000);
+
+    } else {
+      document.getElementById('message').innerText = "❌ 残高が足りません！";
+    }
+  }
+
+  let html5QrcodeScanner = new Html5QrcodeScanner(
+    "reader", { fps: 10, qrbox: 220 });
+  html5QrcodeScanner.render(onScanSuccess);
+</script>
 
 </body>
 </html>
