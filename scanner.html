@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>PayPayごっこ - レジ画面</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding-top: 20px; }
+    #reader { width: 300px; margin: 0 auto; }
+    .balance-box { background: #ff0033; color: white; padding: 15px; border-radius: 10px; width: 250px; margin: 20px auto; }
+    .balance-amount { font-size: 28px; font-weight: bold; }
+    #message { font-size: 20px; color: #ff0033; font-weight: bold; margin-top: 15px; }
+  </style>
+</head>
+<body>
+
+  <h1>PayPayごっこ レジ</h1>
+
+  <!-- 残高表示エリア -->
+  <div class="balance-box">
+    <div>現在の残高</div>
+    <div class="balance-amount"><span id="balance">1000</span> 円</div>
+  </div>
+
+  <!-- カメラエリア -->
+  <div id="reader"></div>
+
+  <!-- 結果メッセージ -->
+  <div id="message"></div>
+
+  <script>
+    // 初期残高
+    let currentBalance = 1000;
+    let isProcessing = false;
+
+    function onScanSuccess(decodedText, decodedResult) {
+      // 連続で読み込むのを防ぐフラグ
+      if (isProcessing) return;
+
+      // QRコードの文字（例: USER_12345_PAY_100）から「100」の数字部分を取り出す簡易処理
+      // ※末尾の数字を金額として読み取ります
+      let payAmount = 100; // デフォルト100円
+      let matches = decodedText.match(/\d+$/); // 末尾の数字を検索
+      if (matches) {
+        payAmount = parseInt(matches[0]);
+      }
+
+      // 残高チェック＆決済処理
+      if (currentBalance >= payAmount) {
+        isProcessing = true;
+        currentBalance -= payAmount;
+        
+        // 画面の数字を更新
+        document.getElementById('balance').innerText = currentBalance;
+        document.getElementById('message').innerText = `「ペイペイ♪」 ${payAmount}円 支払いました！`;
+
+        // 3秒後に次のスキャンを受け付ける
+        setTimeout(() => {
+          document.getElementById('message').innerText = "";
+          isProcessing = false;
+        }, 3000);
+
+      } else {
+        document.getElementById('message').innerText = "残高が足りません！";
+      }
+    }
+
+    let html5QrcodeScanner = new Html5QrcodeScanner(
+      "reader", { fps: 10, qrbox: 250 });
+    html5QrcodeScanner.render(onScanSuccess);
+  </script>
+
+</body>
+</html>
+
