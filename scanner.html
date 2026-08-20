@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <!-- スマホの画面サイズにぴったり合わせる重要設定 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PayPayごっこ - スマホアプリ</title>
+  <title>ElevenPay</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
     * { box-sizing: border-box; }
@@ -52,7 +52,7 @@
 
   <!-- 1. ログイン画面 -->
   <div id="login-view" class="card">
-    <h1>PayPay ログイン</h1>
+    <h1>11Pay ログイン</h1>
     <input type="text" id="username-input" placeholder="ユーザー名">
     <input type="password" id="password-input" placeholder="パスワード">
     <br>
@@ -67,7 +67,7 @@
     </div>
 
     <div class="balance-card">
-      <div class="balance-title">PayPay残高</div>
+      <div class="balance-title">11Pay残高</div>
       <div class="balance-amount"><span id="balance">0</span> 円</div>
     </div>
 
@@ -97,7 +97,7 @@
 
   function autoLogin(user) {
     currentUser = user;
-    currentBalance = parseInt(localStorage.getItem("balance_" + currentUser) || "1000");
+    currentBalance = parseInt(localStorage.getItem("balance_" + currentUser) || "3000");
 
     document.getElementById('login-view').style.display = 'none';
     document.getElementById('app-view').style.display = 'block';
@@ -113,7 +113,7 @@
     const pass = document.getElementById('password-input').value.trim();
 
     if (!user || !pass) {
-      alert("ユーザー名とパスワードを入力してください！");
+      alert("ユーザー名とパスワードを入力してください");
       return;
     }
 
@@ -122,9 +122,9 @@
     if (savedPass === null) {
       localStorage.setItem("pass_" + user, pass);
       localStorage.setItem("balance_" + user, 1000);
-      alert(`🎉 ${user} さんのアカウントを作成しました！`);
+      alert(`${user} さんのアカウントを作成しました！`);
     } else if (savedPass !== pass) {
-      alert("❌ パスワードが違います！");
+      alert("パスワードが違います");
       return;
     }
 
@@ -208,7 +208,7 @@
       currentBalance += amount;
       saveBalance();
       document.getElementById('balance').innerText = currentBalance;
-      document.getElementById('message').innerText = `💰 ${amount}円 チャージ完了！`;
+      document.getElementById('message').innerText = `${amount}円 チャージ完了！`;
       
       playPaySound();
       addHistory("チャージ", amount, true);
@@ -231,7 +231,7 @@
       currentBalance -= payAmount;
       saveBalance();
       document.getElementById('balance').innerText = currentBalance;
-      document.getElementById('message').innerText = `「ペイペイ♪」 ${payAmount}円 支払いました！`;
+      document.getElementById('message').innerText = ` ${payAmount}円 支払いました！`;
       
       playPaySound();
       addHistory("店舗支払い", payAmount, false);
@@ -242,7 +242,7 @@
       }, 3000);
 
     } else {
-      document.getElementById('message').innerText = "❌ 残高が足りません！";
+      document.getElementById('message').innerText = "残高が足りません！";
     }
   }
 </script>
