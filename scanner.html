@@ -55,8 +55,8 @@
     .scratch-result { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff; border: 2px dashed #ff9900; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 20px; font-weight: bold; color: #ff0033; padding: 10px; }
     .scratch-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 10px; cursor: pointer; }
 
-    /* ゲーム用スタイル */
-    #game-canvas { background: #222; border-radius: 10px; margin: 10px auto; display: block; touch-action: none; }
+    /* 豆腐ゲーム用スタイル */
+    #game-canvas { background: #eef2f5; border-radius: 10px; margin: 10px auto; display: block; touch-action: none; cursor: pointer; }
 
     #qr-output-container { display: flex; justify-content: center; margin: 15px 0; }
     #qr-output-container img { width: 200px; height: 200px; border-radius: 10px; }
@@ -109,20 +109,19 @@
 
     <button class="send-qr-btn" onclick="openSendQrModal()">📲 QRコードで送る</button>
     <button class="scratch-btn" onclick="openScratchModal()">🎰 毎日スクラッチくじ</button>
-    <button class="game-btn" onclick="openGameModal()">🎮 ブロック崩しで100pt GET</button>
+    <button class="game-btn" onclick="openGameModal()">🧊 豆腐積みでpt GET</button>
 
     <div id="reader"></div>
   </div>
 
 </div>
 
-<!-- ゲームモーダル -->
+<!-- 豆腐ゲームモーダル -->
 <div id="game-modal" class="modal-overlay hidden">
   <div class="modal-content">
-    <h3>🎮 ブロック崩しチャレンジ</h3>
-    <p style="font-size: 13px; color: #666; margin-bottom: 5px;">バーを指やマウスで動かしてブロックを壊そう！</p>
-    <canvas id="game-canvas" width="300" height="250"></canvas>
-    <button class="main-btn hidden" id="game-claim-btn" onclick="claimGamePoints()">100ptを受け取る</button>
+    <h3>🧊 豆腐タワーチャレンジ</h3>
+    <p style="font-size: 13px; color: #666; margin-bottom: 5px;">タップしてタイミングよく豆腐を重ねよう！</p>
+    <canvas id="game-canvas" width="300" height="300"></canvas>
     <button class="secondary-btn" id="game-close-btn" onclick="closeGameModal()">閉じる</button>
   </div>
 </div>
@@ -224,13 +223,14 @@
   let scratchIsCleared = false;
   let isDrawing = false;
 
-  // ゲーム用変数
-  let gameInterval;
-  let gameCanvas, gameCtx;
-  let ballX, ballY, ballDX, ballDY;
-  let paddleX, paddleWidth = 60, paddleHeight = 10;
-  let bricks = [];
-  const brickRows = 3, brickCols = 5, brickWidth = 50, brickHeight = 15, brickPadding = 8, brickOffsetTop = 20, brickOffsetLeft = 10;
+  // 豆腐ゲーム用変数
+  let gameAnimationId;
+  let tofuCanvas, tofuCtx;
+  let tofuStack = [];
+  let currentTofu = {};
+  let tofuDirection = 1;
+  let tofuSpeed = 2;
+  let gameActive = false;
 
   function getUsers() {
     const users = localStorage.getItem("paypay_users");
@@ -390,129 +390,186 @@
     showMainScreen();
   }
 
-  // --- ゲーム機能（ブロック崩し） ---
+  // --- 豆腐タワーゲーム機能 ---
   function openGameModal() {
     playSound('beep');
-    document.getElementById("game-claim-btn").classList.add("hidden");
     document.getElementById("game-modal").classList.remove("hidden");
 
-    gameCanvas = document.getElementById("game-canvas");
-    gameCtx = gameCanvas.getContext("2d");
+    tofuCanvas = document.getElementById("game-canvas");
+    tofuCtx = tofuCanvas.getContext("2d");
 
-    ballX = gameCanvas.width / 2;
-    ballY = gameCanvas.height - 30;
-    ballDX = 2;
-    ballDY = -2;
-    paddleX = (gameCanvas.width - paddleWidth) / 2;
+    tofuStack = [{ x: 100, width: 100 }]; // 豆腐のサイズを固定(100px)
+    tofuSpeed = 2;
+    gameActive = true;
 
-    for (let c = 0; c < brickCols; c++) {
-      bricks[c] = [];
-      for (let r = 0; r < brickRows; r++) {
-        bricks[c][r] = { x: 0, y: 0, status: 1 };
-      }
-    }
+    spawnNewTofu();
 
-    function movePaddle(e) {
-      const rect = gameCanvas.getBoundingClientRect();
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      paddleX = clientX - rect.left - paddleWidth / 2;
-    }
+    tofuCanvas.onpointerdown = placeTofu;
 
-    gameCanvas.onmousemove = movePaddle;
-    gameCanvas.ontouchmove = movePaddle;
-
-    clearInterval(gameInterval);
-    gameInterval = setInterval(drawGame, 10);
+    cancelAnimationFrame(gameAnimationId);
+    updateTofuGame();
   }
 
-  function drawGame() {
-    gameCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+  function spawnNewTofu() {
+    currentTofu = {
+      x: 0,
+      width: 100 // 常にサイズ固定
+    };
+    tofuDirection = 1;
+    tofuSpeed = 2 + Math.floor(tofuStack.length / 10) * 0.5; // 段数で速度アップ
+  }
 
-    // ブロック描画
-    let remainingBricks = 0;
-    for (let c = 0; c < brickCols; c++) {
-      for (let r = 0; r < brickRows; r++) {
-        if (bricks[c][r].status === 1) {
-          remainingBricks++;
-          const brickX = c * (brickWidth + brickPadding) + brickOffsetLeft;
-          const brickY = r * (brickHeight + brickPadding) + brickOffsetTop;
-          bricks[c][r].x = brickX;
-          bricks[c][r].y = brickY;
-          gameCtx.fillStyle = "#ff0033";
-          gameCtx.fillRect(brickX, brickY, brickWidth, brickHeight);
-        }
-      }
-    }
+  function placeTofu(e) {
+    if (!gameActive) return;
+    e.preventDefault();
 
-    // ボール描画
-    gameCtx.beginPath();
-    gameCtx.arc(ballX, ballY, 6, 0, Math.PI * 2);
-    gameCtx.fillStyle = "#fff";
-    gameCtx.fill();
-    gameCtx.closePath();
+    const topTofu = tofuStack[tofuStack.length - 1];
+    
+    // 完全に土台から外れているかチェック（重なり部分が一切ない場合）
+    const isMissed = (currentTofu.x + currentTofu.width <= topTofu.x) || (currentTofu.x >= topTofu.x + topTofu.width);
 
-    // パドル描画
-    gameCtx.fillStyle = "#007bff";
-    gameCtx.fillRect(paddleX, gameCanvas.height - paddleHeight, paddleWidth, paddleHeight);
-
-    // ブロック衝突判定
-    for (let c = 0; c < brickCols; c++) {
-      for (let r = 0; r < brickRows; r++) {
-        const b = bricks[c][r];
-        if (b.status === 1) {
-          if (ballX > b.x && ballX < b.x + brickWidth && ballY > b.y && ballY < b.y + brickHeight) {
-            ballDY = -ballDY;
-            b.status = 0;
-            playSound('tick');
-          }
-        }
-      }
-    }
-
-    // 全クリア判定
-    if (remainingBricks === 0) {
-      clearInterval(gameInterval);
-      playSound('win');
-      document.getElementById("game-claim-btn").classList.remove("hidden");
+    if (isMissed) {
+      // 完全に落とした（ゲームオーバー）
+      gameActive = false;
+      playSound('error');
+      finishTofuGame();
       return;
     }
 
-    // 壁反射判定
-    if (ballX + ballDX > gameCanvas.width - 6 || ballX + ballDX < 6) ballDX = -ballDX;
-    if (ballY + ballDY < 6) ballDY = -ballDY;
-    else if (ballY + ballDY > gameCanvas.height - 6) {
-      if (ballX > paddleX && ballX < paddleX + paddleWidth) {
-        ballDY = -ballDY;
-        playSound('beep');
-      } else {
-        clearInterval(gameInterval);
-        playSound('error');
-        alert("ゲームオーバー！もう一度挑戦してね");
-        closeGameModal();
-        return;
+    playSound('tick');
+
+    // サイズは小さくせず、置いた位置のまま積んでいく
+    tofuStack.push({ x: currentTofu.x, width: currentTofu.width });
+
+    if (tofuStack.length - 1 >= 100) {
+      // 100段クリア！
+      gameActive = false;
+      playSound('win');
+      finishTofuGame();
+      return;
+    }
+
+    spawnNewTofu();
+  }
+
+  function updateTofuGame() {
+    if (!gameActive && tofuStack.length === 1) return;
+
+    tofuCtx.clearRect(0, 0, tofuCanvas.width, tofuCanvas.height);
+
+    // 豆腐移動
+    if (gameActive) {
+      currentTofu.x += tofuSpeed * tofuDirection;
+      if (currentTofu.x <= 0 || currentTofu.x + currentTofu.width >= tofuCanvas.width) {
+        tofuDirection *= -1;
       }
     }
 
-    ballX += ballDX;
-    ballY += ballDY;
+    // カメラ位置調整
+    const tofuHeight = 20;
+    const baseY = 240;
+    const cameraOffset = Math.max(0, (tofuStack.length - 5) * tofuHeight);
+
+    // 積まれた豆腐の描画
+    for (let i = 0; i < tofuStack.length; i++) {
+      const t = tofuStack[i];
+      const y = baseY - (i * tofuHeight) + cameraOffset;
+
+      if (y < 300 && y > -30) {
+        tofuCtx.fillStyle = "#ffffff";
+        tofuCtx.fillRect(t.x, y, t.width, tofuHeight - 2);
+        tofuCtx.strokeStyle = "#dddddd";
+        tofuCtx.lineWidth = 2;
+        tofuCtx.strokeRect(t.x, y, t.width, tofuHeight - 2);
+      }
+    }
+
+    // 動いている豆腐の描画
+    if (gameActive) {
+      const movingY = baseY - (tofuStack.length * tofuHeight) + cameraOffset;
+      tofuCtx.fillStyle = "#fff8e7";
+      tofuCtx.fillRect(currentTofu.x, movingY, currentTofu.width, tofuHeight - 2);
+      tofuCtx.strokeStyle = "#ffcc00";
+      tofuCtx.lineWidth = 2;
+      tofuCtx.strokeRect(currentTofu.x, movingY, currentTofu.width, tofuHeight - 2);
+    }
+
+    // スコア＆倍率表示
+    const currentSteps = tofuStack.length - 1;
+    let multiplier = 1;
+    if (currentSteps >= 100) multiplier = 10;
+    else if (currentSteps >= 80) multiplier = 8;
+    else if (currentSteps >= 50) multiplier = 5;
+    else if (currentSteps >= 40) multiplier = 4;
+    else if (currentSteps >= 20) multiplier = 2;
+
+    tofuCtx.fillStyle = "#333";
+    tofuCtx.font = "bold 18px sans-serif";
+    tofuCtx.textAlign = "left";
+    tofuCtx.fillText(`🧊 ${currentSteps} 段`, 15, 30);
+    tofuCtx.fillStyle = multiplier > 1 ? "#ff0033" : "#666";
+    tofuCtx.fillText(`倍率: ${multiplier}倍`, 120, 30);
+
+    if (gameActive) {
+      gameAnimationId = requestAnimationFrame(updateTofuGame);
+    }
   }
 
-  function claimGamePoints() {
-    playSound('beep');
-    points += 100;
-    updateDisplay();
-    alert("🎉 ゲームクリア！ 100ポイントを獲得しました！");
+  function finishTofuGame() {
+    const steps = tofuStack.length - 1;
+    let multiplier = 1;
+
+    if (steps >= 100) multiplier = 10;
+    else if (steps >= 80) multiplier = 8;
+    else if (steps >= 50) multiplier = 5;
+    else if (currentSteps >= 40) multiplier = 4;
+    else if (currentSteps >= 20) multiplier = 2;
+
+    tofuCtx.fillStyle = "#333";
+    tofuCtx.font = "bold 18px sans-serif";
+    tofuCtx.textAlign = "left";
+    tofuCtx.fillText(`🧊 ${currentSteps} 段`, 15, 30);
+    tofuCtx.fillStyle = multiplier > 1 ? "#ff0033" : "#666";
+    tofuCtx.fillText(`倍率: ${multiplier}倍`, 120, 30);
+
+    if (gameActive) {
+      gameAnimationId = requestAnimationFrame(updateTofuGame);
+    }
+  }
+
+  function finishTofuGame() {
+    const steps = tofuStack.length - 1;
+    let multiplier = 1;
+
+    if (steps >= 100) multiplier = 10;
+    else if (steps >= 80) multiplier = 8;
+    else if (steps >= 50) multiplier = 5;
+    else if (steps >= 40) multiplier = 4;
+    else if (steps >= 20) multiplier = 2;
+
+    const earned = steps * multiplier;
+
+    if (earned > 0) {
+      points += earned;
+      updateDisplay();
+      playSound('win');
+      alert(`🎉 ゲーム終了！\n記録: ${steps}段 (${multiplier}倍ボーナス)\n👉 ${earned} ポイントを獲得しました！`);
+    } else {
+      alert("残念！1段も積めませんでした...");
+    }
+
     closeGameModal();
   }
 
   function closeGameModal() {
     playSound('beep');
-    clearInterval(gameInterval);
+    gameActive = false;
+    cancelAnimationFrame(gameAnimationId);
     document.getElementById("game-modal").classList.add("hidden");
   }
 
   // --- スクラッチ機能 ---
-  function openScratchModal(){
+  function openScratchModal() {
     playSound('beep');
     const today = new Date().toLocaleDateString();
     const lastScratchDate = localStorage.getItem(`scratch_date_${currentUser}`);
