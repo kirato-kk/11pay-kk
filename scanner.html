@@ -170,7 +170,7 @@
   // ユーザー管理用 (localStorage)
   function getUsers() {
     const users = localStorage.getItem("paypay_users");
-    return users ? JSON.parse(users) : { "きらと": "1234" }; // 初期ユーザー
+    return users ? JSON.parse(users) : { "きらと": "1234" };
   }
 
   function saveUsers(users) {
@@ -245,19 +245,24 @@
     }
   };
 
-  // --- タブ切り替え ---
+  // --- タブ切り替え機能 ---
   function switchTab(tab) {
     playSound('beep');
+    const tabLogin = document.getElementById("tab-login");
+    const tabRegister = document.getElementById("tab-register");
+    const formLogin = document.getElementById("form-login");
+    const formRegister = document.getElementById("form-register");
+
     if (tab === 'login') {
-      document.getElementById("tab-login").classList.add("active");
-      document.getElementById("tab-register").classList.remove("active");
-      document.getElementById("form-login").classList.remove("hidden");
-      document.getElementById("form-register").classList.add("hidden");
+      tabLogin.classList.add("active");
+      tabRegister.classList.remove("active");
+      formLogin.classList.remove("hidden");
+      formRegister.classList.add("hidden");
     } else {
-      document.getElementById("tab-register").classList.add("active");
-      document.getElementById("tab-login").classList.remove("active");
-      document.getElementById("form-register").classList.remove("hidden");
-      document.getElementById("form-login").classList.add("hidden");
+      tabRegister.classList.add("active");
+      tabLogin.classList.remove("active");
+      formRegister.classList.remove("hidden");
+      formLogin.classList.add("hidden");
     }
   }
 
@@ -303,7 +308,6 @@
     users[userInput] = passInput;
     saveUsers(users);
 
-    // 新規登録時の初期残高とポイントを設定
     localStorage.setItem(`balance_${userInput}`, 1000);
     localStorage.setItem(`points_${userInput}`, 0);
 
@@ -539,4 +543,19 @@
         playSound('win');
         document.getElementById("roulette-sub").innerText = "獲得ポイント決定！";
         document.getElementById("roulette-display").innerText = `🎯 ${Math.round(finalRate * 100)}% 還元!\n(+${earnedPoints}pt)`;
-        d
+        docume.getElementById("roulette-close-btn").classList.remove("hidden");
+      }
+    }, 100);
+  }
+
+  function closeRoulette() {
+    playSound('beep');
+    points += earnedPoints;
+    updateDisplay();
+    document.getElementById("roulette-modal").classList.add("hidden");
+    location.reload();
+  }
+</script>
+
+</body>
+</html>
