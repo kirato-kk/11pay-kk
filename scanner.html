@@ -2,248 +2,276 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <!-- スマホの画面サイズにぴったり合わせる重要設定 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ElevenPay</title>
+  <title>11Pay - フル機能版</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
     * { box-sizing: border-box; }
-    body { font-family: 'Helvetica Neue', Arial, sans-serif; text-align: center; background: #f0f2f5; margin: 0; padding: 15px; }
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; text-align: center; padding: 15px; background-color: #f4f6f9; margin: 0; }
+    .container { max-width: 440px; margin: 0 auto; }
     
-    /* 横幅を少し広げ、スマホ全体にフィットさせる */
-    .container { max-width: 440px; margin: 0 auto; width: 100%; }
+    /* カード共通枠 */
+    .card-box { background: white; padding: 30px 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-top: 20px; }
     
     /* ログイン画面 */
-    .card { background: white; padding: 35px 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-top: 20px; }
-    h1 { color: #ff0033; font-size: 28px; margin-top: 0; margin-bottom: 25px; font-weight: bold; }
+    .login-title { font-size: 28px; font-weight: bold; color: #ff0033; margin-bottom: 20px; }
+    input[type="text"], input[type="password"], input[type="number"] { width: 100%; padding: 14px; font-size: 16px; border: 2px solid #ddd; border-radius: 12px; margin-bottom: 12px; text-align: center; }
     
-    /* 入力フォームとボタンを大きく */
-    input { width: 100%; padding: 16px; margin-bottom: 15px; border: 2px solid #ddd; border-radius: 12px; font-size: 18px; text-align: center; font-weight: bold; }
-    input:focus { border-color: #ff0033; outline: none; }
-    .login-btn { width: 100%; padding: 16px; background: #ff0033; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 18px; margin-top: 10px; }
+    .main-btn { width: 100%; padding: 16px; font-size: 18px; color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; background: #ff0033; }
+    .secondary-btn { width: 100%; padding: 12px; font-size: 15px; color: #666; border: 1px solid #ccc; border-radius: 12px; cursor: pointer; font-weight: bold; background: #fff; margin-top: 8px; }
 
-    /* メインアプリ画面 */
-    #app-view { display: none; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 5px; }
-    #user-display { font-weight: bold; color: #333; font-size: 16px; }
-    .logout-btn { background: #666; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; }
+    /* メイン画面（UI保持） */
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; margin-bottom: 10px; }
+    .user-info { font-size: 18px; font-weight: bold; color: #333; display: flex; align-items: center; gap: 6px; }
+    .logout-btn { background: #666; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
-    /* 残高カード */
-    .balance-card { background: linear-gradient(135deg, #ff0033, #ff4d4d); color: white; padding: 28px 20px; border-radius: 20px; box-shadow: 0 6px 18px rgba(255, 0, 51, 0.25); margin-bottom: 20px; }
-    .balance-title { font-size: 15px; opacity: 0.9; letter-spacing: 1px; }
-    .balance-amount { font-size: 46px; font-weight: bold; margin: 10px 0; }
+    .balance-card { 
+      background: linear-gradient(135deg, #ff0033, #ff4d4d); 
+      color: white; 
+      padding: 25px 20px; 
+      border-radius: 20px; 
+      box-shadow: 0 6px 18px rgba(255,0,51,0.3); 
+      margin-bottom: 20px;
+    }
+    .card-label { font-size: 15px; opacity: 0.9; margin-bottom: 5px; }
+    .card-amount { font-size: 42px; font-weight: bold; }
+    .point-display { margin-top: 10px; font-size: 16px; background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; display: inline-block; }
 
-    /* カメラ表示枠 */
-    #reader { width: 100%; background: white; border-radius: 20px; overflow: hidden; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: none; }
-    #message { font-size: 18px; color: #ff0033; font-weight: bold; min-height: 28px; margin-bottom: 15px; }
+    #reader { width: 100%; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
 
-    /* 履歴エリア */
-    .history-card { background: white; padding: 20px; border-radius: 20px; text-align: left; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    .history-card h3 { margin-top: 0; font-size: 17px; color: #333; border-bottom: 2px solid #f0f0f0; padding-bottom: 12px; }
-    ul { list-style: none; padding: 0; margin: 0; }
-    li { padding: 12px 0; border-bottom: 1px solid #f9f9f9; display: flex; justify-content: space-between; font-size: 15px; }
-    .plus { color: #00875a; font-weight: bold; }
-    .minus { color: #de350b; font-weight: bold; }
+    /* ポップアップ・モーダル */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+    .modal-content { background: white; padding: 25px 20px; border-radius: 20px; width: 88%; max-width: 360px; text-align: center; }
+    .roulette-box { font-size: 32px; font-weight: bold; color: #ff0033; margin: 20px 0; min-height: 48px; white-space: pre-line; }
+    
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
 
 <div class="container">
-
+  
   <!-- 1. ログイン画面 -->
-  <div id="login-view" class="card">
-    <h1>11Pay ログイン</h1>
-    <input type="text" id="username-input" placeholder="ユーザー名">
-    <input type="password" id="password-input" placeholder="パスワード">
-    <br>
-    <button class="login-btn" onclick="login()">ログイン / 新規登録</button>
+  <div id="login-view" class="card-box">
+    <div class="login-title">11Pay ログイン</div>
+    <input type="text" id="login-user" placeholder="ユーザー名" value="きらと">
+    <input type="password" id="login-pass" placeholder="パスワード (初期: 1234)" value="1234">
+    <button class="main-btn" onclick="login()">ログイン</button>
   </div>
 
-  <!-- 2. アプリ画面 -->
-  <div id="app-view">
+  <!-- 2. メイン画面 -->
+  <div id="main-view" class="hidden">
     <div class="header">
-      <span id="user-display"></span>
+      <div class="user-info">👤 <span id="user-display">きらと</span></div>
       <button class="logout-btn" onclick="logout()">ログアウト</button>
     </div>
 
     <div class="balance-card">
-      <div class="balance-title">11Pay残高</div>
-      <div class="balance-amount"><span id="balance">0</span> 円</div>
+      <div class="card-label">11Pay残高</div>
+      <div class="card-amount"><span id="balance-display">1000</span> 円</div>
+      <div class="point-display">🪙 ポイント: <span id="point-display">0</span> pt</div>
     </div>
 
-    <div id="message"></div>
     <div id="reader"></div>
-
-    <div class="history-card">
-      <h3>取引履歴</h3>
-      <ul id="history-list"></ul>
-    </div>
   </div>
 
 </div>
 
+<!-- 決済・ポイント確認モーダル -->
+<div id="pay-confirm-modal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <h3>お支払いの確認</h3>
+    <p style="font-size: 18px; font-weight: bold; margin: 10px 0;">請求額: <span id="confirm-pay-amount" style="color:#ff0033;">0</span> 円</p>
+    
+    <div style="background: #f8f9fa; padding: 12px; border-radius: 10px; margin-bottom: 15px; text-align: left;">
+      <label style="font-weight: bold; display: block; margin-bottom: 5px;">
+        <input type="checkbox" id="use-pt-check" onchange="togglePointInput()"> ポイントを使用する
+      </label>
+      <div id="pt-input-container" class="hidden">
+        <input type="number" id="use-pt-input" placeholder="使用ポイント" style="margin-bottom: 0;">
+        <small style="color: #666;">利用可能: <span id="max-pt-display">0</span> pt</small>
+      </div>
+    </div>
+
+    <button class="main-btn" onclick="executePayment()">支払いを確定する</button>
+    <button class="secondary-btn" onclick="cancelPayment()">キャンセル</button>
+  </div>
+</div>
+
+<!-- ルーレット結果モーダル -->
+<div id="roulette-modal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <h3>🎉 11Payジャンボ！</h3>
+    <p style="color: #666; font-size: 14px;" id="roulette-sub">ポイント還元率を抽選中...</p>
+    <div id="roulette-display" class="roulette-box">🎰 回しています...</div>
+    <button id="roulette-close-btn" class="main-btn hidden" onclick="closeRoulette()">ポイントを受け取る</button>
+  </div>
+</div>
+
 <script>
-  let currentUser = "";
-  let currentBalance = 0;
-  let isProcessing = false;
-  let html5QrcodeScanner = null;
+  let currentUser = localStorage.getItem("paypay_login_user") || "";
+  let balance = 1000;
+  let points = 0;
+  
+  let currentScanAmount = 0;
+  let earnedPoints = 0;
+  let html5QrCode;
 
-  window.addEventListener('DOMContentLoaded', () => {
-    const savedUser = localStorage.getItem("session_user");
-    if (savedUser) {
-      autoLogin(savedUser);
+  window.onload = function() {
+    if (currentUser) {
+      showMainScreen();
     }
-  });
-
-  function autoLogin(user) {
-    currentUser = user;
-    currentBalance = parseInt(localStorage.getItem("balance_" + currentUser) || "1000");
-
-    document.getElementById('login-view').style.display = 'none';
-    document.getElementById('app-view').style.display = 'block';
-
-    document.getElementById('user-display').innerText = `👤 ${currentUser}`;
-    document.getElementById('balance').innerText = currentBalance;
-
-    startCamera();
-  }
+  };
 
   function login() {
-    const user = document.getElementById('username-input').value.trim();
-    const pass = document.getElementById('password-input').value.trim();
+    const userInput = document.getElementById("login-user").value.trim();
+    const passInput = document.getElementById("login-pass").value;
 
-    if (!user || !pass) {
-      alert("ユーザー名とパスワードを入力してください");
-      return;
-    }
+    if (!userInput) return alert("ユーザー名を入力してください");
+    if (passInput !== "1234") return alert("パスワードが間違っています");
 
-    const savedPass = localStorage.getItem("pass_" + user);
-
-    if (savedPass === null) {
-      localStorage.setItem("pass_" + user, pass);
-      localStorage.setItem("balance_" + user, 1000);
-      alert(`${user} さんのアカウントを作成しました！`);
-    } else if (savedPass !== pass) {
-      alert("パスワードが違います");
-      return;
-    }
-
-    localStorage.setItem("session_user", user);
-    autoLogin(user);
+    currentUser = userInput;
+    localStorage.setItem("paypay_login_user", currentUser);
+    showMainScreen();
   }
 
   function logout() {
-    if (html5QrcodeScanner) {
-      html5QrcodeScanner.clear();
+    const doLogout = () => {
+      localStorage.removeItem("paypay_login_user");
+      location.reload();
+    };
+    if (html5QrCode && html5QrCode.isScanning) {
+      html5QrCode.stop().then(doLogout).catch(doLogout);
+    } else {
+      doLogout();
     }
-    localStorage.removeItem("session_user");
-    currentUser = "";
-    document.getElementById('app-view').style.display = 'none';
-    document.getElementById('login-view').style.display = 'block';
-    document.getElementById('username-input').value = "";
-    document.getElementById('password-input').value = "";
   }
 
-  function startCamera() {
-    // カメラの読み取り枠サイズ（qrbox）も250pxと少し大きめに変更
-    html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
-    html5QrcodeScanner.render(onScanSuccess);
+  function showMainScreen() {
+    document.getElementById("login-view").classList.add("hidden");
+    document.getElementById("main-view").classList.remove("hidden");
+    document.getElementById("user-display").innerText = currentUser;
+
+    balance = parseInt(localStorage.getItem(`balance_${currentUser}`)) || 1000;
+    points = parseInt(localStorage.getItem(`points_${currentUser}`)) || 0;
+    
+    updateDisplay();
+    startScanner();
   }
 
-  function saveBalance() {
-    localStorage.setItem("balance_" + currentUser, currentBalance);
+  function updateDisplay() {
+    document.getElementById("balance-display").innerText = balance.toLocaleString();
+    document.getElementById("point-display").innerText = points.toLocaleString();
+    localStorage.setItem(`balance_${currentUser}`, balance);
+    localStorage.setItem(`points_${currentUser}`, points);
   }
 
-  function playPaySound() {
-    try {
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc1 = audioCtx.createOscillator();
-      const gain1 = audioCtx.createGain();
-      osc1.type = 'sine';
-      osc1.frequency.setValueAtTime(1046.50, audioCtx.currentTime);
-      gain1.gain.setValueAtTime(0.3, audioCtx.currentTime);
-      gain1.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-      osc1.connect(gain1);
-      gain1.connect(audioCtx.destination);
-      osc1.start();
-      osc1.stop(audioCtx.currentTime + 0.15);
-
-      setTimeout(() => {
-        const osc2 = audioCtx.createOscillator();
-        const gain2 = audioCtx.createGain();
-        osc2.type = 'sine';
-        osc2.frequency.setValueAtTime(1567.98, audioCtx.currentTime);
-        gain2.gain.setValueAtTime(0.4, audioCtx.currentTime);
-        gain2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-        osc2.connect(gain2);
-        gain2.connect(audioCtx.destination);
-        osc2.start();
-        osc2.stop(audioCtx.currentTime + 0.3);
-      }, 120);
-    } catch(e) {}
-  }
-
-  function addHistory(title, amount, isPlus) {
-    const list = document.getElementById('history-list');
-    const li = document.createElement('li');
-    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const sign = isPlus ? "+" : "-";
-    const className = isPlus ? "plus" : "minus";
-
-    li.innerHTML = `
-      <span>${time} ${title}</span>
-      <span class="${className}">${sign}${amount}円</span>
-    `;
-    list.insertBefore(li, list.firstChild);
+  function startScanner() {
+    html5QrCode = new Html5Qrcode("reader");
+    html5QrCode.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: 250, height: 250 } },
+      onScanSuccess
+    );
   }
 
   function onScanSuccess(decodedText) {
-    if (isProcessing) return;
+    html5QrCode.stop();
 
-    if (decodedText.startsWith("CHARGE_")) {
-      let amount = parseInt(decodedText.replace("CHARGE_", ""));
-      if (isNaN(amount) || amount <= 0) return;
+    const isCharge = decodedText.startsWith("CHARGE_");
+    const amount = parseInt(decodedText.replace(/(CHARGE_|PAY_)/, "")) || 0;
 
-      isProcessing = true;
-      currentBalance += amount;
-      saveBalance();
-      document.getElementById('balance').innerText = currentBalance;
-      document.getElementById('message').innerText = `${amount}円 チャージ完了！`;
-      
-      playPaySound();
-      addHistory("チャージ", amount, true);
+    if (isCharge) {
+      balance += amount;
+      updateDisplay();
+      alert(`✅ ${amount.toLocaleString()}円 チャージが完了しました！`);
+      location.reload();
+    } else {
+      currentScanAmount = amount;
+      openPayConfirmModal();
+    }
+  }
 
-      setTimeout(() => {
-        document.getElementById('message').innerText = "";
-        isProcessing = false;
-      }, 3000);
+  /* 決済確認モーダル処理 */
+  function openPayConfirmModal() {
+    document.getElementById("confirm-pay-amount").innerText = currentScanAmount.toLocaleString();
+    document.getElementById("max-pt-display").innerText = points.toLocaleString();
+    document.getElementById("use-pt-check").checked = false;
+    document.getElementById("use-pt-input").value = "";
+    togglePointInput();
+    document.getElementById("pay-confirm-modal").classList.remove("hidden");
+  }
+
+  function togglePointInput() {
+    const isChecked = document.getElementById("use-pt-check").checked;
+    document.getElementById("pt-input-container").classList.toggle("hidden", !isChecked);
+  }
+
+  function cancelPayment() {
+    document.getElementById("pay-confirm-modal").classList.add("hidden");
+    location.reload();
+  }
+
+  function executePayment() {
+    const usePtChecked = document.getElementById("use-pt-check").checked;
+    let usePt = parseInt(document.getElementById("use-pt-input").value) || 0;
+
+    if (usePtChecked) {
+      if (usePt <= 0) return alert("利用するポイントを入力してください");
+      if (usePt > points) return alert("保持ポイントを超えています");
+      if (usePt > currentScanAmount) usePt = currentScanAmount;
+    } else {
+      usePt = 0;
+    }
+
+    const cashPay = currentScanAmount - usePt;
+
+    if (cashPay > balance) {
+      alert(`❌ 残高が不足しています！\n現金必要額: ${cashPay}円 / 残高: ${balance}円`);
       return;
     }
 
-    let payAmount = 0;
-    let matches = decodedText.match(/\d+/);
-    if (matches) payAmount = parseInt(matches[0]);
+    // 処理実行
+    balance -= cashPay;
+    points -= usePt;
+    updateDisplay();
 
-    if (payAmount <= 0) return;
+    document.getElementById("pay-confirm-modal").classList.add("hidden");
+    startRoulette(currentScanAmount);
+  }
 
-    if (currentBalance >= payAmount) {
-      isProcessing = true;
-      currentBalance -= payAmount;
-      saveBalance();
-      document.getElementById('balance').innerText = currentBalance;
-      document.getElementById('message').innerText = `${payAmount}円 支払いました！`;
-      
-      playPaySound();
-      addHistory("店舗支払い", payAmount, false);
+  /* ルーレット処理 */
+  function startRoulette(payAmount) {
+    document.getElementById("roulette-modal").classList.remove("hidden");
+    document.getElementById("roulette-close-btn").classList.add("hidden");
+    document.getElementById("roulette-sub").innerText = "ポイント還元率を抽選中...";
 
-      setTimeout(() => {
-        document.getElementById('message').innerText = "";
-        isProcessing = false;
-      }, 3000);
+    let count = 0;
+    const rates = [0.01, 0.05, 0.1, 0.5, 1.0];
 
-    } else {
-      document.getElementById('message').innerText = "残高が足りません！";
-    }
+    const interval = setInterval(() => {
+      const randomRate = rates[Math.floor(Math.random() * rates.length)];
+      document.getElementById("roulette-display").innerText = `${Math.round(randomRate * 100)}% 還元！`;
+      count++;
+
+      if (count > 20) {
+        clearInterval(interval);
+        const finalRate = rates[Math.floor(Math.random() * rates.length)];
+        earnedPoints = Math.floor(payAmount * finalRate);
+        if (earnedPoints < 1) earnedPoints = 1;
+
+        document.getElementById("roulette-sub").innerText = "獲得ポイント決定！";
+        document.getElementById("roulette-display").innerText = `🎯 ${Math.round(finalRate * 100)}% 還元!\n(+${earnedPoints}pt)`;
+        document.getElementById("roulette-close-btn").classList.remove("hidden");
+      }
+    }, 100);
+  }
+
+  function closeRoulette() {
+    points += earnedPoints;
+    updateDisplay();
+    document.getElementById("roulette-modal").classList.add("hidden");
+    location.reload();
   }
 </script>
 
