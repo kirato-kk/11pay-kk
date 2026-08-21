@@ -65,20 +65,20 @@
       <button id="tab-register" class="tab-btn" onclick="switchTab('register')">新規登録</button>
     </div>
 
-    <!-- ログインフォーム -->
+    <!-- ログインフォーム (初期値valueを削除) -->
     <div id="form-login">
       <div class="login-title">11Pay ログイン</div>
-      <input type="text" id="login-user" placeholder="ユーザー名" value="きらと">
-      <input type="password" id="login-pass" placeholder="パスワード" value="1234">
+      <input type="text" id="login-user" placeholder="ユーザー名" autocomplete="off">
+      <input type="password" id="login-pass" placeholder="パスワード" autocomplete="off">
       <button class="main-btn" onclick="login()">ログイン</button>
     </div>
 
     <!-- 新規登録フォーム -->
     <div id="form-register" class="hidden">
       <div class="login-title">アカウントを作成</div>
-      <input type="text" id="reg-user" placeholder="新しいユーザー名">
-      <input type="password" id="reg-pass" placeholder="パスワード">
-      <input type="password" id="reg-pass-confirm" placeholder="パスワード (確認)">
+      <input type="text" id="reg-user" placeholder="新しいユーザー名" autocomplete="off">
+      <input type="password" id="reg-pass" placeholder="パスワード" autocomplete="off">
+      <input type="password" id="reg-pass-confirm" placeholder="パスワード (確認)" autocomplete="off">
       <button class="main-btn" onclick="register()">新規登録してはじめる</button>
     </div>
   </div>
@@ -256,14 +256,24 @@
   }
 
   window.onload = function() {
+    clearAuthFields();
     if (currentUser) {
       showMainScreen();
     }
   };
 
+  function clearAuthFields() {
+    document.getElementById("login-user").value = "";
+    document.getElementById("login-pass").value = "";
+    document.getElementById("reg-user").value = "";
+    document.getElementById("reg-pass").value = "";
+    document.getElementById("reg-pass-confirm").value = "";
+  }
+
   // --- タブ切り替え機能 ---
   function switchTab(tab) {
     playSound('beep');
+    clearAuthFields();
     const tabLogin = document.getElementById("tab-login");
     const tabRegister = document.getElementById("tab-register");
     const formLogin = document.getElementById("form-login");
@@ -381,6 +391,7 @@
     playSound('beep');
     const doLogout = () => {
       localStorage.removeItem("paypay_login_user");
+      clearAuthFields();
       location.reload();
     };
     if (html5QrCode && html5QrCode.isScanning) {
@@ -524,6 +535,14 @@
     document.getElementById("confirm-pay-amount").innerText = currentScanAmount.toLocaleString();
     document.getElementById("max-pt-display").innerText = points.toLocaleString();
     document.getElementById("use-pt-check").checked = false;
+    document.getElementById("use-pt-input").value = "";
+    togglePointInput();
+    document.getElementById("pay-confirm-modal").classList.remove("hidden");
+  }
+
+  function togglePointInput() {
+    playSound('beep');
+    const isChecked = document.getElementById("use-pt-check").checked = false;
     document.getElementById("use-pt-input").value = "";
     togglePointInput();
     document.getElementById("pay-confirm-modal").classList.remove("hidden");
