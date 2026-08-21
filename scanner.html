@@ -3,17 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>11Pay - フル機能版 (送金・クーポン・QR生成)</title>
+  <title>11Pay - 修正版</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
+  <!-- QRコード生成ライブラリ (CDN) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     * { box-sizing: border-box; }
     body { font-family: 'Helvetica Neue', Arial, sans-serif; text-align: center; padding: 15px; background-color: #f4f6f9; margin: 0; }
     .container { max-width: 440px; margin: 0 auto; }
-    
     .card-box { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-top: 20px; }
     input, select { width: 100%; padding: 14px; font-size: 16px; border: 2px solid #ddd; border-radius: 12px; margin-bottom: 12px; text-align: center; }
-    
     .main-btn { width: 100%; padding: 16px; font-size: 18px; color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; background: #ff0033; margin-top: 10px; }
     .secondary-btn { width: 100%; padding: 12px; font-size: 15px; color: #666; border: 1px solid #ccc; border-radius: 12px; cursor: pointer; font-weight: bold; background: #fff; margin-top: 8px; }
 
@@ -24,21 +23,19 @@
     #reader { width: 100%; border-radius: 20px; overflow: hidden; margin-top: 20px; }
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
     .modal-content { background: white; padding: 25px; border-radius: 20px; width: 90%; max-width: 360px; text-align: center; }
-    #qrcode { margin: 20px auto; display: flex; justify-content: center; }
+    #qrcode { margin: 20px auto; display: flex; justify-content: center; min-height: 200px; }
     .hidden { display: none !important; }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <!-- ログイン画面 -->
   <div id="login-view" class="card-box">
     <div style="font-size:24px; font-weight:bold; color:#ff0033;">11Pay ログイン</div>
     <input type="text" id="login-user" placeholder="ユーザー名" value="きらと">
     <button class="main-btn" onclick="login()">ログイン</button>
   </div>
 
-  <!-- メイン画面 -->
   <div id="main-view" class="hidden">
     <div class="header">
       <div style="font-weight:bold;">👤 <span id="user-display"></span></div>
@@ -47,33 +44,32 @@
     <div class="balance-card">
       <div style="font-size:14px; opacity:0.9;">11Pay残高</div>
       <div class="card-amount"><span id="balance-display">1000</span> 円</div>
+      <div style="margin-top:10px; font-size:16px; background:rgba(255,255,255,0.2); padding:5px 10px; border-radius:15px; display:inline-block;">
+        🪙 ポイント: <span id="point-display">0</span> pt
+      </div>
     </div>
     <button class="main-btn" onclick="showQRModal()">受取用QRを表示</button>
     <div id="reader"></div>
   </div>
 </div>
 
-<!-- アクション確認モーダル（支払い・送金） -->
+<!-- 共通モーダル -->
 <div id="action-modal" class="modal-overlay hidden">
   <div class="modal-content">
     <h3 id="modal-title">確認</h3>
     <p style="font-size:28px; font-weight:bold; color:#ff0033;" id="modal-amount">0 円</p>
-    
     <div id="coupon-area" style="text-align:left;">
       <label>クーポン:</label>
       <select id="coupon-select" onchange="calculateFinal()">
         <option value="0">なし</option>
         <option value="100">100円引き</option>
-        <option value="500">500円引き</option>
       </select>
     </div>
-    
     <button class="main-btn" onclick="executeAction()">確定する</button>
     <button class="secondary-btn" onclick="closeModal()">キャンセル</button>
   </div>
 </div>
 
-<!-- QR生成モーダル -->
 <div id="qr-modal" class="modal-overlay hidden">
   <div class="modal-content">
     <h3>受取額を入力</h3>
@@ -86,9 +82,8 @@
 
 <script>
   let currentUser = localStorage.getItem("paypay_login_user") || "";
-  let balance = 1000;
-  let currentRawAmount = 0; // 元の金額
-  let currentAction = "";
+  let balance = 1000, points = 0;
+  let currentRawAmount = 0, currentAction = "";
 
   function login() { 
     currentUser = document.getElementById("login-user").value;
@@ -96,24 +91,28 @@
     location.reload(); 
   }
 
-  function logout() { localStorage.removeItem("paypay_login_user"); location.reload(); }
+  function logout() { localStorage.clear(); location.reload(); }
 
   window.onload = () => {
     if(currentUser){
       document.getElementById("login-view").classList.add("hidden");
       document.getElementById("main-view").classList.remove("hidden");
       document.getElementById("user-display").innerText = currentUser;
+      
       balance = parseInt(localStorage.getItem(`bal_${currentUser}`)) || 1000;
+      points = parseInt(localStorage.getItem(`pt_${currentUser}`)) || 0;
+      
       document.getElementById("balance-display").innerText = balance.toLocaleString();
+      document.getElementById("point-display").innerText = points.toLocaleString();
+      
       new Html5Qrcode("reader").start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, onScan);
     }
   };
 
-  // QRスキャン時
   function onScan(decodedText) {
-    const parts = decodedText.split('_'); // [PAY/SEND, 金額]
+    const parts = decodedText.split('_'); 
     currentAction = parts[0];
-    currentRawAmount = parseInt(parts[1]);
+    currentRawAmount = parseInt(parts[2] || parts[1]); // SEND_名前_金額 に対応
 
     if(currentAction === 'PAY') {
       document.getElementById("modal-title").innerText = "お支払い";
@@ -122,19 +121,16 @@
       document.getElementById("modal-title").innerText = "送金リクエスト";
       document.getElementById("coupon-area").classList.add("hidden");
     }
-    
     calculateFinal();
     document.getElementById("action-modal").classList.remove("hidden");
   }
 
-  // クーポン計算
   function calculateFinal() {
     let discount = (currentAction === 'PAY') ? parseInt(document.getElementById("coupon-select").value) : 0;
     let final = Math.max(0, currentRawAmount - discount);
     document.getElementById("modal-amount").innerText = final + " 円";
   }
 
-  // 確定処理
   function executeAction() {
     let final = parseInt(document.getElementById("modal-amount").innerText);
     if(balance < final) return alert("残高不足です");
@@ -149,8 +145,15 @@
 
   function generateMyQR() {
     const amount = document.getElementById("qr-amount").value;
-    document.getElementById("qrcode").innerHTML = "";
-    new QRCode(document.getElementById("qrcode"), { text: `SEND_${currentUser}_${amount}`, width: 200, height: 200 });
+    const qrDiv = document.getElementById("qrcode");
+    qrDiv.innerHTML = "";
+    
+    // QR生成
+    new QRCode(qrDiv, { 
+      text: `SEND_${currentUser}_${amount}`, 
+      width: 200, 
+      height: 200 
+    });
   }
 </script>
 </body>
