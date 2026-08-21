@@ -22,7 +22,8 @@
     input[type="text"], input[type="password"], input[type="number"] { width: 100%; padding: 14px; font-size: 16px; border: 2px solid #ddd; border-radius: 12px; margin-bottom: 12px; text-align: center; }
     
     .main-btn { width: 100%; padding: 16px; font-size: 18px; color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; background: #ff0033; }
-    .send-qr-btn { width: 100%; padding: 14px; font-size: 16px; color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; background: #007bff; margin-bottom: 15px; }
+    .send-qr-btn { width: 100%; padding: 14px; font-size: 16px; color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; background: #007bff; margin-bottom: 10px; }
+    .scratch-btn { width: 100%; padding: 14px; font-size: 16px; color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; background: #ff9900; margin-bottom: 15px; }
     .secondary-btn { width: 100%; padding: 12px; font-size: 15px; color: #666; border: 1px solid #ccc; border-radius: 12px; cursor: pointer; font-weight: bold; background: #fff; margin-top: 8px; }
 
     .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; margin-bottom: 10px; }
@@ -48,6 +49,11 @@
     .modal-content { background: white; padding: 25px 20px; border-radius: 20px; width: 88%; max-width: 360px; text-align: center; }
     .roulette-box { font-size: 32px; font-weight: bold; color: #ff0033; margin: 20px 0; min-height: 48px; white-space: pre-line; }
     
+    /* スクラッチ用スタイル */
+    .scratch-container { position: relative; width: 200px; height: 100px; margin: 15px auto; user-select: none; }
+    .scratch-result { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff; border: 2px dashed #ff9900; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 20px; font-weight: bold; color: #ff0033; padding: 10px; }
+    .scratch-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 10px; cursor: pointer; }
+
     #qr-output-container { display: flex; justify-content: center; margin: 15px 0; }
     #qr-output-container img { width: 200px; height: 200px; border-radius: 10px; }
     
@@ -58,14 +64,13 @@
 
 <div class="container">
   
-  <!-- 認証画面 (ログイン/新規登録) -->
+  <!-- 認証画面 -->
   <div id="auth-view" class="card-box">
     <div class="tab-container">
       <button id="tab-login" class="tab-btn active" onclick="switchTab('login')">ログイン</button>
       <button id="tab-register" class="tab-btn" onclick="switchTab('register')">新規登録</button>
     </div>
 
-    <!-- ログインフォーム (初期値valueを削除) -->
     <div id="form-login">
       <div class="login-title">11Pay ログイン</div>
       <input type="text" id="login-user" placeholder="ユーザー名" autocomplete="off">
@@ -73,7 +78,6 @@
       <button class="main-btn" onclick="login()">ログイン</button>
     </div>
 
-    <!-- 新規登録フォーム -->
     <div id="form-register" class="hidden">
       <div class="login-title">アカウントを作成</div>
       <input type="text" id="reg-user" placeholder="新しいユーザー名" autocomplete="off">
@@ -99,12 +103,28 @@
       <div class="point-display">🪙 ポイント: <span id="point-display">0</span> pt</div>
     </div>
 
-    <!-- QRコードで送るボタン -->
     <button class="send-qr-btn" onclick="openSendQrModal()">📲 QRコードで送る</button>
+    <button class="scratch-btn" onclick="openScratchModal()">🎰 毎日スクラッチくじ</button>
 
     <div id="reader"></div>
   </div>
 
+</div>
+
+<!-- スクラッチモーダル -->
+<div id="scratch-modal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <h3>🎰 毎日スクラッチ</h3>
+    <p style="font-size: 13px; color: #666; margin-bottom: 10px;">グレーの部分を指やマウスでけずってね！</p>
+    
+    <div class="scratch-container">
+      <div id="scratch-result-text" class="scratch-result">?</div>
+      <canvas id="scratch-canvas" class="scratch-canvas" width="200" height="100"></canvas>
+    </div>
+
+    <button class="main-btn hidden" id="scratch-claim-btn" onclick="claimScratchPoints()">ポイントを受け取る</button>
+    <button class="secondary-btn" id="scratch-close-btn" onclick="closeScratchModal()">閉じる</button>
+  </div>
 </div>
 
 <!-- パスワード変更モーダル -->
@@ -183,7 +203,11 @@
   let pendingSendAmount = 0;
   let html5QrCode;
 
-  // ユーザー管理用 (localStorage)
+  // スクラッチ用変数
+  let scratchPointResult = 0;
+  let scratchIsCleared = false;
+  let isDrawing = false;
+
   function getUsers() {
     const users = localStorage.getItem("paypay_users");
     return users ? JSON.parse(users) : { "きらと": "1234" };
@@ -193,7 +217,7 @@
     localStorage.setItem("paypay_users", JSON.stringify(users));
   }
 
-  // --- 音声効果音 (Web Audio API) ---
+  // --- 音声効果音 ---
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
   function playSound(type) {
@@ -270,7 +294,6 @@
     document.getElementById("reg-pass-confirm").value = "";
   }
 
-  // --- タブ切り替え機能 ---
   function switchTab(tab) {
     playSound('beep');
     clearAuthFields();
@@ -341,6 +364,103 @@
     localStorage.setItem("paypay_login_user", currentUser);
     alert("アカウントの作成が完了しました！");
     showMainScreen();
+  }
+
+  // --- スクラッチ機能 ---
+  function openScratchModal() {
+    playSound('beep');
+    const today = new Date().toLocaleDateString();
+    const lastScratchDate = localStorage.getItem(`scratch_date_${currentUser}`);
+
+    if (lastScratchDate === today) {
+      playSound('error');
+      return alert("今日のスクラッチはすでに引いています！\nまた明日チャレンジしてね！");
+    }
+
+    // 確率設定（50pt:70%, 100pt:20%, 500pt:8%, 1000pt:2%）
+    const rand = Math.random() * 100;
+    if (rand < 2) scratchPointResult = 1000;
+    else if (rand < 10) scratchPointResult = 500;
+    else if (rand < 30) scratchPointResult = 100;
+    else scratchPointResult = 50;
+
+    document.getElementById("scratch-result-text").innerText = `${scratchPointResult}ポイント\nプレゼント！`;
+    document.getElementById("scratch-claim-btn").classList.add("hidden");
+    document.getElementById("scratch-modal").classList.remove("hidden");
+
+    initScratchCanvas();
+  }
+
+  function initScratchCanvas() {
+    const canvas = document.getElementById("scratch-canvas");
+    const ctx = canvas.getContext("2d");
+    scratchIsCleared = false;
+
+    ctx.fillStyle = "#cccccc";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.font = "bold 16px sans-serif";
+    ctx.fillStyle = "#666666";
+    ctx.textAlign = "center";
+    ctx.fillText("ここを擦ってね！", canvas.width / 2, canvas.height / 2 + 5);
+
+    function scratch(e) {
+      if (!isDrawing) return;
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const touch = e.touches ? e.touches[0] : e;
+      const x = touch.clientX - rect.left;
+      const y = touch.clientY - rect.top;
+
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.beginPath();
+      ctx.arc(x, y, 15, 0, Math.PI * 2);
+      ctx.fill();
+
+      checkScratchProgress(ctx, canvas);
+    }
+
+    canvas.onmousedown = (e) => { isDrawing = true; scratch(e); };
+    canvas.onmousemove = scratch;
+    canvas.onmouseup = () => { isDrawing = false; };
+    canvas.ontouchstart = (e) => { isDrawing = true; scratch(e); };
+    canvas.ontouchmove = scratch;
+    canvas.ontouchend = () => { isDrawing = false; };
+  }
+
+  function checkScratchProgress(ctx, canvas) {
+    if (scratchIsCleared) return;
+
+    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let transparentPixels = 0;
+    for (let i = 3; i < imgData.data.length; i += 4) {
+      if (imgData.data[i] === 0) transparentPixels++;
+    }
+
+    // 40%以上削られたらクリア
+    if (transparentPixels > imgData.data.length / 4 * 0.4) {
+      scratchIsCleared = true;
+      playSound('win');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      document.getElementById("scratch-claim-btn").classList.remove("hidden");
+    }
+  }
+
+  function claimScratchPoints() {
+    playSound('beep');
+    const today = new Date().toLocaleDateString();
+    localStorage.setItem(`scratch_date_${currentUser}`, today);
+
+    points += scratchPointResult;
+    updateDisplay();
+
+    alert(`🎉 ${scratchPointResult} ポイントを獲得しました！`);
+    closeScratchModal();
+  }
+
+  function closeScratchModal() {
+    playSound('beep');
+    document.getElementById("scratch-modal").classList.add("hidden");
   }
 
   // --- パスワード変更機能 ---
@@ -535,14 +655,6 @@
     document.getElementById("confirm-pay-amount").innerText = currentScanAmount.toLocaleString();
     document.getElementById("max-pt-display").innerText = points.toLocaleString();
     document.getElementById("use-pt-check").checked = false;
-    document.getElementById("use-pt-input").value = "";
-    togglePointInput();
-    document.getElementById("pay-confirm-modal").classList.remove("hidden");
-  }
-
-  function togglePointInput() {
-    playSound('beep');
-    const isChecked = document.getElementById("use-pt-check").checked = false;
     document.getElementById("use-pt-input").value = "";
     togglePointInput();
     document.getElementById("pay-confirm-modal").classList.remove("hidden");
