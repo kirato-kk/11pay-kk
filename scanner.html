@@ -13,7 +13,12 @@
     
     .card-box { background: white; padding: 30px 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-top: 20px; }
     
-    .login-title { font-size: 28px; font-weight: bold; color: #ff0033; margin-bottom: 20px; }
+    /* タブ切り替えスタイル */
+    .tab-container { display: flex; margin-bottom: 20px; border-bottom: 2px solid #eee; }
+    .tab-btn { flex: 1; padding: 12px; font-size: 16px; font-weight: bold; color: #888; background: none; border: none; cursor: pointer; border-bottom: 3px solid transparent; }
+    .tab-btn.active { color: #ff0033; border-bottom-color: #ff0033; }
+
+    .login-title { font-size: 24px; font-weight: bold; color: #ff0033; margin-bottom: 15px; }
     input[type="text"], input[type="password"], input[type="number"] { width: 100%; padding: 14px; font-size: 16px; border: 2px solid #ddd; border-radius: 12px; margin-bottom: 12px; text-align: center; }
     
     .main-btn { width: 100%; padding: 16px; font-size: 18px; color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; background: #ff0033; }
@@ -52,12 +57,29 @@
 
 <div class="container">
   
-  <!-- ログイン画面 -->
-  <div id="login-view" class="card-box">
-    <div class="login-title">11Pay ログイン</div>
-    <input type="text" id="login-user" placeholder="ユーザー名" value="きらと">
-    <input type="password" id="login-pass" placeholder="パスワード (初期: 1234)" value="1234">
-    <button class="main-btn" onclick="login()">ログイン</button>
+  <!-- 認証画面 (ログイン/新規登録) -->
+  <div id="auth-view" class="card-box">
+    <div class="tab-container">
+      <button id="tab-login" class="tab-btn active" onclick="switchTab('login')">ログイン</button>
+      <button id="tab-register" class="tab-btn" onclick="switchTab('register')">新規登録</button>
+    </div>
+
+    <!-- ログインフォーム -->
+    <div id="form-login">
+      <div class="login-title">11Pay ログイン</div>
+      <input type="text" id="login-user" placeholder="ユーザー名" value="きらと">
+      <input type="password" id="login-pass" placeholder="パスワード (初期: 1234)" value="1234">
+      <button class="main-btn" onclick="login()">ログイン</button>
+    </div>
+
+    <!-- 新規登録フォーム -->
+    <div id="form-register" class="hidden">
+      <div class="login-title">アカウントを作成</div>
+      <input type="text" id="reg-user" placeholder="新しいユーザー名">
+      <input type="password" id="reg-pass" placeholder="パスワード">
+      <input type="password" id="reg-pass-confirm" placeholder="パスワード (確認)">
+      <button class="main-btn" onclick="register()">新規登録してはじめる</button>
+    </div>
   </div>
 
   <!-- メイン画面 -->
@@ -142,8 +164,18 @@
   
   let currentScanAmount = 0;
   let earnedPoints = 0;
-  let pendingSendAmount = 0; // 保留中の送金額
+  let pendingSendAmount = 0;
   let html5QrCode;
+
+  // ユーザー管理用 (localStorage)
+  function getUsers() {
+    const users = localStorage.getItem("paypay_users");
+    return users ? JSON.parse(users) : { "きらと": "1234" }; // 初期ユーザー
+  }
+
+  function saveUsers(users) {
+    localStorage.setItem("paypay_users", JSON.stringify(users));
+  }
 
   // --- 音声効果音 (Web Audio API) ---
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -213,19 +245,71 @@
     }
   };
 
+  // --- タブ切り替え ---
+  function switchTab(tab) {
+    playSound('beep');
+    if (tab === 'login') {
+      document.getElementById("tab-login").classList.add("active");
+      document.getElementById("tab-register").classList.remove("active");
+      document.getElementById("form-login").classList.remove("hidden");
+      document.getElementById("form-register").classList.add("hidden");
+    } else {
+      document.getElementById("tab-register").classList.add("active");
+      document.getElementById("tab-login").classList.remove("active");
+      document.getElementById("form-register").classList.remove("hidden");
+      document.getElementById("form-login").classList.add("hidden");
+    }
+  }
+
   function login() {
     playSound('beep');
     const userInput = document.getElementById("login-user").value.trim();
     const passInput = document.getElementById("login-pass").value;
 
     if (!userInput) return alert("ユーザー名を入力してください");
-    if (passInput !== "1234") {
+
+    const users = getUsers();
+
+    if (!users[userInput] || users[userInput] !== passInput) {
       playSound('error');
-      return alert("パスワードが間違っています");
+      return alert("ユーザー名またはパスワードが間違っています");
     }
 
     currentUser = userInput;
     localStorage.setItem("paypay_login_user", currentUser);
+    showMainScreen();
+  }
+
+  function register() {
+    playSound('beep');
+    const userInput = document.getElementById("reg-user").value.trim();
+    const passInput = document.getElementById("reg-pass").value;
+    const confirmInput = document.getElementById("reg-pass-confirm").value;
+
+    if (!userInput) return alert("ユーザー名を入力してください");
+    if (!passInput) return alert("パスワードを入力してください");
+    if (passInput !== confirmInput) {
+      playSound('error');
+      return alert("パスワードが一致しません");
+    }
+
+    const users = getUsers();
+
+    if (users[userInput]) {
+      playSound('error');
+      return alert("このユーザー名は既に使われています");
+    }
+
+    users[userInput] = passInput;
+    saveUsers(users);
+
+    // 新規登録時の初期残高とポイントを設定
+    localStorage.setItem(`balance_${userInput}`, 1000);
+    localStorage.setItem(`points_${userInput}`, 0);
+
+    currentUser = userInput;
+    localStorage.setItem("paypay_login_user", currentUser);
+    alert("アカウントの作成が完了しました！");
     showMainScreen();
   }
 
@@ -243,7 +327,7 @@
   }
 
   function showMainScreen() {
-    document.getElementById("login-view").classList.add("hidden");
+    document.getElementById("auth-view").classList.add("hidden");
     document.getElementById("main-view").classList.remove("hidden");
     document.getElementById("user-display").innerText = currentUser;
 
@@ -264,7 +348,7 @@
     localStorage.setItem(`points_${currentUser}`, points);
   }
 
-  // --- 送金用QRコード機能 (作成時即時引き落とし) ---
+  // --- 送金用QRコード機能 ---
   function openSendQrModal() {
     playSound('beep');
     document.getElementById("send-qr-amount").value = "";
@@ -293,7 +377,6 @@
       return alert(`残高が不足しています！\n現在の残高: ${balance.toLocaleString()}円`);
     }
 
-    // ★作成した瞬間に自分の残高から差し引く
     pendingSendAmount = sendAmount;
     balance -= sendAmount;
     updateDisplay();
@@ -349,7 +432,6 @@
         return;
       }
 
-      // 受け取った側の残高を増やす
       balance += sendAmount;
       updateDisplay();
 
@@ -457,20 +539,4 @@
         playSound('win');
         document.getElementById("roulette-sub").innerText = "獲得ポイント決定！";
         document.getElementById("roulette-display").innerText = `🎯 ${Math.round(finalRate * 100)}% 還元!\n(+${earnedPoints}pt)`;
-        document.getElementById("roulette-close-btn").classList.remove("hidden");
-      }
-    }, 100);
-  }
-
-  function closeRoulette() {
-    playSound('beep');
-    points += earnedPoints;
-    updateDisplay();
-    document.getElementById("roulette-modal").classList.add("hidden");
-    location.reload();
-  }
-</script>
-
-</body>
-</html>
-
+        d
