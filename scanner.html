@@ -19,6 +19,8 @@
     .send-btn { width: 100%; padding: 14px; font-size: 16px; color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; background: #007bff; margin-bottom: 15px; }
     .secondary-btn { width: 100%; padding: 12px; font-size: 15px; color: #666; border: 1px solid #ccc; border-radius: 12px; cursor: pointer; font-weight: bold; background: #fff; margin-top: 8px; }
 
+    .toggle-auth-btn { background: none; border: none; color: #007bff; font-weight: bold; font-size: 14px; margin-top: 15px; cursor: pointer; text-decoration: underline; }
+
     .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; margin-bottom: 10px; }
     .user-info { font-size: 18px; font-weight: bold; color: #333; display: flex; align-items: center; gap: 6px; }
     .logout-btn { background: #666; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; }
@@ -52,8 +54,18 @@
   <div id="login-view" class="card-box">
     <div class="login-title">11Pay ログイン</div>
     <input type="text" id="login-user" placeholder="ユーザー名" value="きらと">
-    <input type="password" id="login-pass" placeholder="パスワード (初期: 1234)" value="1234">
+    <input type="password" id="login-pass" placeholder="パスワード" value="1234">
     <button class="main-btn" onclick="login()">ログイン</button>
+    <button class="toggle-auth-btn" onclick="toggleAuthMode('register')">新規登録はこちら</button>
+  </div>
+
+  <!-- 新規登録画面 -->
+  <div id="register-view" class="card-box hidden">
+    <div class="login-title">新規アカウント作成</div>
+    <input type="text" id="reg-user" placeholder="ユーザー名を作成">
+    <input type="password" id="reg-pass" placeholder="パスワードを設定">
+    <button class="main-btn" style="background: #28a745;" onclick="register()">アカウント作成</button>
+    <button class="toggle-auth-btn" onclick="toggleAuthMode('login')">ログイン画面へ戻る</button>
   </div>
 
   <!-- メイン画面 -->
@@ -191,18 +203,74 @@
   }
 
   window.onload = function() {
+    // 初期データの登録（デフォルトユーザー: きらと）
+    if (!localStorage.getItem("pass_きらと")) {
+      localStorage.setItem("pass_きらと", "1234");
+    }
+
     if (currentUser) {
       showMainScreen();
     }
   };
 
+  // 画面切り替え機能
+  function toggleAuthMode(mode) {
+    playSound('beep');
+    if (mode === 'register') {
+      document.getElementById("login-view").classList.add("hidden");
+      document.getElementById("register-view").classList.remove("hidden");
+    } else {
+      document.getElementById("register-view").classList.add("hidden");
+      document.getElementById("login-view").classList.remove("hidden");
+    }
+  }
+
+  // 新規登録処理
+  function register() {
+    playSound('beep');
+    const userInput = document.getElementById("reg-user").value.trim();
+    const passInput = document.getElementById("reg-pass").value;
+
+    if (!userInput) return alert("ユーザー名を入力してください");
+    if (!passInput) return alert("パスワードを入力してください");
+
+    // 既に存在するユーザーかチェック
+    if (localStorage.getItem(`pass_${userInput}`)) {
+      playSound('error');
+      return alert("そのユーザー名は既に使用されています");
+    }
+
+    // アカウント情報と初期残高を保存
+    localStorage.setItem(`pass_${userInput}`, passInput);
+    localStorage.setItem(`balance_${userInput}`, 1000);
+    localStorage.setItem(`points_${userInput}`, 0);
+
+    currentUser = userInput;
+    localStorage.setItem("paypay_login_user", currentUser);
+
+    playSound('win');
+    alert(`🎉 アカウントを作成しました！\n新規登録特典: 1,000円プレゼント！`);
+    showMainScreen();
+  }
+
+  // ログイン処理
   function login() {
     playSound('beep');
     const userInput = document.getElementById("login-user").value.trim();
     const passInput = document.getElementById("login-pass").value;
 
     if (!userInput) return alert("ユーザー名を入力してください");
-    if (passInput !== "1234") {
+
+    const savedPass = localStorage.getItem(`pass_${userInput}`);
+
+    // 未登録ユーザーの場合
+    if (!savedPass) {
+      playSound('error');
+      return alert("ユーザーが存在しません。「新規登録」から作成してください");
+    }
+
+    // パスワード判定
+    if (passInput !== savedPass) {
       playSound('error');
       return alert("パスワードが間違っています");
     }
@@ -227,6 +295,7 @@
 
   function showMainScreen() {
     document.getElementById("login-view").classList.add("hidden");
+    document.getElementById("register-view").classList.add("hidden");
     document.getElementById("main-view").classList.remove("hidden");
     document.getElementById("user-display").innerText = currentUser;
 
@@ -268,6 +337,13 @@
     if (sendAmount > balance) {
       playSound('error');
       return alert("残高が不足しています");
+    }
+
+    // 相手が登録されているか確認
+    const targetPass = localStorage.getItem(`pass_${targetUser}`);
+    if (!targetPass) {
+      playSound('error');
+      return alert(`❌ ユーザー「${targetUser}」が見つかりません。\n相手に新規登録してもらっているか確認してください。`);
     }
 
     // 相手の残高を取得・加算
