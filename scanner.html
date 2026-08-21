@@ -398,7 +398,7 @@
     tofuCanvas = document.getElementById("game-canvas");
     tofuCtx = tofuCanvas.getContext("2d");
 
-    tofuStack = [{ x: 100, width: 100 }]; // 豆腐のサイズを固定(100px)
+    tofuStack = [{ x: 75, width: 150 }];
     tofuSpeed = 2;
     gameActive = true;
 
@@ -411,12 +411,13 @@
   }
 
   function spawnNewTofu() {
+    const topTofu = tofuStack[tofuStack.length - 1];
     currentTofu = {
       x: 0,
-      width: 100 // 常にサイズ固定
+      width: topTofu.width
     };
     tofuDirection = 1;
-    tofuSpeed = 2 + Math.floor(tofuStack.length / 10) * 0.5; // 段数で速度アップ
+    tofuSpeed = 2 + Math.floor(tofuStack.length / 10) * 0.5; // 段数で少しずつ速く
   }
 
   function placeTofu(e) {
@@ -424,12 +425,10 @@
     e.preventDefault();
 
     const topTofu = tofuStack[tofuStack.length - 1];
-    
-    // 完全に土台から外れているかチェック（重なり部分が一切ない場合）
-    const isMissed = (currentTofu.x + currentTofu.width <= topTofu.x) || (currentTofu.x >= topTofu.x + topTofu.width);
+    const diff = currentTofu.x - topTofu.x;
 
-    if (isMissed) {
-      // 完全に落とした（ゲームオーバー）
+    if (Math.abs(diff) >= currentTofu.width) {
+      // 完全に外れた（ゲームオーバー）
       gameActive = false;
       playSound('error');
       finishTofuGame();
@@ -438,11 +437,14 @@
 
     playSound('tick');
 
-    // サイズは小さくせず、置いた位置のまま積んでいく
-    tofuStack.push({ x: currentTofu.x, width: currentTofu.width });
+    // ズレた分削れる
+    const newWidth = currentTofu.width - Math.abs(diff);
+    const newX = diff > 0 ? currentTofu.x : topTofu.x;
+
+    tofuStack.push({ x: newX, width: newWidth });
 
     if (tofuStack.length - 1 >= 100) {
-      // 100段クリア！
+      // 100段最高記録クリア
       gameActive = false;
       playSound('win');
       finishTofuGame();
@@ -465,7 +467,7 @@
       }
     }
 
-    // カメラ位置調整
+    // カメラ位置調整（積み上がったら画面を下げる）
     const tofuHeight = 20;
     const baseY = 240;
     const cameraOffset = Math.max(0, (tofuStack.length - 5) * tofuHeight);
@@ -476,6 +478,7 @@
       const y = baseY - (i * tofuHeight) + cameraOffset;
 
       if (y < 300 && y > -30) {
+        // 豆腐（白ベースにうっすら影）
         tofuCtx.fillStyle = "#ffffff";
         tofuCtx.fillRect(t.x, y, t.width, tofuHeight - 2);
         tofuCtx.strokeStyle = "#dddddd";
@@ -487,7 +490,7 @@
     // 動いている豆腐の描画
     if (gameActive) {
       const movingY = baseY - (tofuStack.length * tofuHeight) + cameraOffset;
-      tofuCtx.fillStyle = "#fff8e7";
+      tofuCtx.fillStyle = "#fff8e7"; // 動いている豆腐は少しおいしそうな色
       tofuCtx.fillRect(currentTofu.x, movingY, currentTofu.width, tofuHeight - 2);
       tofuCtx.strokeStyle = "#ffcc00";
       tofuCtx.lineWidth = 2;
@@ -500,28 +503,6 @@
     if (currentSteps >= 100) multiplier = 10;
     else if (currentSteps >= 80) multiplier = 8;
     else if (currentSteps >= 50) multiplier = 5;
-    else if (currentSteps >= 40) multiplier = 4;
-    else if (currentSteps >= 20) multiplier = 2;
-
-    tofuCtx.fillStyle = "#333";
-    tofuCtx.font = "bold 18px sans-serif";
-    tofuCtx.textAlign = "left";
-    tofuCtx.fillText(`🧊 ${currentSteps} 段`, 15, 30);
-    tofuCtx.fillStyle = multiplier > 1 ? "#ff0033" : "#666";
-    tofuCtx.fillText(`倍率: ${multiplier}倍`, 120, 30);
-
-    if (gameActive) {
-      gameAnimationId = requestAnimationFrame(updateTofuGame);
-    }
-  }
-
-  function finishTofuGame() {
-    const steps = tofuStack.length - 1;
-    let multiplier = 1;
-
-    if (steps >= 100) multiplier = 10;
-    else if (steps >= 80) multiplier = 8;
-    else if (steps >= 50) multiplier = 5;
     else if (currentSteps >= 40) multiplier = 4;
     else if (currentSteps >= 20) multiplier = 2;
 
