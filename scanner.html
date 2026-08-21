@@ -24,6 +24,7 @@
         .btn { padding: 12px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; background: white; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .btn:active { transform: scale(0.97); }
         .btn-primary { background: var(--main-color); color: white; }
+        .btn-charge { background: #28a745; color: white; grid-column: span 2; font-size: 16px; }
         .btn-logout { background: #666; color: white; padding: 6px 12px; border-radius: 8px; font-size: 12px; border: none; cursor: pointer; }
         
         #reader { background: white; border-radius: 20px; overflow: hidden; border: 2px solid #ddd; }
@@ -64,6 +65,7 @@
         </div>
 
         <div class="actions">
+            <button class="btn btn-charge" onclick="openModal('modal-charge')">💳 残高チャージ</button>
             <button class="btn" onclick="openModal('modal-qr')">受取QR生成</button>
             <button class="btn" onclick="openModal('modal-coupon')">ポイント交換</button>
         </div>
@@ -71,6 +73,17 @@
         <div id="reader"></div>
     </div>
 
+</div>
+
+<!-- Charge Modal -->
+<div id="modal-charge" class="modal">
+    <div class="modal-content">
+        <h3>残高チャージ</h3>
+        <p style="font-size:13px; color:#666;">チャージする金額を入力してください</p>
+        <input type="number" id="charge-amount" class="auth-input" placeholder="金額 (例: 3000)">
+        <button class="btn btn-charge" style="width:100%; margin-top:10px;" onclick="executeCharge()">チャージ実行</button>
+        <button class="btn" style="width:100%; margin-top:8px;" onclick="closeModals()">キャンセル</button>
+    </div>
 </div>
 
 <!-- Auto Payment Roulette Modal -->
@@ -162,7 +175,7 @@
     let currentScanAmount = 0;
     let scanner = null;
 
-    // --- 音声処理 (Web Audio API) ---
+    // --- 音声処理 ---
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     
     function playSound(type) {
@@ -264,6 +277,27 @@
         });
     }
 
+    // --- チャージ処理 ---
+    function executeCharge() {
+        const amountInput = document.getElementById('charge-amount');
+        const amount = parseInt(amountInput.value);
+
+        if (isNaN(amount) || amount <= 0) {
+            return alert("正しい金額を入力してください");
+        }
+
+        let data = getUserData();
+        data.balance += amount;
+        saveUserData(data);
+
+        playSound('win');
+        confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 } });
+        alert(`${amount.toLocaleString()} 円をチャージしました！`);
+
+        amountInput.value = "";
+        closeModals();
+    }
+
     // --- クーポン交換 ---
     function exchangeCoupon(costPt, discountVal) {
         let data = getUserData();
@@ -315,7 +349,6 @@
             data.points -= finalPrice;
         }
 
-        // クーポン消化
         if (couponVal > 0) {
             const index = data.coupons.indexOf(couponVal);
             if (index > -1) data.coupons.splice(index, 1);
@@ -325,12 +358,10 @@
         closeModals();
         playSound('pay');
 
-        // クーポン使用時またはポイント支払いの場合はルーレットをスキップ
         if (couponVal > 0 || method === 'points') {
             alert("お支払いが完了しました！ (※クーポン・ポイント利用時はルーレット対象外です)");
             location.reload();
         } else {
-            // 還元ルーレット開始
             runPaymentRoulette(finalPrice);
         }
     }
@@ -353,19 +384,16 @@
             if (count >= maxCount) {
                 clearInterval(timer);
 
-                // 還元率確定 (1〜100%)
                 const finalPercent = Math.floor(Math.random() * 100) + 1;
                 const earnedPoints = Math.floor(baseAmount * (finalPercent / 100));
 
                 document.getElementById('roulette-percent').innerText = `${finalPercent} %`;
                 document.getElementById('roulette-result-pt').innerText = `+${earnedPoints} pt 獲得！`;
 
-                // ポイント保存
                 let data = getUserData();
                 data.points += earnedPoints;
                 saveUserData(data);
 
-                // 演出
                 playSound('win');
                 confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
                 closeBtn.style.display = 'block';
