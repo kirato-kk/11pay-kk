@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>11Pay - Professional</title>
+    <title>11Pay - Complete Edition</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
@@ -11,146 +11,267 @@
         body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 0; }
         .app-container { max-width: 500px; margin: 0 auto; padding: 20px; }
         
+        /* Auth UI */
+        .auth-card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; margin-top: 50px; }
+        .auth-input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; }
+        .auth-toggle { color: var(--main-color); cursor: pointer; font-size: 14px; margin-top: 15px; text-decoration: underline; }
+
         /* Dashboard */
-        .card-balance { background: linear-gradient(135deg, var(--main-color), #ff4d4d); color: white; padding: 30px; border-radius: 20px; text-align: center; box-shadow: 0 10px 20px rgba(255,0,51,0.2); margin-bottom: 20px; }
-        .amount { font-size: 40px; font-weight: bold; }
+        .card-balance { background: linear-gradient(135deg, var(--main-color), #ff4d4d); color: white; padding: 25px; border-radius: 20px; text-align: center; box-shadow: 0 10px 20px rgba(255,0,51,0.2); margin-bottom: 20px; }
+        .amount { font-size: 36px; font-weight: bold; }
         .points-box { background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 20px; display: inline-block; margin-top: 10px; font-weight: bold; }
         
         /* Controls */
         .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .btn { padding: 15px; border: none; border-radius: 15px; font-weight: bold; cursor: pointer; background: white; transition: 0.3s; }
-        .btn:active { transform: scale(0.95); }
+        .btn { padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; background: white; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .btn:active { transform: scale(0.97); }
         .btn-primary { background: var(--main-color); color: white; }
+        .btn-logout { background: #666; color: white; padding: 6px 12px; border-radius: 8px; font-size: 12px; border: none; cursor: pointer; }
         
-        /* Scanner Area */
+        /* Modals & Coupons */
         #reader { background: white; border-radius: 20px; overflow: hidden; border: 2px solid #ddd; }
-        
-        /* Modals */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; }
-        .modal-content { background: white; width: 90%; max-width: 400px; padding: 30px; border-radius: 20px; text-align: center; }
-        .hidden { display: none; }
+        .modal-content { background: white; width: 90%; max-width: 400px; padding: 25px; border-radius: 20px; text-align: center; }
+        
+        .coupon-item { border: 1px dashed var(--main-color); background: #fff0f2; padding: 12px; border-radius: 10px; margin: 10px 0; display: flex; justify-content: space-between; align-items: center; }
+        .coupon-btn { background: var(--main-color); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    <!-- Header -->
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h3>👤 <span id="user-name">きらと</span></h3>
-        <button onclick="location.reload()">更新</button>
+
+    <!-- Auth Section -->
+    <div id="section-auth" class="auth-card">
+        <h2 id="auth-title" style="color:var(--main-color);">11Pay ログイン</h2>
+        <input type="text" id="auth-user" class="auth-input" placeholder="ユーザー名">
+        <input type="password" id="auth-pass" class="auth-input" placeholder="パスワード">
+        <button class="btn btn-primary" style="width:100%; margin-top:10px;" id="auth-submit-btn" onclick="handleAuth()">ログイン</button>
+        <div class="auth-toggle" id="auth-toggle-btn" onclick="toggleAuthMode()">新規登録はこちら</div>
     </div>
 
-    <!-- Balance -->
-    <div class="card-balance">
-        <div>11Pay残高</div>
-        <div class="amount" id="display-balance">1,000</div>
-        <div class="points-box" id="display-points">🪙 0 pt</div>
+    <!-- Main App Section -->
+    <div id="section-main" class="hidden">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h3>👤 <span id="display-username"></span></h3>
+            <button class="btn-logout" onclick="logout()">ログアウト</button>
+        </div>
+
+        <div class="card-balance">
+            <div>11Pay残高</div>
+            <div class="amount" id="display-balance">0</div>
+            <div class="points-box" id="display-points">🪙 0 pt</div>
+        </div>
+
+        <div class="actions">
+            <button class="btn" onclick="openModal('modal-qr')">受取QR生成</button>
+            <button class="btn" onclick="openModal('modal-coupon')">ポイントで交換</button>
+        </div>
+
+        <div id="reader"></div>
     </div>
 
-    <!-- Controls -->
-    <div class="actions">
-        <button class="btn" onclick="openQRGenerate()">受取QR生成</button>
-        <button class="btn" onclick="openCouponModal()">クーポン選択</button>
-    </div>
-
-    <!-- Scanner -->
-    <div id="reader"></div>
-</div>
-
-<!-- Payment Modal -->
-<div id="modal-pay" class="modal">
-    <div class="modal-content">
-        <h2>お支払い確認</h2>
-        <div style="font-size:24px; color:var(--main-color); font-weight:bold; margin:20px 0;" id="pay-raw">0円</div>
-        <div id="coupon-applied" style="margin-bottom:15px; color:#555;">クーポン: なし</div>
-        <button class="btn btn-primary" style="width:100%;" onclick="confirmPayment()">支払いを確定する</button>
-        <button class="btn" style="width:100%;" onclick="closeAllModals()">キャンセル</button>
-    </div>
 </div>
 
 <!-- QR Generator Modal -->
 <div id="modal-qr" class="modal">
     <div class="modal-content">
         <h3>受取金額を入力</h3>
-        <input type="number" id="gen-amount" style="width:90%; padding:10px; margin-bottom:10px;">
-        <button class="btn btn-primary" onclick="generateQR()">QR生成</button>
-        <div id="qrcode-area" style="margin-top:20px; display:flex; justify-content:center;"></div>
-        <button class="btn" onclick="closeAllModals()" style="width:100%; margin-top:15px;">閉じる</button>
+        <input type="number" id="gen-amount" class="auth-input" placeholder="金額 (例: 500)">
+        <button class="btn btn-primary" style="width:100%;" onclick="generateQR()">QR生成</button>
+        <div id="qrcode-area" style="margin-top:15px; display:flex; justify-content:center;"></div>
+        <button class="btn" style="width:100%; margin-top:15px;" onclick="closeModals()">閉じる</button>
     </div>
 </div>
 
-<!-- Coupon Modal -->
+<!-- Coupon Exchange Modal -->
 <div id="modal-coupon" class="modal">
     <div class="modal-content">
-        <h3>クーポン選択</h3>
-        <select id="coupon-select" style="width:100%; padding:15px; margin-bottom:20px;">
-            <option value="0">クーポンなし</option>
-            <option value="100">100円引き</option>
-            <option value="500">500円引き</option>
-        </select>
-        <button class="btn btn-primary" style="width:100%;" onclick="saveCoupon()">適用する</button>
+        <h3>クーポンポイント交換</h3>
+        <p style="font-size:12px; color:#666;">保有: <span id="exchange-current-pt">0</span> pt</p>
+        
+        <div class="coupon-item">
+            <div style="text-align:left;">
+                <strong style="color:var(--main-color);">2,000円引き</strong><br>
+                <small>必要: 1,000 pt</small>
+            </div>
+            <button class="coupon-btn" onclick="exchangeCoupon(1000, 2000)">交換</button>
+        </div>
+
+        <div class="coupon-item">
+            <div style="text-align:left;">
+                <strong style="color:var(--main-color);">7,000円引き</strong><br>
+                <small>必要: 5,000 pt</small>
+            </div>
+            <button class="coupon-btn" onclick="exchangeCoupon(5000, 7000)">交換</button>
+        </div>
+
+        <div class="coupon-item">
+            <div style="text-align:left;">
+                <strong style="color:var(--main-color);">20,000円引き</strong><br>
+                <small>必要: 10,000 pt</small>
+            </div>
+            <button class="coupon-btn" onclick="exchangeCoupon(10000, 20000)">交換</button>
+        </div>
+
+        <div style="margin-top:15px; text-align:left;">
+            <label style="font-size:13px;">保有クーポン一覧:</label>
+            <select id="active-coupons" class="auth-input">
+                <option value="0">使用するクーポンを選択</option>
+            </select>
+        </div>
+
+        <button class="btn" style="width:100%; margin-top:10px;" onclick="closeModals()">完了</button>
+    </div>
+</div>
+
+<!-- Payment Modal -->
+<div id="modal-pay" class="modal">
+    <div class="modal-content">
+        <h2>お支払い確認</h2>
+        <div style="font-size:24px; color:var(--main-color); font-weight:bold; margin:15px 0;" id="pay-amount-display">0円</div>
+        <div id="pay-coupon-info" style="font-size:14px; color:#666; margin-bottom:15px;"></div>
+        <button class="btn btn-primary" style="width:100%;" onclick="confirmPayment()">確定する</button>
+        <button class="btn" style="width:100%; margin-top:8px;" onclick="closeModals()">キャンセル</button>
     </div>
 </div>
 
 <script>
-    // --- APP STATE ---
-    let state = {
-        balance: parseInt(localStorage.getItem('bal')) || 1000,
-        points: parseInt(localStorage.getItem('pts')) || 0,
-        coupon: 0,
-        currentScanAmt: 0
-    };
+    let isRegisterMode = false;
+    let currentUser = localStorage.getItem('11pay_session') || null;
+    let currentScanAmount = 0;
+    let scanner = null;
 
-    function updateUI() {
-        document.getElementById('display-balance').innerText = state.balance.toLocaleString();
-        document.getElementById('display-points').innerText = `🪙 ${state.points.toLocaleString()} pt`;
-        localStorage.setItem('bal', state.balance);
-        localStorage.setItem('pts', state.points);
+    // --- Authentication ---
+    function toggleAuthMode() {
+        isRegisterMode = !isRegisterMode;
+        document.getElementById('auth-title').innerText = isRegisterMode ? "11Pay 新規登録" : "11Pay ログイン";
+        document.getElementById('auth-submit-btn').innerText = isRegisterMode ? "登録する" : "ログイン";
+        document.getElementById('auth-toggle-btn').innerText = isRegisterMode ? "ログインはこちら" : "新規登録はこちら";
     }
 
-    // --- MODALS ---
-    function openQRGenerate() { document.getElementById('modal-qr').style.display = 'flex'; }
-    function openCouponModal() { document.getElementById('modal-coupon').style.display = 'flex'; }
-    function closeAllModals() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
+    function handleAuth() {
+        const user = document.getElementById('auth-user').value.trim();
+        const pass = document.getElementById('auth-pass').value.trim();
 
-    // --- LOGIC ---
-    function generateQR() {
-        const amt = document.getElementById('gen-amount').value;
-        const area = document.getElementById('qrcode-area');
-        area.innerHTML = "";
-        new QRCode(area, { text: `PAY_11Pay_${amt}`, width: 180, height: 180 });
+        if (!user || !pass) return alert("ユーザー名とパスワードを入力してください");
+
+        let userData = JSON.parse(localStorage.getItem(`user_${user}`));
+
+        if (isRegisterMode) {
+            if (userData) return alert("このユーザー名は既に存在します");
+            userData = { pass: pass, balance: 1000, points: 2000, coupons: [] }; // 初期データ (テスト用に2000pt付与)
+            localStorage.setItem(`user_${user}`, JSON.stringify(userData));
+            alert("登録が完了しました！ログインします。");
+        } else {
+            if (!userData || userData.pass !== pass) return alert("ユーザー名またはパスワードが間違っています");
+        }
+
+        currentUser = user;
+        localStorage.setItem('11pay_session', currentUser);
+        initApp();
     }
 
-    function saveCoupon() {
-        state.coupon = parseInt(document.getElementById('coupon-select').value);
-        alert('クーポンを適用しました！');
-        closeAllModals();
-    }
-
-    // --- SCANNER ---
-    new Html5Qrcode("reader").start({ facingMode: "environment" }, { fps: 10, qrbox: 200 }, (data) => {
-        const parts = data.split('_');
-        state.currentScanAmt = parseInt(parts[2] || 0);
-        
-        // Show Pay Modal
-        document.getElementById('pay-raw').innerText = `${state.currentScanAmt}円`;
-        document.getElementById('coupon-applied').innerText = state.coupon > 0 ? `適用クーポン: ${state.coupon}円OFF` : "クーポン: なし";
-        document.getElementById('modal-pay').style.display = 'flex';
-    });
-
-    function confirmPayment() {
-        const finalPrice = Math.max(0, state.currentScanAmt - state.coupon);
-        if(state.balance < finalPrice) return alert("残高不足です");
-        
-        state.balance -= finalPrice;
-        state.coupon = 0; // Reset coupon
-        updateUI();
-        alert(`決済完了！${finalPrice}円支払いました。`);
-        closeAllModals();
+    function logout() {
+        if (scanner) scanner.stop();
+        localStorage.removeItem('11pay_session');
         location.reload();
     }
 
-    updateUI();
+    // --- Core Functions ---
+    function getUserData() {
+        return JSON.parse(localStorage.getItem(`user_${currentUser}`)) || { balance: 0, points: 0, coupons: [] };
+    }
+
+    function saveUserData(data) {
+        localStorage.setItem(`user_${currentUser}`, JSON.stringify(data));
+        updateUI();
+    }
+
+    function initApp() {
+        document.getElementById('section-auth').classList.add('hidden');
+        document.getElementById('section-main').classList.remove('hidden');
+        document.getElementById('display-username').innerText = currentUser;
+
+        updateUI();
+
+        scanner = new Html5Qrcode("reader");
+        scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 200 }, onScanSuccess);
+    }
+
+    function updateUI() {
+        const data = getUserData();
+        document.getElementById('display-balance').innerText = `${data.balance.toLocaleString()} 円`;
+        document.getElementById('display-points').innerText = `🪙 ${data.points.toLocaleString()} pt`;
+        document.getElementById('exchange-current-pt').innerText = data.points.toLocaleString();
+
+        const couponSelect = document.getElementById('active-coupons');
+        couponSelect.innerHTML = '<option value="0">使用するクーポンを選択</option>';
+        data.coupons.forEach((val, idx) => {
+            couponSelect.innerHTML += `<option value="${val}">${val.toLocaleString()}円引きクーポン</option>`;
+        });
+    }
+
+    // --- Coupon Exchange System ---
+    function exchangeCoupon(costPt, discountVal) {
+        let data = getUserData();
+        if (data.points < costPt) return alert("ポイントが足りません！");
+
+        data.points -= costPt;
+        data.coupons.push(discountVal);
+        saveUserData(data);
+        alert(`${discountVal.toLocaleString()}円引きクーポンと交換しました！`);
+    }
+
+    // --- Modal Controls ---
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModals() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
+
+    // --- QR Logic ---
+    function generateQR() {
+        const amt = document.getElementById('gen-amount').value;
+        const area = document.getElementById('qrcode-area');
+        if (!amt) return alert("金額を入力してください");
+        area.innerHTML = "";
+        new QRCode(area, { text: `PAY_${currentUser}_${amt}`, width: 180, height: 180 });
+    }
+
+    function onScanSuccess(decodedText) {
+        const parts = decodedText.split('_');
+        currentScanAmount = parseInt(parts[2] || parts[1] || 0);
+
+        const couponVal = parseInt(document.getElementById('active-coupons').value) || 0;
+        const finalAmount = Math.max(0, currentScanAmount - couponVal);
+
+        document.getElementById('pay-amount-display').innerText = `${finalAmount.toLocaleString()} 円`;
+        document.getElementById('pay-coupon-info').innerText = couponVal > 0 ? `(クーポン割引: -${couponVal.toLocaleString()}円)` : "クーポン使用なし";
+        openModal('modal-pay');
+    }
+
+    function confirmPayment() {
+        let data = getUserData();
+        const couponVal = parseInt(document.getElementById('active-coupons').value) || 0;
+        const finalPrice = Math.max(0, currentScanAmount - couponVal);
+
+        if (data.balance < finalPrice) return alert("残高が不足しています！");
+
+        data.balance -= finalPrice;
+
+        // 使用したクーポンを削除
+        if (couponVal > 0) {
+            const index = data.coupons.indexOf(couponVal);
+            if (index > -1) data.coupons.splice(index, 1);
+        }
+
+        saveUserData(data);
+        alert("お支払いが完了しました！");
+        closeModals();
+        location.reload();
+    }
+
+    // Auto Login Check
+    if (currentUser) initApp();
 </script>
 </body>
 </html>
