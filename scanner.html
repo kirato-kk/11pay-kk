@@ -4,7 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>11Pay - フル機能版</title>
+  <!-- QRスキャナー用 -->
   <script src="https://unpkg.com/html5-qrcode"></script>
+  <!-- QRコード生成用 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     * { box-sizing: border-box; }
     body { font-family: 'Helvetica Neue', Arial, sans-serif; text-align: center; padding: 15px; background-color: #f4f6f9; margin: 0; }
@@ -16,6 +19,7 @@
     input[type="text"], input[type="password"], input[type="number"] { width: 100%; padding: 14px; font-size: 16px; border: 2px solid #ddd; border-radius: 12px; margin-bottom: 12px; text-align: center; }
     
     .main-btn { width: 100%; padding: 16px; font-size: 18px; color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; background: #ff0033; }
+    .send-qr-btn { width: 100%; padding: 14px; font-size: 16px; color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; background: #007bff; margin-bottom: 15px; }
     .secondary-btn { width: 100%; padding: 12px; font-size: 15px; color: #666; border: 1px solid #ccc; border-radius: 12px; cursor: pointer; font-weight: bold; background: #fff; margin-top: 8px; }
 
     .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; margin-bottom: 10px; }
@@ -28,7 +32,7 @@
       padding: 25px 20px; 
       border-radius: 20px; 
       box-shadow: 0 6px 18px rgba(255,0,51,0.3); 
-      margin-bottom: 20px;
+      margin-bottom: 15px;
     }
     .card-label { font-size: 15px; opacity: 0.9; margin-bottom: 5px; }
     .card-amount { font-size: 42px; font-weight: bold; }
@@ -39,6 +43,8 @@
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
     .modal-content { background: white; padding: 25px 20px; border-radius: 20px; width: 88%; max-width: 360px; text-align: center; }
     .roulette-box { font-size: 32px; font-weight: bold; color: #ff0033; margin: 20px 0; min-height: 48px; white-space: pre-line; }
+    
+    #qr-output-container { display: flex; justify-content: center; margin: 15px 0; }
     
     .hidden { display: none !important; }
   </style>
@@ -68,9 +74,33 @@
       <div class="point-display">🪙 ポイント: <span id="point-display">0</span> pt</div>
     </div>
 
+    <!-- QRコードで送るボタン -->
+    <button class="send-qr-btn" onclick="openSendQrModal()">📲 QRコードで送る</button>
+
     <div id="reader"></div>
   </div>
 
+</div>
+
+<!-- QRコードで送るモーダル -->
+<div id="send-qr-modal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <h3>QRコードで送る</h3>
+    <p style="font-size: 13px; color: #666; margin-bottom: 10px;">送る金額を入力してQRを作成してください</p>
+    
+    <div id="qr-input-area">
+      <input type="number" id="send-qr-amount" placeholder="送金金額 (例: 500)">
+      <button class="main-btn" onclick="generateSendQr()">QRコード作成</button>
+    </div>
+
+    <div id="qr-result-area" class="hidden">
+      <p style="font-weight: bold; margin-bottom: 5px;">相手にカメラで読み取ってもらってください</p>
+      <div id="qr-output-container"></div>
+      <p style="font-size: 14px; color: #333;" id="qr-desc-amount"></p>
+    </div>
+
+    <button class="secondary-btn" onclick="closeSendQrModal()">閉じる</button>
+  </div>
 </div>
 
 <!-- 決済・ポイント確認モーダル -->
@@ -113,6 +143,7 @@
   let currentScanAmount = 0;
   let earnedPoints = 0;
   let html5QrCode;
+  let qrcodeObj = null;
 
   // --- 音声効果音 (Web Audio API) ---
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -214,7 +245,6 @@
     document.getElementById("main-view").classList.remove("hidden");
     document.getElementById("user-display").innerText = currentUser;
 
-    // ★修正ポイント: データが存在するか（!== null）を正確に判定して取得する
     const savedBalance = localStorage.getItem(`balance_${currentUser}`);
     balance = (savedBalance !== null) ? parseInt(savedBalance) : 1000;
 
@@ -232,6 +262,51 @@
     localStorage.setItem(`points_${currentUser}`, points);
   }
 
+  // --- 送金用QRコード機能 ---
+  function openSendQrModal() {
+    playSound('beep');
+    document.getElementById("send-qr-amount").value = "";
+    document.getElementById("qr-input-area").classList.remove("hidden");
+    document.getElementById("qr-result-area").classList.add("hidden");
+    document.getElementById("qr-output-container").innerHTML = "";
+    document.getElementById("send-qr-modal").classList.remove("hidden");
+  }
+
+  function closeSendQrModal() {
+    playSound('beep');
+    document.getElementById("send-qr-modal").classList.add("hidden");
+  }
+
+  function generateSendQr() {
+    const sendAmount = parseInt(document.getElementById("send-qr-amount").value);
+
+    if (isNaN(sendAmount) || sendAmount <= 0) {
+      playSound('error');
+      return alert("正しい送金金額を入力してください");
+    }
+
+    if (sendAmount > balance) {
+      playSound('error');
+      return alert(`残高が不足しています！\n現在の残高: ${balance.toLocaleString()}円`);
+    }
+
+    // QR生成用データフォーマット "SEND:送信者名:金額"
+    const qrData = `SEND:${currentUser}:${sendAmount}`;
+
+    document.getElementById("qr-output-container").innerHTML = "";
+    qrcodeObj = new QRCode(document.getElementById("qr-output-container"), {
+      text: qrData,
+      width: 200,
+      height: 200
+    });
+
+    document.getElementById("qr-desc-amount").innerText = `送金額: ${sendAmount.toLocaleString()}円`;
+    document.getElementById("qr-input-area").classList.add("hidden");
+    document.getElementById("qr-result-area").classList.remove("hidden");
+    playSound('beep');
+  }
+
+  // --- スキャナー処理 ---
   function startScanner() {
     html5QrCode = new Html5Qrcode("reader");
     html5QrCode.start(
@@ -244,6 +319,44 @@
   function onScanSuccess(decodedText) {
     html5QrCode.stop();
     playSound('beep');
+
+    // 送金QRを受け取った場合の判定 "SEND:送信者名:金額"
+    if (decodedText.startsWith("SEND:")) {
+      const parts = decodedText.split(":");
+      const senderUser = parts[1];
+      const sendAmount = parseInt(parts[2]) || 0;
+
+      if (senderUser === currentUser) {
+        playSound('error');
+        alert("自分の送金用QRコードは読み込めません");
+        location.reload();
+        return;
+      }
+
+      // 送信元の残高チェック
+      let senderBalance = parseInt(localStorage.getItem(`balance_${senderUser}`));
+      if (isNaN(senderBalance)) senderBalance = 1000;
+
+      if (sendAmount > senderBalance) {
+        playSound('error');
+        alert(`❌ エラー: ${senderUser} 様の残高が不足しているため受け取れませんでした`);
+        location.reload();
+        return;
+      }
+
+      // 送信元の残高を減らす
+      senderBalance -= sendAmount;
+      localStorage.setItem(`balance_${senderUser}`, senderBalance);
+
+      // 自身の残高を増やす
+      balance += sendAmount;
+      updateDisplay();
+
+      playSound('win');
+      alert(`🎁 ${senderUser} 様より ${sendAmount.toLocaleString()}円 を受取りました！`);
+      location.reload();
+      return;
+    }
 
     const isCharge = decodedText.startsWith("CHARGE_");
     const amount = parseInt(decodedText.replace(/(CHARGE_|PAY_)/, "")) || 0;
