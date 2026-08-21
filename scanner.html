@@ -26,8 +26,9 @@
     .secondary-btn { width: 100%; padding: 12px; font-size: 15px; color: #666; border: 1px solid #ccc; border-radius: 12px; cursor: pointer; font-weight: bold; background: #fff; margin-top: 8px; }
 
     .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; margin-bottom: 10px; }
-    .user-info { font-size: 18px; font-weight: bold; color: #333; display: flex; align-items: center; gap: 6px; }
-    .logout-btn { background: #666; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .user-info { font-size: 16px; font-weight: bold; color: #333; display: flex; align-items: center; gap: 6px; }
+    .header-btns { display: flex; gap: 6px; }
+    .small-btn { background: #666; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 13px; }
 
     .balance-card { 
       background: linear-gradient(135deg, #ff0033, #ff4d4d); 
@@ -68,7 +69,7 @@
     <div id="form-login">
       <div class="login-title">11Pay ログイン</div>
       <input type="text" id="login-user" placeholder="ユーザー名" value="きらと">
-      <input type="password" id="login-pass" placeholder="パスワード (初期: 1234)" value="1234">
+      <input type="password" id="login-pass" placeholder="パスワード" value="1234">
       <button class="main-btn" onclick="login()">ログイン</button>
     </div>
 
@@ -86,7 +87,10 @@
   <div id="main-view" class="hidden">
     <div class="header">
       <div class="user-info">👤 <span id="user-display">きらと</span></div>
-      <button class="logout-btn" onclick="logout()">ログアウト</button>
+      <div class="header-btns">
+        <button class="small-btn" style="background:#007bff;" onclick="openPassModal()">パスワード変更</button>
+        <button class="small-btn" onclick="logout()">ログアウト</button>
+      </div>
     </div>
 
     <div class="balance-card">
@@ -101,6 +105,18 @@
     <div id="reader"></div>
   </div>
 
+</div>
+
+<!-- パスワード変更モーダル -->
+<div id="pass-modal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <h3>パスワード変更</h3>
+    <input type="password" id="old-pass" placeholder="現在のパスワード">
+    <input type="password" id="new-pass" placeholder="新しいパスワード">
+    <input type="password" id="new-pass-confirm" placeholder="新しいパスワード (確認)">
+    <button class="main-btn" onclick="changePassword()">変更する</button>
+    <button class="secondary-btn" onclick="closePassModal()">キャンセル</button>
+  </div>
 </div>
 
 <!-- QRコードで送るモーダル -->
@@ -315,6 +331,50 @@
     localStorage.setItem("paypay_login_user", currentUser);
     alert("アカウントの作成が完了しました！");
     showMainScreen();
+  }
+
+  // --- パスワード変更機能 ---
+  function openPassModal() {
+    playSound('beep');
+    document.getElementById("old-pass").value = "";
+    document.getElementById("new-pass").value = "";
+    document.getElementById("new-pass-confirm").value = "";
+    document.getElementById("pass-modal").classList.remove("hidden");
+  }
+
+  function closePassModal() {
+    playSound('beep');
+    document.getElementById("pass-modal").classList.add("hidden");
+  }
+
+  function changePassword() {
+    const oldPass = document.getElementById("old-pass").value;
+    const newPass = document.getElementById("new-pass").value;
+    const newPassConfirm = document.getElementById("new-pass-confirm").value;
+
+    const users = getUsers();
+
+    if (users[currentUser] !== oldPass) {
+      playSound('error');
+      return alert("現在のパスワードが違います");
+    }
+
+    if (!newPass) {
+      playSound('error');
+      return alert("新しいパスワードを入力してください");
+    }
+
+    if (newPass !== newPassConfirm) {
+      playSound('error');
+      return alert("新しいパスワード（確認）が一致しません");
+    }
+
+    users[currentUser] = newPass;
+    saveUsers(users);
+
+    playSound('win');
+    alert("パスワードを変更しました！");
+    closePassModal();
   }
 
   function logout() {
@@ -543,7 +603,7 @@
         playSound('win');
         document.getElementById("roulette-sub").innerText = "獲得ポイント決定！";
         document.getElementById("roulette-display").innerText = `🎯 ${Math.round(finalRate * 100)}% 還元!\n(+${earnedPoints}pt)`;
-        docume.getElementById("roulette-close-btn").classList.remove("hidden");
+        document.getElementById("roulette-close-btn").classList.remove("hidden");
       }
     }, 100);
   }
