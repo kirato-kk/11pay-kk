@@ -64,7 +64,7 @@
 
     <div class="balance-card">
       <div class="card-label">11Pay残高</div>
-      <div class="card-amount"><span id="balance-display">1000</span> 円</div>
+      <div class="card-amount"><span id="balance-display">0</span> 円</div>
       <div class="point-display">🪙 ポイント: <span id="point-display">0</span> pt</div>
     </div>
 
@@ -107,7 +107,7 @@
 
 <script>
   let currentUser = localStorage.getItem("paypay_login_user") || "";
-  let balance = 1000;
+  let balance = 0;
   let points = 0;
   
   let currentScanAmount = 0;
@@ -214,8 +214,12 @@
     document.getElementById("main-view").classList.remove("hidden");
     document.getElementById("user-display").innerText = currentUser;
 
-    balance = parseInt(localStorage.getItem(`balance_${currentUser}`)) || 1000;
-    points = parseInt(localStorage.getItem(`points_${currentUser}`)) || 0;
+    // ★修正ポイント: データが存在するか（!== null）を正確に判定して取得する
+    const savedBalance = localStorage.getItem(`balance_${currentUser}`);
+    balance = (savedBalance !== null) ? parseInt(savedBalance) : 1000;
+
+    const savedPoints = localStorage.getItem(`points_${currentUser}`);
+    points = (savedPoints !== null) ? parseInt(savedPoints) : 0;
     
     updateDisplay();
     startScanner();
@@ -308,12 +312,10 @@
 
     document.getElementById("pay-confirm-modal").classList.add("hidden");
 
-    // ★ ポイントを1ptでも使用した場合はルーレットなしで即完了
     if (usePt > 0) {
       alert(`✅ お支払い完了！\n(ポイント利用のためルーレットはスキップされました)`);
       location.reload();
     } else {
-      // ポイント未使用（全額残高支払い）の時だけルーレット発生
       startRoulette(currentScanAmount);
     }
   }
