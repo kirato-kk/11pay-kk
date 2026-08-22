@@ -139,11 +139,31 @@
       </div>
     </div>
 
-    <div class="balance-card">
-      <div class="card-label">11Pay残高</div>
-      <div class="card-amount"><span id="balance-display">0</span> 円</div>
-      <div class="point-display">🪙 ポイント: <span id="point-display">0</span> pt</div>
+        <!-- カード表示エリア（左右スワイプ / タップで切替） -->
+    <div id="card-slider" class="balance-card" onclick="toggleCardView()" style="cursor: pointer; position: relative;">
+      
+      <!-- 11Pay 残高画面 -->
+      <div id="card-main">
+        <div style="font-size: 11px; opacity: 0.8; position: absolute; top: 10px; right: 15px;">👉 タップで会員証へ</div>
+        <div class="card-label">11Pay残高</div>
+        <div class="card-amount"><span id="balance-display">0</span> 円</div>
+        <div class="point-display">🪙 ポイント: <span id="point-display">0</span> pt</div>
+      </div>
+
+      <!-- デジタル会員証画面（初期は非表示） -->
+      <div id="card-member" class="hidden">
+        <div style="font-size: 11px; opacity: 0.8; position: absolute; top: 10px; right: 15px;">👈 タップで残高へ</div>
+        <div class="card-label">🪪 デジタル会員証 (スタンプ)</div>
+        <div id="stamp-dots" style="display: flex; justify-content: center; gap: 6px; margin: 15px 0;">
+          <!-- JSでスタンプ(⚪/🔴)が生成されます -->
+        </div>
+        <div style="font-size: 13px; background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 12px; display: inline-block;">
+          スタンプ <span id="stamp-count">0</span> / 10（10個で1000円クーポンGET）
+        </div>
+      </div>
+
     </div>
+
 
     <!-- カメラ起動コントロール -->
     <div class="camera-area">
@@ -1247,6 +1267,23 @@
     document.getElementById("roulette-modal").classList.add("hidden");
   }
 
+      // 決済1回につきスタンプ1個獲得
+    stampCount++;
+    if (stampCount >= 10) {
+      stampCount = 0; // リセット
+      // 1000円引きクーポンを追加
+      coupons.push({
+        id: Date.now(),
+        title: "🎁 スタンプ満了 1000円OFF",
+        discount: 1000,
+        minPay: 1000,
+        used: false
+      });
+      playSound('win');
+      alert("🎉 スタンプが10個溜まりました！\n「1000円OFFクーポン」を獲得しました！");
+    }
+
+
   // --- 取引履歴機能 ---
   let showAllTransactions = false;
 
@@ -1313,6 +1350,61 @@
     showAllTransactions = !showAllTransactions;
     renderTransactions();
   }
+
+    // スタンプ数管理
+  let stampCount = 0;
+  let isMemberCardView = false;
+
+  // カード表示切り替え（タップまたはスワイプ）
+  function toggleCardView() {
+    playSound('beep');
+    isMemberCardView = !isMemberCardView;
+    
+    document.getElementById("card-main").classList.toggle("hidden", isMemberCardView);
+    document.getElementById("card-member").classList.toggle("hidden", !isMemberCardView);
+  }
+
+  // スワイプ操作の検知（指で左右になぞって切り替え）
+  let touchStartX = 0;
+  const cardSlider = document.getElementById("card-slider");
+  
+  if (cardSlider) {
+    cardSlider.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
+    cardSlider.addEventListener('touchend', e => {
+      const touchEndX = e.changedTouches[0].clientX;
+      if (Math.abs(touchEndX - touchStartX) > 40) {
+        toggleCardView();
+      }
+    });
+  }
+
+  // 表示更新関数にスタンプ描画を追加
+  function updateDisplay() {
+    document.getElementById("balance-display").innerText = balance.toLocaleString();
+    document.getElementById("point-display").innerText = points.toLocaleString();
+    
+    // スタンプ描画
+    document.getElementById("stamp-count").innerText = stampCount;
+    const stampContainer = document.getElementById("stamp-dots");
+    if (stampContainer) {
+      let dotsHtml = "";
+      for (let i = 0; i < 10; i++) {
+        dotsHtml += i < stampCount ? "🔴 " : "⚪ ";
+      }
+      stampContainer.innerText = dotsHtml;
+    }
+
+    localStorage.setItem(`balance_${currentUser}`, balance);
+    localStorage.setItem(`points_${currentUser}`, points);
+    localStorage.setItem(`stamps_${currentUser}`, stampCount);
+    localStorage.setItem(`tx_${currentUser}`, JSON.stringify(transactions));
+    renderTransactions();
+  }
+
+  // ログイン時のデータ読み込みにスタンプを追加（showMainScreen内に記述）
+  // const savedStamps = localStorage.getItem(`stamps_${currentUser}`);
+  // stampCount = (savedStamps !== null) ? parseInt(savedStamps) : 0;
+
 </script>
 
 </body>
