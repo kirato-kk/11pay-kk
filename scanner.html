@@ -216,13 +216,39 @@
   </div>
 </div>
 
-<!-- 豆腐ゲームモーダル -->
+<!-- GAMEモーダル (選択画面 / 豆腐ゲーム / ガチャ) -->
 <div id="game-modal" class="modal-overlay hidden">
   <div class="modal-content">
-    <h3>🧊 豆腐タワーチャレンジ</h3>
-    <p style="font-size: 13px; color: #666; margin-bottom: 5px;">タップしてタイミングよく豆腐を重ねよう！</p>
-    <canvas id="game-canvas" width="300" height="300"></canvas>
-    <button class="secondary-btn" id="game-close-btn" onclick="closeGameModal()">閉じる</button>
+    
+    <!-- 1. ゲーム選択画面 -->
+    <div id="game-menu-select">
+      <h3>🎮 ゲームメニュー</h3>
+      <p style="font-size: 13px; color: #666; margin-bottom: 20px;">遊ぶゲームを選んでね！</p>
+      <button class="main-btn" style="margin-bottom: 12px; background: #28a745;" onclick="startTofuGameSelect()">🧊 豆腐タワー</button>
+      <button class="main-btn" style="background: #ff9900;" onclick="startGachaSelect()">🎰 ポイントガチャ (1回 200pt)</button>
+      <button class="secondary-btn" style="margin-top: 15px;" onclick="closeGameModal()">閉じる</button>
+    </div>
+
+    <!-- 2. 豆腐ゲーム画面 -->
+    <div id="game-tofu-screen" class="hidden">
+      <h3>🧊 豆腐タワーチャレンジ</h3>
+      <p style="font-size: 13px; color: #666; margin-bottom: 5px;">タップしてタイミングよく豆腐を重ねよう！</p>
+      <canvas id="game-canvas" width="300" height="300"></canvas>
+      <button class="secondary-btn" onclick="backToGameMenu()">メニューに戻る</button>
+    </div>
+
+    <!-- 3. ガチャ画面 -->
+    <div id="gacha-screen" class="hidden">
+      <h3>🎰 ポイントガチャ</h3>
+      <p style="font-size: 13px; color: #666; margin-bottom: 10px;">1回 200pt で運試し！</p>
+      
+      <div id="gacha-box" style="font-size: 40px; margin: 20px 0;">🎁</div>
+      <div id="gacha-result-text" style="font-size: 18px; font-weight: bold; color: #ff0033; min-height: 28px; margin-bottom: 15px;"></div>
+
+      <button id="gacha-draw-btn" class="main-btn" style="background: #ff9900;" onclick="playGacha()">ガチャを回す (200pt)</button>
+      <button class="secondary-btn" style="margin-top: 10px;" onclick="backToGameMenu()">メニューに戻る</button>
+    </div>
+
   </div>
 </div>
 
@@ -661,6 +687,114 @@
     gameActive = false;
     cancelAnimationFrame(gameAnimationId);
     document.getElementById("game-modal").classList.add("hidden");
+  }
+  // --- GAMEメニュー画面制御 ---
+  function openGameModal() {
+    playSound('beep');
+    document.getElementById("game-modal").classList.remove("hidden");
+    backToGameMenu();
+  }
+
+  function backToGameMenu() {
+    gameActive = false;
+    cancelAnimationFrame(gameAnimationId);
+    document.getElementById("game-menu-select").classList.remove("hidden");
+    document.getElementById("game-tofu-screen").classList.add("hidden");
+    document.getElementById("gacha-screen").classList.add("hidden");
+  }
+
+  function startTofuGameSelect() {
+    playSound('beep');
+    document.getElementById("game-menu-select").classList.add("hidden");
+    document.getElementById("game-tofu-screen").classList.remove("hidden");
+
+    tofuCanvas = document.getElementById("game-canvas");
+    tofuCtx = tofuCanvas.getContext("2d");
+
+    tofuStack = [{ x: 75, width: 150 }];
+    tofuSpeed = 2;
+    gameActive = true;
+
+    spawnNewTofu();
+    tofuCanvas.onpointerdown = placeTofu;
+
+    cancelAnimationFrame(gameAnimationId);
+    updateTofuGame();
+  }
+
+  function startGachaSelect() {
+    playSound('beep');
+    document.getElementById("game-menu-select").classList.add("hidden");
+    document.getElementById("gacha-screen").classList.remove("hidden");
+    document.getElementById("gacha-box").innerText = "🎁";
+    document.getElementById("gacha-result-text").innerText = "";
+    document.getElementById("gacha-draw-btn").classList.remove("hidden");
+  }
+
+  // --- ガチャ処理 (1回200pt) ---
+  function playGacha() {
+    if (points < 200) {
+      playSound('error');
+      return alert("ポイントが足りません！ (必要: 200pt)");
+    }
+
+    // ポイント消費
+    points -= 200;
+    addTransaction('ポイント', -200, 'ガチャ利用');
+    updateDisplay();
+
+    const drawBtn = document.getElementById("gacha-draw-btn");
+    drawBtn.classList.add("hidden");
+
+    const box = document.getElementById("gacha-box");
+    const resultText = document.getElementById("gacha-result-text");
+    
+    resultText.innerText = "ガチャ回し中...";
+
+    // 確率設定 (合計100%)
+    // 10pt (35%), 50pt (30%), 100pt (18%), 200pt (10%), 500pt (5%), 1000pt (2%)
+    const rand = Math.random() * 100;
+    let wonPoint = 10;
+
+    if (rand < 2) wonPoint = 1000;      // 2%
+    else if (rand < 7) wonPoint = 500;  // 5%
+    else if (rand < 17) wonPoint = 200; // 10%
+    else if (rand < 35) wonPoint = 100; // 18%
+    else if (rand < 65) wonPoint = 50;  // 30%
+    else wonPoint = 10;                // 35%
+
+    // アニメーション演出
+    let count = 0;
+    const icons = ["🎰", "📦", "✨", "🎉"];
+    const interval = setInterval(() => {
+      playSound('tick');
+      box.innerText = icons[count % icons.length];
+      count++;
+
+      if (count > 15) {
+        clearInterval(interval);
+        
+        // 当たり判定と反映
+        points += wonPoint;
+        addTransaction('ポイント', wonPoint, 'ガチャ当選');
+        updateDisplay();
+
+        box.innerText = wonPoint >= 500 ? "🎊" : "🎁";
+        
+        if (wonPoint >= 500) {
+          playSound('win');
+          resultText.innerText = `超激レア！ ${wonPoint}pt 当選！`;
+        } else if (wonPoint >= 200) {
+          playSound('win');
+          resultText.innerText = `当たり！ ${wonPoint}pt 当選！`;
+        } else {
+          playSound('beep');
+          resultText.innerText = `${wonPoint}pt 獲得！`;
+        }
+
+        drawBtn.classList.remove("hidden");
+      }
+    }, 100);
   }
 
   // --- スクラッチ機能 ---
