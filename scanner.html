@@ -139,31 +139,11 @@
       </div>
     </div>
 
-        <!-- カード表示エリア（左右スワイプ / タップで切替） -->
-    <div id="card-slider" class="balance-card" onclick="toggleCardView()" style="cursor: pointer; position: relative;">
-      
-      <!-- 11Pay 残高画面 -->
-      <div id="card-main">
-        <div style="font-size: 11px; opacity: 0.8; position: absolute; top: 10px; right: 15px;">👉 タップで会員証へ</div>
-        <div class="card-label">11Pay残高</div>
-        <div class="card-amount"><span id="balance-display">0</span> 円</div>
-        <div class="point-display">🪙 ポイント: <span id="point-display">0</span> pt</div>
-      </div>
-
-      <!-- デジタル会員証画面（初期は非表示） -->
-      <div id="card-member" class="hidden">
-        <div style="font-size: 11px; opacity: 0.8; position: absolute; top: 10px; right: 15px;">👈 タップで残高へ</div>
-        <div class="card-label">🪪 デジタル会員証 (スタンプ)</div>
-        <div id="stamp-dots" style="display: flex; justify-content: center; gap: 6px; margin: 15px 0;">
-          <!-- JSでスタンプ(⚪/🔴)が生成されます -->
-        </div>
-        <div style="font-size: 13px; background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 12px; display: inline-block;">
-          スタンプ <span id="stamp-count">0</span> / 10（10個で1000円クーポンGET）
-        </div>
-      </div>
-
+    <div class="balance-card">
+      <div class="card-label">11Pay残高</div>
+      <div class="card-amount"><span id="balance-display">0</span> 円</div>
+      <div class="point-display">🪙 ポイント: <span id="point-display">0</span> pt</div>
     </div>
-
 
     <!-- カメラ起動コントロール -->
     <div class="camera-area">
@@ -584,8 +564,7 @@
     }
     renderCoupons();
   }
-
-  // --- GAMEメニュー機能 ---
+ // --- GAMEメニュー機能 ---
   function openGameModal() {
     playSound('beep');
     document.getElementById("game-modal").classList.remove("hidden");
@@ -814,8 +793,7 @@
     cancelAnimationFrame(gameAnimationId);
     document.getElementById("game-modal").classList.add("hidden");
   }
-
-  // --- スクラッチ機能 ---
+    // --- スクラッチ機能 ---
   function openScratchModal() {
     playSound('beep');
     const today = new Date().toLocaleDateString();
@@ -964,7 +942,7 @@
     });
   }
 
-    function showMainScreen() {
+  function showMainScreen() {
     document.getElementById("auth-view").classList.add("hidden");
     document.getElementById("main-view").classList.remove("hidden");
     document.getElementById("bottom-nav").classList.remove("hidden");
@@ -976,16 +954,11 @@
     const savedPoints = localStorage.getItem(`points_${currentUser}`);
     points = (savedPoints !== null) ? parseInt(savedPoints) : 0;
 
-    // ★この行を追加（スタンプ読み込み）
-    const savedStamps = localStorage.getItem(`stamps_${currentUser}`);
-    stampCount = (savedStamps !== null) ? parseInt(savedStamps) : 0;
-
     const savedTx = localStorage.getItem(`tx_${currentUser}`);
     transactions = savedTx ? JSON.parse(savedTx) : [];
     
     updateDisplay();
   }
-
 
   function updateDisplay() {
     document.getElementById("balance-display").innerText = balance.toLocaleString();
@@ -1272,23 +1245,6 @@
     document.getElementById("roulette-modal").classList.add("hidden");
   }
 
-      // 決済1回につきスタンプ1個獲得
-    stampCount++;
-    if (stampCount >= 10) {
-      stampCount = 0; // リセット
-      // 1000円引きクーポンを追加
-      coupons.push({
-        id: Date.now(),
-        title: "🎁 スタンプ満了 1000円OFF",
-        discount: 1000,
-        minPay: 1000,
-        used: false
-      });
-      playSound('win');
-      alert("🎉 スタンプが10個溜まりました！\n「1000円OFFクーポン」を獲得しました！");
-    }
-
-
   // --- 取引履歴機能 ---
   let showAllTransactions = false;
 
@@ -1355,46 +1311,6 @@
     showAllTransactions = !showAllTransactions;
     renderTransactions();
   }
-
-     // スタンプ数管理
-  let stampCount = 0;
-  let isMemberCardView = false;
-
-  // カード表示切り替え（クリック / タップ用）
-  function toggleCardView() {
-    playSound('beep');
-    isMemberCardView = !isMemberCardView;
-    
-    const mainCard = document.getElementById("card-main");
-    const memberCard = document.getElementById("card-member");
-
-    if (isMemberCardView) {
-      mainCard.classList.add("hidden");
-      memberCard.classList.remove("hidden");
-    } else {
-      mainCard.classList.remove("hidden");
-      memberCard.classList.add("hidden");
-    }
-  }
-
-  // スワイプ操作の検知（指でなぞって切り替え）
-  let touchStartX = 0;
-  window.addEventListener('DOMContentLoaded', () => {
-    const cardSlider = document.getElementById("card-slider");
-    if (cardSlider) {
-      cardSlider.addEventListener('touchstart', e => { 
-        touchStartX = e.touches[0].clientX; 
-      }, { passive: true });
-      
-      cardSlider.addEventListener('touchend', e => {
-        const touchEndX = e.changedTouches[0].clientX;
-        if (Math.abs(touchEndX - touchStartX) > 30) {
-          toggleCardView();
-        }
-      }, { passive: true });
-    }
-  });
-
 </script>
 
 </body>
