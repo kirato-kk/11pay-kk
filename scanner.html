@@ -942,9 +942,10 @@
     }
   }
 
-  function onScanSuccess(decodedText) {
+    function onScanSuccess(decodedText) {
     playSound('beep');
     stopScanner(() => {
+      // 1. 送金 (SEND:)
       if (decodedText.startsWith("SEND:")) {
         const parts = decodedText.split(":");
         const senderUser = parts[1];
@@ -958,21 +959,35 @@
 
         balance += sendAmount;
         updateDisplay();
-
         playSound('win');
-        alert(`${senderUser} さんより ${sendAmount.toLocaleString()}円 を受取りました！`);
+        alert(`🎁 ${senderUser} 様より ${sendAmount.toLocaleString()}円 を受取りました！`);
         return;
       }
 
-      const isCharge = decodedText.startsWith("CHARGE_");
-      const amount = parseInt(decodedText.replace(/(CHARGE_|PAY_)/, "")) || 0;
+      // 2. 判別ロジック
+      const isCharge = decodedText.startsWith("CHARGE_"); // 残高チャージ
+      const isPoint  = decodedText.startsWith("POINT_");  // ポイント付与
+      const isPay    = decodedText.startsWith("PAY_");    // 支払い
+      
+      // 金額の抽出 (CHARGE_, POINT_, PAY_ を削除して数字だけにする)
+      const amount = parseInt(decodedText.replace(/(CHARGE_|PAY_|POINT_)/, "")) || 0;
 
       if (isCharge) {
+        // 残高を増やす
         balance += amount;
         updateDisplay();
         playSound('win');
-        alert(`${amount.toLocaleString()}円 チャージが完了しました！`);
-      } else {
+        alert(`✅ 残高に ${amount.toLocaleString()}円 チャージされました！`);
+      } 
+      else if (isPoint) {
+        // ポイントを増やす
+        points += amount;
+        updateDisplay();
+        playSound('win');
+        alert(`✨ ${amount.toLocaleString()} ポイントを獲得しました！`);
+      } 
+      else if (isPay) {
+        // 支払い処理へ
         currentScanAmount = amount;
         openPayConfirmModal();
       }
