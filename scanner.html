@@ -72,12 +72,15 @@
       cursor: pointer;
       padding: 5px 0;
     }
-    .nav-item .nav-icon {
-      font-size: 20px;
+    .nav-svg {
       margin-bottom: 2px;
+      fill: #666666;
     }
     .nav-item.active {
       color: #ff0033;
+    }
+    .nav-item.active .nav-svg {
+      fill: #ff0033;
     }
 
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
@@ -149,23 +152,33 @@
 <!-- ボトムナビゲーション -->
 <div id="bottom-nav" class="bottom-nav hidden">
   <button class="nav-item" onclick="openNewsModal()">
-    <span class="nav-icon">📰</span>
+    <svg class="nav-svg" viewBox="0 0 24 24" width="22" height="22">
+      <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-1 14H5c-.55 0-1-.45-1-1V7c0-.55.45-1 1-1h14c.55 0 1 .45 1 1v10c0 .55-.45 1-1 1zM7 9h10v2H7zm0 4h7v2H7z"/>
+    </svg>
     <span>お知らせ</span>
   </button>
   <button class="nav-item" onclick="openSendQrModal()">
-    <span class="nav-icon">📲</span>
+    <svg class="nav-svg" viewBox="0 0 24 24" width="22" height="22">
+      <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+    </svg>
     <span>送る</span>
   </button>
   <button class="nav-item active" onclick="goHome()">
-    <span class="nav-icon">🏠</span>
+    <svg class="nav-svg" viewBox="0 0 24 24" width="22" height="22">
+      <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+    </svg>
     <span>HOME</span>
   </button>
   <button class="nav-item" onclick="openGameModal()">
-    <span class="nav-icon">🧊</span>
+    <svg class="nav-svg" viewBox="0 0 24 24" width="22" height="22">
+      <path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H9v2H7v-2H5v-2h2V9h2v2h2v2zm4.5 1c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm3-3c-.83 0-1.5-.67-1.5-1.5S17.67 9 18.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+    </svg>
     <span>ゲーム</span>
   </button>
   <button class="nav-item" onclick="openScratchModal()">
-    <span class="nav-icon">🎰</span>
+    <svg class="nav-svg" viewBox="0 0 24 24" width="22" height="22">
+      <path d="M22 10V6c0-1.11-.9-2-2-2H4c-1.1 0-1.99.89-1.99 2v4c1.1 0 1.99.9 1.99 2s-.89 2-2 2v4c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2v-4c-1.1 0-2-.9-2-2s.9-2 2-2zm-2-1.53c-1.19.69-2 1.97-2 3.53s.81 2.84 2 3.53V18H4v-2.47c1.19-.69 2-1.97 2-3.53s-.81-2.84-2-3.53V6h16v2.47z"/>
+    </svg>
     <span>スクラッチ</span>
   </button>
 </div>
@@ -514,7 +527,6 @@
     const diff = currentTofu.x - topTofu.x;
 
     if (Math.abs(diff) >= currentTofu.width) {
-      // 完全に外れた（ゲームオーバー）
       gameActive = false;
       playSound('error');
       finishTofuGame();
@@ -523,14 +535,12 @@
 
     playSound('tick');
 
-    // ズレた分だけ削れる
     const newWidth = currentTofu.width - Math.abs(diff);
     const newX = diff > 0 ? currentTofu.x : topTofu.x;
 
     tofuStack.push({ x: newX, width: newWidth });
 
     if (tofuStack.length - 1 >= 100) {
-      // 100段クリア！
       gameActive = false;
       playSound('win');
       finishTofuGame();
@@ -545,7 +555,6 @@
 
     tofuCtx.clearRect(0, 0, tofuCanvas.width, tofuCanvas.height);
 
-    // 豆腐移動
     if (gameActive) {
       currentTofu.x += tofuSpeed * tofuDirection;
       if (currentTofu.x <= 0 || currentTofu.x + currentTofu.width >= tofuCanvas.width) {
@@ -553,12 +562,10 @@
       }
     }
 
-    // カメラ位置調整
     const tofuHeight = 20;
     const baseY = 240;
     const cameraOffset = Math.max(0, (tofuStack.length - 5) * tofuHeight);
 
-    // 積まれた豆腐の描画
     for (let i = 0; i < tofuStack.length; i++) {
       const t = tofuStack[i];
       const y = baseY - (i * tofuHeight) + cameraOffset;
@@ -572,7 +579,6 @@
       }
     }
 
-    // 動いている豆腐の描画
     if (gameActive) {
       const movingY = baseY - (tofuStack.length * tofuHeight) + cameraOffset;
       tofuCtx.fillStyle = "#fff8e7";
@@ -582,7 +588,6 @@
       tofuCtx.strokeRect(currentTofu.x, movingY, currentTofu.width, tofuHeight - 2);
     }
 
-    // スコア＆倍率表示
     const currentSteps = tofuStack.length - 1;
     let multiplier = 1;
     if (currentSteps >= 100) multiplier = 10;
