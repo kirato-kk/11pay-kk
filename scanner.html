@@ -162,11 +162,13 @@
     </div>
 
     <!-- 取引履歴エリア -->
-    <div class="tx-card">
-      <div class="tx-title">📋 取引履歴</div>
-      <div id="transaction-list"></div>
-    </div>
-  </div>
+<div class="tx-card">
+  <div class="tx-title">📋 取引履歴</div>
+  <div id="transaction-list"></div>
+  <!-- ★ここにボタンを追加 -->
+  <button id="tx-more-btn" class="secondary-btn hidden" style="margin-top: 10px;" onclick="toggleMoreTransactions()">もっと見る</button>
+</div>
+
 
 </div>
 
@@ -973,7 +975,9 @@
     renderTransactions();
   }
 
-  // --- 取引履歴機能 ---
+    // --- 取引履歴機能 ---
+  let showAllTransactions = false; // 表示切替フラグ
+
   function addTransaction(type, amount, detail) {
     const now = new Date();
     const timeStr = `${now.getMonth() + 1}/${now.getDate()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
@@ -992,14 +996,19 @@
 
   function renderTransactions() {
     const container = document.getElementById("transaction-list");
+    const moreBtn = document.getElementById("tx-more-btn");
     if (!container) return;
 
     if (transactions.length === 0) {
       container.innerHTML = "<p style='color:#888; font-size:14px; text-align:center;'>履歴はありません</p>";
+      if (moreBtn) moreBtn.classList.add("hidden");
       return;
     }
 
-    container.innerHTML = transactions.map(tx => {
+    // 「もっと見る」が開かれていなければ6件だけ取得
+    const displayList = showAllTransactions ? transactions : transactions.slice(0, 6);
+
+    container.innerHTML = displayList.map(tx => {
       const isPlus = tx.amount > 0;
       const color = isPlus ? "#28a745" : "#dc3545";
       const sign = isPlus ? "+" : "";
@@ -1017,7 +1026,24 @@
         </div>
       `;
     }).join('');
+
+    // 7件以上ある場合にボタンを表示
+    if (moreBtn) {
+      if (transactions.length > 6) {
+        moreBtn.classList.remove("hidden");
+        moreBtn.innerText = showAllTransactions ? "閉じる" : "もっと見る";
+      } else {
+        moreBtn.classList.add("hidden");
+      }
+    }
   }
+
+  function toggleMoreTransactions() {
+    playSound('beep');
+    showAllTransactions = !showAllTransactions;
+    renderTransactions();
+  }
+
 
   // --- 送金用QRコード機能 ---
   function openSendQrModal() {
