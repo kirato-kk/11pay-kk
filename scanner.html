@@ -178,12 +178,13 @@
     <svg class="nav-svg" viewBox="0 0 24 24" width="22" height="22">
       <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-1 14H5c-.55 0-1-.45-1-1V7c0-.55.45-1 1-1h14c.55 0 1 .45 1 1v10c0 .55-.45 1-1 1zM7 9h10v2H7zm0 4h7v2H7z"/>
     </svg>
-    <span>お知らせ</span>
-  </button>
-  <button class="nav-item" onclick="openSendQrModal()">
-    <svg class="nav-svg" viewBox="0 0 24 24" width="22" height="22">
-      <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-    </svg>
+    <!-- 例：ナビゲーションにクーポンボタンを追加 -->
+  <span>クーポン</span>
+　</button>
+  <button class="nav-item" onclick="openCouponModal()">
+  <svg class="nav-svg" viewBox="0 0 24 24" width="22" height="22">
+    <path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/>
+  </svg>
     <span>送る</span>
   </button>
   <button class="nav-item active" onclick="goHome()">
@@ -323,6 +324,20 @@
 
     <button class="main-btn" onclick="executePayment()">支払いを確定する</button>
     <button class="secondary-btn" onclick="cancelPayment()">キャンセル</button>
+  </div>
+</div>
+
+  <!-- クーポンモーダル -->
+<div id="coupon-modal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <h3>🎟️ お得なクーポン</h3>
+    <p style="font-size: 13px; color: #666; margin-bottom: 15px;">使いたいクーポンを選択してください</p>
+    
+    <div id="coupon-list" style="max-height: 250px; overflow-y: auto; text-align: left;">
+      <!-- クーポンカードがここに動的表示されます -->
+    </div>
+
+    <button class="secondary-btn" style="margin-top: 15px;" onclick="closeCouponModal()">閉じる</button>
   </div>
 </div>
 
@@ -690,6 +705,61 @@
     cancelAnimationFrame(gameAnimationId);
     document.getElementById("game-modal").classList.add("hidden");
   }
+    
+  // クーポンデータと適用状態の管理
+  let activeDiscount = 0; // 適用中の割引額
+  let coupons = [
+    { id: 1, title: "コンビニ限定 100円OFF", discount: 100, minPay: 200, used: false },
+    { id: 2, title: "カフェで使える 200円OFF", discount: 200, minPay: 500, used: false },
+    { id: 3, title: "11Pay感謝祭 500円OFF", discount: 500, minPay: 1000, used: false }
+  ];
+
+  function openCouponModal() {
+    playSound('beep');
+    renderCoupons();
+    document.getElementById("coupon-modal").classList.remove("hidden");
+  }
+
+  function closeCouponModal() {
+    playSound('beep');
+    document.getElementById("coupon-modal").classList.add("hidden");
+  }
+
+  function renderCoupons() {
+    const container = document.getElementById("coupon-list");
+    if (!container) return;
+
+    container.innerHTML = coupons.map(c => {
+      const isSelected = activeDiscount === c.discount && !c.used;
+      return `
+        <div style="border: 2px dashed ${c.used ? '#ccc' : '#ff0033'}; padding: 12px; border-radius: 12px; margin-bottom: 10px; background: ${c.used ? '#f9f9f9' : '#fff5f5'};">
+          <div style="font-weight: bold; font-size: 15px; color: ${c.used ? '#888' : '#333'};">${c.title}</div>
+          <div style="font-size: 12px; color: #666; margin: 4px 0;">${c.minPay}円以上のお支払いで利用可能</div>
+          <button class="main-btn" style="padding: 6px 12px; font-size: 13px; margin-top: 6px; background: ${c.used ? '#ccc' : isSelected ? '#28a745' : '#ff0033'};" 
+            onclick="selectCoupon(${c.id})" ${c.used ? 'disabled' : ''}>
+            ${c.used ? '使用済み' : isSelected ? 'セット中 (タップで解除)' : 'セットする'}
+          </button>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function selectCoupon(id) {
+    const coupon = coupons.find(c => c.id === id);
+    if (!coupon || coupon.used) return;
+
+    if (activeDiscount === coupon.discount) {
+      activeDiscount = 0;
+      playSound('beep');
+      alert("クーポンのセットを解除しました");
+    } else {
+      activeDiscount = coupon.discount;
+      playSound('win');
+      alert(`「${coupon.title}」をセットしました！\n次回の決済時に自動で適用されます。`);
+    }
+    renderCoupons();
+  }
+
   // --- GAMEメニュー画面制御 ---
   function openGameModal() {
     playSound('beep');
@@ -1237,7 +1307,11 @@
     document.getElementById("pay-confirm-modal").classList.add("hidden");
   }
 
-  function executePayment() {
+    function executePayment() {
+    // クーポン割引の適用
+    let discount = activeDiscount;
+    let finalAmount = Math.max(0, currentScanAmount - discount);
+
     const usePtChecked = document.getElementById("use-pt-check").checked;
     let usePt = parseInt(document.getElementById("use-pt-input").value) || 0;
 
@@ -1247,16 +1321,16 @@
         playSound('error');
         return alert("保持ポイントを超えています");
       }
-      if (usePt > currentScanAmount) usePt = currentScanAmount;
+      if (usePt > finalAmount) usePt = finalAmount;
     } else {
       usePt = 0;
     }
 
-    const cashPay = currentScanAmount - usePt;
+    const cashPay = finalAmount - usePt;
 
     if (cashPay > balance) {
       playSound('error');
-      alert(`❌ 残高が不足しています！\n現金必要額: ${cashPay}円 / 残高: ${balance}円`);
+      alert(`❌ 残高が不足しています！\nお支払い額: ${cashPay}円 / 残高: ${balance}円`);
       return;
     }
 
@@ -1265,17 +1339,24 @@
     balance -= cashPay;
     points -= usePt;
 
+    // 履歴追加
     if (cashPay > 0) addTransaction('残高', -cashPay, '店舗支払い');
     if (usePt > 0) addTransaction('ポイント', -usePt, '店舗支払い利用');
 
-    updateDisplay();
+    // 使ったクーポンを使用済みに更新
+    if (discount > 0) {
+      const usedCoupon = coupons.find(c => c.discount === discount && !c.used);
+      if (usedCoupon) usedCoupon.used = true;
+      activeDiscount = 0; // 解除
+    }
 
+    updateDisplay();
     document.getElementById("pay-confirm-modal").classList.add("hidden");
 
     if (usePt > 0) {
-      alert(`✅ お支払い完了！\n(ポイント利用のためルーレットはスキップされました)`);
+      alert(`✅ お支払い完了！(割引: ${discount}円 / pt利用: ${usePt}pt)`);
     } else {
-      startRoulette(currentScanAmount);
+      startRoulette(finalAmount);
     }
   }
 
