@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>11Pay - フル機能版</title>
-  <!-- QRスキャナー用 -->
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
     * { box-sizing: border-box; }
@@ -13,7 +12,6 @@
     
     .card-box { background: white; padding: 30px 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-top: 20px; }
     
-    /* タブ切り替えスタイル */
     .tab-container { display: flex; margin-bottom: 20px; border-bottom: 2px solid #eee; }
     .tab-btn { flex: 1; padding: 12px; font-size: 16px; font-weight: bold; color: #888; background: none; border: none; cursor: pointer; border-bottom: 3px solid transparent; }
     .tab-btn.active { color: #ff0033; border-bottom-color: #ff0033; }
@@ -41,7 +39,6 @@
     .card-amount { font-size: 42px; font-weight: bold; }
     .point-display { margin-top: 10px; font-size: 16px; background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; display: inline-block; }
 
-    /* カメラコントロール */
     .camera-area { margin-top: 15px; }
     .camera-btn {
       background: #333; color: white; border: none; padding: 10px 20px; border-radius: 20px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 10px; transition: background 0.2s;
@@ -52,13 +49,11 @@
     #reader { width: 100%; border-radius: 20px; overflow: hidden; }
     .camera-off-placeholder { color: #aaa; font-weight: bold; font-size: 14px; position: absolute; }
 
-    /* 取引履歴カード */
     .tx-card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-top: 20px; text-align: left; }
     .tx-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 12px; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px; }
     .tx-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; }
     .tx-item:last-child { border-bottom: none; }
 
-    /* ボトムナビゲーション */
     .bottom-nav {
       position: fixed;
       bottom: 0;
@@ -95,12 +90,10 @@
     .modal-content { background: white; padding: 25px 20px; border-radius: 20px; width: 88%; max-width: 360px; text-align: center; }
     .roulette-box { font-size: 32px; font-weight: bold; color: #ff0033; margin: 20px 0; min-height: 48px; white-space: pre-line; }
     
-    /* スクラッチ用スタイル */
     .scratch-container { position: relative; width: 200px; height: 100px; margin: 15px auto; user-select: none; }
     .scratch-result { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff; border: 2px dashed #ff9900; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 20px; font-weight: bold; color: #ff0033; padding: 10px; }
     .scratch-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 10px; cursor: pointer; }
 
-    /* 豆腐ゲーム用スタイル */
     #game-canvas { background: #eef2f5; border-radius: 10px; margin: 10px auto; display: block; touch-action: none; cursor: pointer; }
 
     #qr-output-container { display: flex; justify-content: center; margin: 15px 0; }
@@ -162,29 +155,27 @@
     </div>
 
     <!-- 取引履歴エリア -->
-<div class="tx-card">
-  <div class="tx-title">📋 取引履歴</div>
-  <div id="transaction-list"></div>
-  <!-- ★ここにボタンを追加 -->
-  <button id="tx-more-btn" class="secondary-btn hidden" style="margin-top: 10px;" onclick="toggleMoreTransactions()">もっと見る</button>
-</div>
-
+    <div class="tx-card">
+      <div class="tx-title">📋 取引履歴</div>
+      <div id="transaction-list"></div>
+      <button id="tx-more-btn" class="secondary-btn hidden" style="margin-top: 10px;" onclick="toggleMoreTransactions()">もっと見る</button>
+    </div>
+  </div>
 
 </div>
 
 <!-- ボトムナビゲーション -->
 <div id="bottom-nav" class="bottom-nav hidden">
-  <button class="nav-item" onclick="openNewsModal()">
-    <svg class="nav-svg" viewBox="0 0 24 24" width="22" height="22">
-      <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-1 14H5c-.55 0-1-.45-1-1V7c0-.55.45-1 1-1h14c.55 0 1 .45 1 1v10c0 .55-.45 1-1 1zM7 9h10v2H7zm0 4h7v2H7z"/>
-    </svg>
-    <!-- 例：ナビゲーションにクーポンボタンを追加 -->
-  <span>クーポン</span>
-　</button>
   <button class="nav-item" onclick="openCouponModal()">
-  <svg class="nav-svg" viewBox="0 0 24 24" width="22" height="22">
-    <path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/>
-  </svg>
+    <svg class="nav-svg" viewBox="0 0 24 24" width="22" height="22">
+      <path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/>
+    </svg>
+    <span>クーポン</span>
+  </button>
+  <button class="nav-item" onclick="openSendQrModal()">
+    <svg class="nav-svg" viewBox="0 0 24 24" width="22" height="22">
+      <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+    </svg>
     <span>送る</span>
   </button>
   <button class="nav-item active" onclick="goHome()">
@@ -207,13 +198,22 @@
   </button>
 </div>
 
+<!-- クーポンモーダル -->
+<div id="coupon-modal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <h3>🎟️ お得なクーポン</h3>
+    <p style="font-size: 13px; color: #666; margin-bottom: 15px;">使いたいクーポンを選択してください</p>
+    
+    <div id="coupon-list" style="max-height: 250px; overflow-y: auto; text-align: left;"></div>
 
+    <button class="secondary-btn" style="margin-top: 15px;" onclick="closeCouponModal()">閉じる</button>
+  </div>
+</div>
 
-<!-- GAMEモーダル (選択画面 / 豆腐ゲーム / ガチャ) -->
+<!-- GAMEモーダル -->
 <div id="game-modal" class="modal-overlay hidden">
   <div class="modal-content">
     
-    <!-- 1. ゲーム選択画面 -->
     <div id="game-menu-select">
       <h3>🎮 ゲームメニュー</h3>
       <p style="font-size: 13px; color: #666; margin-bottom: 20px;">遊ぶゲームを選んでね！</p>
@@ -222,7 +222,6 @@
       <button class="secondary-btn" style="margin-top: 15px;" onclick="closeGameModal()">閉じる</button>
     </div>
 
-    <!-- 2. 豆腐ゲーム画面 -->
     <div id="game-tofu-screen" class="hidden">
       <h3>🧊 豆腐タワーチャレンジ</h3>
       <p style="font-size: 13px; color: #666; margin-bottom: 5px;">タップしてタイミングよく豆腐を重ねよう！</p>
@@ -230,7 +229,6 @@
       <button class="secondary-btn" onclick="backToGameMenu()">メニューに戻る</button>
     </div>
 
-    <!-- 3. ガチャ画面 -->
     <div id="gacha-screen" class="hidden">
       <h3>🎰 ポイントガチャ</h3>
       <p style="font-size: 13px; color: #666; margin-bottom: 10px;">1回 200pt で運試し！</p>
@@ -317,20 +315,6 @@
   </div>
 </div>
 
-  <!-- クーポンモーダル -->
-<div id="coupon-modal" class="modal-overlay hidden">
-  <div class="modal-content">
-    <h3>🎟️ お得なクーポン</h3>
-    <p style="font-size: 13px; color: #666; margin-bottom: 15px;">使いたいクーポンを選択してください</p>
-    
-    <div id="coupon-list" style="max-height: 250px; overflow-y: auto; text-align: left;">
-      <!-- クーポンカードがここに動的表示されます -->
-    </div>
-
-    <button class="secondary-btn" style="margin-top: 15px;" onclick="closeCouponModal()">閉じる</button>
-  </div>
-</div>
-
 <!-- ルーレット結果モーダル -->
 <div id="roulette-modal" class="modal-overlay hidden">
   <div class="modal-content">
@@ -353,12 +337,20 @@
   let html5QrCode = null;
   let isCameraOn = false;
 
-  // スクラッチ用変数
+  // クーポン管理
+  let activeDiscount = 0;
+  let coupons = [
+    { id: 1, title: "コンビニ限定 100円OFF", discount: 100, minPay: 200, used: false },
+    { id: 2, title: "カフェで使える 200円OFF", discount: 200, minPay: 500, used: false },
+    { id: 3, title: "11Pay感謝祭 500円OFF", discount: 500, minPay: 1000, used: false }
+  ];
+
+  // スクラッチ用
   let scratchPointResult = 0;
   let scratchIsCleared = false;
   let isDrawing = false;
 
-  // 豆腐ゲーム用変数
+  // 豆腐ゲーム用
   let gameAnimationId;
   let tofuCanvas, tofuCtx;
   let tofuStack = [];
@@ -376,19 +368,16 @@
     localStorage.setItem("paypay_users", JSON.stringify(users));
   }
 
-  // --- 音声効果音 ---
+  // --- 効果音 ---
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
   function playSound(type) {
     try {
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.connect(gain);
       gain.connect(audioCtx.destination);
-
       const now = audioCtx.currentTime;
 
       if (type === 'beep') {
@@ -440,9 +429,7 @@
 
   window.onload = function() {
     clearAuthFields();
-    if (currentUser) {
-      showMainScreen();
-    }
+    if (currentUser) showMainScreen();
   };
 
   function clearAuthFields() {
@@ -480,7 +467,6 @@
     const passInput = document.getElementById("login-pass").value;
 
     if (!userInput) return alert("ユーザー名を入力してください");
-
     const users = getUsers();
 
     if (!users[userInput] || users[userInput] !== passInput) {
@@ -507,7 +493,6 @@
     }
 
     const users = getUsers();
-
     if (users[userInput]) {
       playSound('error');
       return alert("このユーザー名は既に使われています");
@@ -525,30 +510,80 @@
     showMainScreen();
   }
 
-  // --- ナビゲーション移動 ---
   function goHome() {
     playSound('beep');
-    closeNewsModal();
+    closeCouponModal();
     closeSendQrModal();
     closeGameModal();
     closeScratchModal();
   }
 
-  // --- お知らせ機能 ---
-  function openNewsModal() {
+  // --- クーポン機能 ---
+  function openCouponModal() {
     playSound('beep');
-    document.getElementById("news-modal").classList.remove("hidden");
+    renderCoupons();
+    document.getElementById("coupon-modal").classList.remove("hidden");
   }
 
-  function closeNewsModal() {
+  function closeCouponModal() {
     playSound('beep');
-    document.getElementById("news-modal").classList.add("hidden");
+    document.getElementById("coupon-modal").classList.add("hidden");
   }
 
-  // --- 豆腐タワーゲーム機能 ---
+  function renderCoupons() {
+    const container = document.getElementById("coupon-list");
+    if (!container) return;
+
+    container.innerHTML = coupons.map(c => {
+      const isSelected = activeDiscount === c.discount && !c.used;
+      return `
+        <div style="border: 2px dashed ${c.used ? '#ccc' : '#ff0033'}; padding: 12px; border-radius: 12px; margin-bottom: 10px; background: ${c.used ? '#f9f9f9' : '#fff5f5'};">
+          <div style="font-weight: bold; font-size: 15px; color: ${c.used ? '#888' : '#333'};">${c.title}</div>
+          <div style="font-size: 12px; color: #666; margin: 4px 0;">${c.minPay}円以上のお支払いで利用可能</div>
+          <button class="main-btn" style="padding: 6px 12px; font-size: 13px; margin-top: 6px; background: ${c.used ? '#ccc' : isSelected ? '#28a745' : '#ff0033'};" 
+            onclick="selectCoupon(${c.id})" ${c.used ? 'disabled' : ''}>
+            ${c.used ? '使用済み' : isSelected ? 'セット中 (タップで解除)' : 'セットする'}
+          </button>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function selectCoupon(id) {
+    const coupon = coupons.find(c => c.id === id);
+    if (!coupon || coupon.used) return;
+
+    if (activeDiscount === coupon.discount) {
+      activeDiscount = 0;
+      playSound('beep');
+      alert("クーポンのセットを解除しました");
+    } else {
+      activeDiscount = coupon.discount;
+      playSound('win');
+      alert(`「${coupon.title}」をセットしました！\n次回の決済時に自動で適用されます。`);
+    }
+    renderCoupons();
+  }
+
+  // --- GAMEメニュー機能 ---
   function openGameModal() {
     playSound('beep');
     document.getElementById("game-modal").classList.remove("hidden");
+    backToGameMenu();
+  }
+
+  function backToGameMenu() {
+    gameActive = false;
+    cancelAnimationFrame(gameAnimationId);
+    document.getElementById("game-menu-select").classList.remove("hidden");
+    document.getElementById("game-tofu-screen").classList.add("hidden");
+    document.getElementById("gacha-screen").classList.add("hidden");
+  }
+
+  function startTofuGameSelect() {
+    playSound('beep');
+    document.getElementById("game-menu-select").classList.add("hidden");
+    document.getElementById("game-tofu-screen").classList.remove("hidden");
 
     tofuCanvas = document.getElementById("game-canvas");
     tofuCtx = tofuCanvas.getContext("2d");
@@ -558,19 +593,83 @@
     gameActive = true;
 
     spawnNewTofu();
-
     tofuCanvas.onpointerdown = placeTofu;
 
     cancelAnimationFrame(gameAnimationId);
     updateTofuGame();
   }
 
+  function startGachaSelect() {
+    playSound('beep');
+    document.getElementById("game-menu-select").classList.add("hidden");
+    document.getElementById("gacha-screen").classList.remove("hidden");
+    document.getElementById("gacha-box").innerText = "🎁";
+    document.getElementById("gacha-result-text").innerText = "";
+    document.getElementById("gacha-draw-btn").classList.remove("hidden");
+  }
+
+  function playGacha() {
+    if (points < 200) {
+      playSound('error');
+      return alert("ポイントが足りません！ (必要: 200pt)");
+    }
+
+    points -= 200;
+    addTransaction('ポイント', -200, 'ガチャ利用');
+    updateDisplay();
+
+    const drawBtn = document.getElementById("gacha-draw-btn");
+    drawBtn.classList.add("hidden");
+
+    const box = document.getElementById("gacha-box");
+    const resultText = document.getElementById("gacha-result-text");
+    resultText.innerText = "ガチャ回し中...";
+
+    const rand = Math.random() * 100;
+    let wonPoint = 10;
+
+    if (rand < 2) wonPoint = 1000;
+    else if (rand < 7) wonPoint = 500;
+    else if (rand < 17) wonPoint = 200;
+    else if (rand < 35) wonPoint = 100;
+    else if (rand < 65) wonPoint = 50;
+    else wonPoint = 10;
+
+    let count = 0;
+    const icons = ["🎰", "📦", "✨", "🎉"];
+    const interval = setInterval(() => {
+      playSound('tick');
+      box.innerText = icons[count % icons.length];
+      count++;
+
+      if (count > 15) {
+        clearInterval(interval);
+        
+        points += wonPoint;
+        addTransaction('ポイント', wonPoint, 'ガチャ当選');
+        updateDisplay();
+
+        box.innerText = wonPoint >= 500 ? "🎊" : "🎁";
+        
+        if (wonPoint >= 500) {
+          playSound('win');
+          resultText.innerText = `超激レア！ ${wonPoint}pt 当選！`;
+        } else if (wonPoint >= 200) {
+          playSound('win');
+          resultText.innerText = `当たり！ ${wonPoint}pt 当選！`;
+        } else {
+          playSound('beep');
+          resultText.innerText = `${wonPoint}pt 獲得！`;
+        }
+
+        drawBtn.classList.remove("hidden");
+      }
+    }, 100);
+  }
+
   function spawnNewTofu() {
     const topTofu = tofuStack[tofuStack.length - 1];
-    currentTofu = {
-      x: 0,
-      width: topTofu.width
-    };
+    currentTofu = { x: 0, width: topTofu.width };
     tofuDirection = 1;
     tofuSpeed = 2 + Math.floor(tofuStack.length / 10) * 0.5;
   }
@@ -695,169 +794,6 @@
     cancelAnimationFrame(gameAnimationId);
     document.getElementById("game-modal").classList.add("hidden");
   }
-    
-  // クーポンデータと適用状態の管理
-  let activeDiscount = 0; // 適用中の割引額
-  let coupons = [
-    { id: 1, title: "コンビニ限定 100円OFF", discount: 100, minPay: 200, used: false },
-    { id: 2, title: "カフェで使える 200円OFF", discount: 200, minPay: 500, used: false },
-    { id: 3, title: "11Pay感謝祭 500円OFF", discount: 500, minPay: 1000, used: false }
-  ];
-
-  function openCouponModal() {
-    playSound('beep');
-    renderCoupons();
-    document.getElementById("coupon-modal").classList.remove("hidden");
-  }
-
-  function closeCouponModal() {
-    playSound('beep');
-    document.getElementById("coupon-modal").classList.add("hidden");
-  }
-
-  function renderCoupons() {
-    const container = document.getElementById("coupon-list");
-    if (!container) return;
-
-    container.innerHTML = coupons.map(c => {
-      const isSelected = activeDiscount === c.discount && !c.used;
-      return `
-        <div style="border: 2px dashed ${c.used ? '#ccc' : '#ff0033'}; padding: 12px; border-radius: 12px; margin-bottom: 10px; background: ${c.used ? '#f9f9f9' : '#fff5f5'};">
-          <div style="font-weight: bold; font-size: 15px; color: ${c.used ? '#888' : '#333'};">${c.title}</div>
-          <div style="font-size: 12px; color: #666; margin: 4px 0;">${c.minPay}円以上のお支払いで利用可能</div>
-          <button class="main-btn" style="padding: 6px 12px; font-size: 13px; margin-top: 6px; background: ${c.used ? '#ccc' : isSelected ? '#28a745' : '#ff0033'};" 
-            onclick="selectCoupon(${c.id})" ${c.used ? 'disabled' : ''}>
-            ${c.used ? '使用済み' : isSelected ? 'セット中 (タップで解除)' : 'セットする'}
-          </button>
-        </div>
-      `;
-    }).join('');
-  }
-
-  function selectCoupon(id) {
-    const coupon = coupons.find(c => c.id === id);
-    if (!coupon || coupon.used) return;
-
-    if (activeDiscount === coupon.discount) {
-      activeDiscount = 0;
-      playSound('beep');
-      alert("クーポンのセットを解除しました");
-    } else {
-      activeDiscount = coupon.discount;
-      playSound('win');
-      alert(`「${coupon.title}」をセットしました！\n次回の決済時に自動で適用されます。`);
-    }
-    renderCoupons();
-  }
-
-  // --- GAMEメニュー画面制御 ---
-  function openGameModal() {
-    playSound('beep');
-    document.getElementById("game-modal").classList.remove("hidden");
-    backToGameMenu();
-  }
-
-  function backToGameMenu() {
-    gameActive = false;
-    cancelAnimationFrame(gameAnimationId);
-    document.getElementById("game-menu-select").classList.remove("hidden");
-    document.getElementById("game-tofu-screen").classList.add("hidden");
-    document.getElementById("gacha-screen").classList.add("hidden");
-  }
-
-  function startTofuGameSelect() {
-    playSound('beep');
-    document.getElementById("game-menu-select").classList.add("hidden");
-    document.getElementById("game-tofu-screen").classList.remove("hidden");
-
-    tofuCanvas = document.getElementById("game-canvas");
-    tofuCtx = tofuCanvas.getContext("2d");
-
-    tofuStack = [{ x: 75, width: 150 }];
-    tofuSpeed = 2;
-    gameActive = true;
-
-    spawnNewTofu();
-    tofuCanvas.onpointerdown = placeTofu;
-
-    cancelAnimationFrame(gameAnimationId);
-    updateTofuGame();
-  }
-
-  function startGachaSelect() {
-    playSound('beep');
-    document.getElementById("game-menu-select").classList.add("hidden");
-    document.getElementById("gacha-screen").classList.remove("hidden");
-    document.getElementById("gacha-box").innerText = "🎁";
-    document.getElementById("gacha-result-text").innerText = "";
-    document.getElementById("gacha-draw-btn").classList.remove("hidden");
-  }
-
-  // --- ガチャ処理 (1回200pt) ---
-  function playGacha() {
-    if (points < 200) {
-      playSound('error');
-      return alert("ポイントが足りません！ (必要: 200pt)");
-    }
-
-    // ポイント消費
-    points -= 200;
-    addTransaction('ポイント', -200, 'ガチャ利用');
-    updateDisplay();
-
-    const drawBtn = document.getElementById("gacha-draw-btn");
-    drawBtn.classList.add("hidden");
-
-    const box = document.getElementById("gacha-box");
-    const resultText = document.getElementById("gacha-result-text");
-    
-    resultText.innerText = "ガチャ回し中...";
-
-    // 確率設定 (合計100%)
-    // 10pt (35%), 50pt (30%), 100pt (18%), 200pt (10%), 500pt (5%), 1000pt (2%)
-    const rand = Math.random() * 100;
-    let wonPoint = 10;
-
-    if (rand < 2) wonPoint = 1000;      // 2%
-    else if (rand < 7) wonPoint = 500;  // 5%
-    else if (rand < 17) wonPoint = 200; // 10%
-    else if (rand < 35) wonPoint = 100; // 18%
-    else if (rand < 65) wonPoint = 50;  // 30%
-    else wonPoint = 10;                // 35%
-
-    // アニメーション演出
-    let count = 0;
-    const icons = ["🎰", "📦", "✨", "🎉"];
-    const interval = setInterval(() => {
-      playSound('tick');
-      box.innerText = icons[count % icons.length];
-      count++;
-
-      if (count > 15) {
-        clearInterval(interval);
-        
-        // 当たり判定と反映
-        points += wonPoint;
-        addTransaction('ポイント', wonPoint, 'ガチャ当選');
-        updateDisplay();
-
-        box.innerText = wonPoint >= 500 ? "🎊" : "🎁";
-        
-        if (wonPoint >= 500) {
-          playSound('win');
-          resultText.innerText = `超激レア！ ${wonPoint}pt 当選！`;
-        } else if (wonPoint >= 200) {
-          playSound('win');
-          resultText.innerText = `当たり！ ${wonPoint}pt 当選！`;
-        } else {
-          playSound('beep');
-          resultText.innerText = `${wonPoint}pt 獲得！`;
-        }
-
-        drawBtn.classList.remove("hidden");
-      }
-    }, 100);
-  }
 
   // --- スクラッチ機能 ---
   function openScratchModal() {
@@ -955,7 +891,7 @@
     document.getElementById("scratch-modal").classList.add("hidden");
   }
 
-  // --- パスワード変更機能 ---
+  // --- パスワード変更 ---
   function openPassModal() {
     playSound('beep');
     document.getElementById("old-pass").value = "";
@@ -1035,77 +971,7 @@
     renderTransactions();
   }
 
-    // --- 取引履歴機能 ---
-  let showAllTransactions = false; // 表示切替フラグ
-
-  function addTransaction(type, amount, detail) {
-    const now = new Date();
-    const timeStr = `${now.getMonth() + 1}/${now.getDate()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-    
-    transactions.unshift({
-      type: type,
-      amount: amount,
-      detail: detail,
-      time: timeStr
-    });
-
-    if (transactions.length > 20) {
-      transactions.pop();
-    }
-  }
-
-  function renderTransactions() {
-    const container = document.getElementById("transaction-list");
-    const moreBtn = document.getElementById("tx-more-btn");
-    if (!container) return;
-
-    if (transactions.length === 0) {
-      container.innerHTML = "<p style='color:#888; font-size:14px; text-align:center;'>履歴はありません</p>";
-      if (moreBtn) moreBtn.classList.add("hidden");
-      return;
-    }
-
-    // 「もっと見る」が開かれていなければ6件だけ取得
-    const displayList = showAllTransactions ? transactions : transactions.slice(0, 4);
-
-    container.innerHTML = displayList.map(tx => {
-      const isPlus = tx.amount > 0;
-      const color = isPlus ? "#28a745" : "#dc3545";
-      const sign = isPlus ? "+" : "";
-      const unit = tx.type === 'ポイント' ? 'pt' : '円';
-
-      return `
-        <div class="tx-item">
-          <div>
-            <div style="font-weight:bold; font-size:14px; color:#333;">${tx.detail} (${tx.type})</div>
-            <div style="font-size:12px; color:#888;">${tx.time}</div>
-          </div>
-          <div style="font-weight:bold; font-size:15px; color:${color};">
-            ${sign}${tx.amount.toLocaleString()} ${unit}
-          </div>
-        </div>
-      `;
-    }).join('');
-
-    // 7件以上ある場合にボタンを表示
-    if (moreBtn) {
-      if (transactions.length > 6) {
-        moreBtn.classList.remove("hidden");
-        moreBtn.innerText = showAllTransactions ? "閉じる" : "もっと見る";
-      } else {
-        moreBtn.classList.add("hidden");
-      }
-    }
-  }
-
-  function toggleMoreTransactions() {
-    playSound('beep');
-    showAllTransactions = !showAllTransactions;
-    renderTransactions();
-  }
-
-
-  // --- 送金用QRコード機能 ---
+  // --- 送金QR機能 ---
   function openSendQrModal() {
     playSound('beep');
     document.getElementById("send-qr-amount").value = "";
@@ -1163,7 +1029,7 @@
     closeSendQrModal();
   }
 
-  // --- カメラON/OFF制御機能 ---
+  // --- スキャナー制御 ---
   function toggleCamera() {
     playSound('beep');
     if (isCameraOn) {
@@ -1228,7 +1094,6 @@
   function onScanSuccess(decodedText) {
     playSound('beep');
     stopScanner(() => {
-      // 1. 送金 (SEND:)
       if (decodedText.startsWith("SEND:")) {
         const parts = decodedText.split(":");
         const senderUser = parts[1];
@@ -1249,10 +1114,9 @@
         return;
       }
 
-      // 2. 判別ロジック
-      const isCharge = decodedText.startsWith("CHARGE_"); // 残高チャージ
-      const isPoint  = decodedText.startsWith("POINT_");  // ポイント付与
-      const isPay    = decodedText.startsWith("PAY_");    // 支払い
+      const isCharge = decodedText.startsWith("CHARGE_");
+      const isPoint  = decodedText.startsWith("POINT_");
+      const isPay    = decodedText.startsWith("PAY_");
       
       const amount = parseInt(decodedText.replace(/(CHARGE_|PAY_|POINT_)/, "")) || 0;
 
@@ -1297,8 +1161,7 @@
     document.getElementById("pay-confirm-modal").classList.add("hidden");
   }
 
-    function executePayment() {
-    // クーポン割引の適用
+  function executePayment() {
     let discount = activeDiscount;
     let finalAmount = Math.max(0, currentScanAmount - discount);
 
@@ -1329,15 +1192,13 @@
     balance -= cashPay;
     points -= usePt;
 
-    // 履歴追加
     if (cashPay > 0) addTransaction('残高', -cashPay, '店舗支払い');
     if (usePt > 0) addTransaction('ポイント', -usePt, '店舗支払い利用');
 
-    // 使ったクーポンを使用済みに更新
     if (discount > 0) {
       const usedCoupon = coupons.find(c => c.discount === discount && !c.used);
       if (usedCoupon) usedCoupon.used = true;
-      activeDiscount = 0; // 解除
+      activeDiscount = 0;
     }
 
     updateDisplay();
@@ -1384,6 +1245,73 @@
     addTransaction('ポイント', earnedPoints, '11Payジャンボ還元');
     updateDisplay();
     document.getElementById("roulette-modal").classList.add("hidden");
+  }
+
+  // --- 取引履歴機能 ---
+  let showAllTransactions = false;
+
+  function addTransaction(type, amount, detail) {
+    const now = new Date();
+    const timeStr = `${now.getMonth() + 1}/${now.getDate()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+    
+    transactions.unshift({
+      type: type,
+      amount: amount,
+      detail: detail,
+      time: timeStr
+    });
+
+    if (transactions.length > 20) {
+      transactions.pop();
+    }
+  }
+
+  function renderTransactions() {
+    const container = document.getElementById("transaction-list");
+    const moreBtn = document.getElementById("tx-more-btn");
+    if (!container) return;
+
+    if (transactions.length === 0) {
+      container.innerHTML = "<p style='color:#888; font-size:14px; text-align:center;'>履歴はありません</p>";
+      if (moreBtn) moreBtn.classList.add("hidden");
+      return;
+    }
+
+    const displayList = showAllTransactions ? transactions : transactions.slice(0, 6);
+
+    container.innerHTML = displayList.map(tx => {
+      const isPlus = tx.amount > 0;
+      const color = isPlus ? "#28a745" : "#dc3545";
+      const sign = isPlus ? "+" : "";
+      const unit = tx.type === 'ポイント' ? 'pt' : '円';
+
+      return `
+        <div class="tx-item">
+          <div>
+            <div style="font-weight:bold; font-size:14px; color:#333;">${tx.detail} (${tx.type})</div>
+            <div style="font-size:12px; color:#888;">${tx.time}</div>
+          </div>
+          <div style="font-weight:bold; font-size:15px; color:${color};">
+            ${sign}${tx.amount.toLocaleString()} ${unit}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    if (moreBtn) {
+      if (transactions.length > 6) {
+        moreBtn.classList.remove("hidden");
+        moreBtn.innerText = showAllTransactions ? "閉じる" : "もっと見る";
+      } else {
+        moreBtn.classList.add("hidden");
+      }
+    }
+  }
+
+  function toggleMoreTransactions() {
+    playSound('beep');
+    showAllTransactions = !showAllTransactions;
+    renderTransactions();
   }
 </script>
 
