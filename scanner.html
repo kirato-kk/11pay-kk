@@ -41,7 +41,16 @@
     .card-amount { font-size: 42px; font-weight: bold; }
     .point-display { margin-top: 10px; font-size: 16px; background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; display: inline-block; }
 
-    #reader { width: 100%; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
+    /* カメラコントロール */
+    .camera-area { margin-top: 15px; }
+    .camera-btn {
+      background: #333; color: white; border: none; padding: 10px 20px; border-radius: 20px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 10px; transition: background 0.2s;
+    }
+    .camera-btn.active { background: #007bff; }
+    
+    .scanner-box { position: relative; min-height: 250px; background: #222; border-radius: 20px; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+    #reader { width: 100%; border-radius: 20px; overflow: hidden; }
+    .camera-off-placeholder { color: #aaa; font-weight: bold; font-size: 14px; position: absolute; }
 
     /* ボトムナビゲーション */
     .bottom-nav {
@@ -72,16 +81,9 @@
       cursor: pointer;
       padding: 5px 0;
     }
-    .nav-svg {
-      margin-bottom: 2px;
-      fill: #666666;
-    }
-    .nav-item.active {
-      color: #ff0033;
-    }
-    .nav-item.active .nav-svg {
-      fill: #ff0033;
-    }
+    .nav-svg { margin-bottom: 2px; fill: #666666; }
+    .nav-item.active { color: #ff0033; }
+    .nav-item.active .nav-svg { fill: #ff0033; }
 
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
     .modal-content { background: white; padding: 25px 20px; border-radius: 20px; width: 88%; max-width: 360px; text-align: center; }
@@ -144,7 +146,14 @@
       <div class="point-display">🪙 ポイント: <span id="point-display">0</span> pt</div>
     </div>
 
-    <div id="reader"></div>
+    <!-- カメラ起動コントロール -->
+    <div class="camera-area">
+      <button id="toggle-camera-btn" class="camera-btn" onclick="toggleCamera()">📷 カメラON</button>
+      <div class="scanner-box">
+        <div id="camera-off-msg" class="camera-off-placeholder">📷 カメラはオフです</div>
+        <div id="reader" class="hidden"></div>
+      </div>
+    </div>
   </div>
 
 </div>
@@ -295,7 +304,8 @@
   let currentScanAmount = 0;
   let earnedPoints = 0;
   let pendingSendAmount = 0;
-  let html5QrCode;
+  let html5QrCode = null;
+  let isCameraOn = false;
 
   // スクラッチ用変数
   let scratchPointResult = 0;
@@ -480,6 +490,11 @@
 
   // --- お知らせ機能 ---
   function openNewsModal() {
+    playSound('beep');
+    document.getElementById("news-modal").classList.remove("hidden");
+  }
+
+  function closeNewsModal() {
     playSound('beep');
     document.getElementById("news-modal").classList.remove("hidden");
   }
@@ -780,16 +795,11 @@
 
   function logout() {
     playSound('beep');
-    const doLogout = () => {
+    stopScanner(() => {
       localStorage.removeItem("paypay_login_user");
       clearAuthFields();
       location.reload();
-    };
-    if (html5QrCode && html5QrCode.isScanning) {
-      html5QrCode.stop().then(doLogout).catch(doLogout);
-    } else {
-      doLogout();
-    }
+    });
   }
 
   function showMainScreen() {
@@ -805,7 +815,6 @@
     points = (savedPoints !== null) ? parseInt(savedPoints) : 0;
     
     updateDisplay();
-    startScanner();
   }
 
   function updateDisplay() {
@@ -871,56 +880,103 @@
     closeSendQrModal();
   }
 
-  // --- スキャナー処理 ---
+  // --- カメラON/OFF制御機能 ---
+  function toggleCamera() {
+    playSound('beep');
+    if (isCameraOn) {
+      stopScanner();
+    } else {
+      startScanner();
+    }
+  }
+
   function startScanner() {
+    const readerDiv = document.getElementById("reader");
+    const offMsg = document.getElementById("camera-off-msg");
+    const btn = document.getElementById("toggle-camera-btn");
+
+    readerDiv.classList.remove("hidden");
+    offMsg.classList.add("hidden");
+
     html5QrCode = new Html5Qrcode("reader");
     html5QrCode.start(
       { facingMode: "environment" },
-      { fps: 10, qrbox: { width: 250, height: 250 } },
+      { fps: 10, qrbox: { width: 220, height: 220 } },
       onScanSuccess
-    ).catch(err => {
+    ).then(() => {
+      isCameraOn = true;
+      btn.innerText = "📷 カメラOFF";
+      btn.classList.add("active");
+    }).catch(err => {
       console.log("カメラ起動エラー: ", err);
+      alert("カメラの起動に失敗しました");
+      stopScanner();
     });
   }
 
+  function stopScanner(callback) {
+    const readerDiv = document.getElementById("reader");
+    const offMsg = document.getElementById("camera-off-msg");
+    const btn = document.getElementById("toggle-camera-btn");
+
+    if (html5QrCode && isCameraOn) {
+      html5QrCode.stop().then(() => {
+        html5QrCode.clear();
+        isCameraOn = false;
+        readerDiv.classList.add("hidden");
+        offMsg.classList.remove("hidden");
+        btn.innerText = "📷 カメラON";
+        btn.classList.remove("active");
+        if (callback) callback();
+      }).catch(err => {
+        console.log("カメラ停止エラー: ", err);
+        if (callback) callback();
+      });
+    } else {
+      isCameraOn = false;
+      readerDiv.classList.add("hidden");
+      offMsg.classList.remove("hidden");
+      btn.innerText = "📷 カメラON";
+      btn.classList.remove("active");
+      if (callback) callback();
+    }
+  }
+
   function onScanSuccess(decodedText) {
-    html5QrCode.stop();
     playSound('beep');
+    stopScanner(() => {
+      if (decodedText.startsWith("SEND:")) {
+        const parts = decodedText.split(":");
+        const senderUser = parts[1];
+        const sendAmount = parseInt(parts[2]) || 0;
 
-    if (decodedText.startsWith("SEND:")) {
-      const parts = decodedText.split(":");
-      const senderUser = parts[1];
-      const sendAmount = parseInt(parts[2]) || 0;
+        if (senderUser === currentUser) {
+          playSound('error');
+          alert("自分の送金用QRコードは読み込めません");
+          return;
+        }
 
-      if (senderUser === currentUser) {
-        playSound('error');
-        alert("自分の送金用QRコードは読み込めません");
-        location.reload();
+        balance += sendAmount;
+        updateDisplay();
+
+        playSound('win');
+        alert(`🎁 ${senderUser} 様より ${sendAmount.toLocaleString()}円 を受取りました！`);
         return;
       }
 
-      balance += sendAmount;
-      updateDisplay();
+      const isCharge = decodedText.startsWith("CHARGE_");
+      const amount = parseInt(decodedText.replace(/(CHARGE_|PAY_)/, "")) || 0;
 
-      playSound('win');
-      alert(`🎁 ${senderUser} 様より ${sendAmount.toLocaleString()}円 を受取りました！`);
-      location.reload();
-      return;
-    }
-
-    const isCharge = decodedText.startsWith("CHARGE_");
-    const amount = parseInt(decodedText.replace(/(CHARGE_|PAY_)/, "")) || 0;
-
-    if (isCharge) {
-      balance += amount;
-      updateDisplay();
-      playSound('win');
-      alert(`✅ ${amount.toLocaleString()}円 チャージが完了しました！`);
-      location.reload();
-    } else {
-      currentScanAmount = amount;
-      openPayConfirmModal();
-    }
+      if (isCharge) {
+        balance += amount;
+        updateDisplay();
+        playSound('win');
+        alert(`✅ ${amount.toLocaleString()}円 チャージが完了しました！`);
+      } else {
+        currentScanAmount = amount;
+        openPayConfirmModal();
+      }
+    });
   }
 
   function openPayConfirmModal() {
@@ -941,7 +997,6 @@
   function cancelPayment() {
     playSound('beep');
     document.getElementById("pay-confirm-modal").classList.add("hidden");
-    location.reload();
   }
 
   function executePayment() {
@@ -977,7 +1032,6 @@
 
     if (usePt > 0) {
       alert(`✅ お支払い完了！\n(ポイント利用のためルーレットはスキップされました)`);
-      location.reload();
     } else {
       startRoulette(currentScanAmount);
     }
@@ -1016,7 +1070,6 @@
     points += earnedPoints;
     updateDisplay();
     document.getElementById("roulette-modal").classList.add("hidden");
-    location.reload();
   }
 </script>
 
