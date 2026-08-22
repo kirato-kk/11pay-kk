@@ -1006,7 +1006,7 @@
     }
 
     // 「もっと見る」が開かれていなければ6件だけ取得
-    const displayList = showAllTransactions ? transactions : transactions.slice(0, 6);
+    const displayList = showAllTransactions ? transactions : transactions.slice(0, 4);
 
     container.innerHTML = displayList.map(tx => {
       const isPlus = tx.amount > 0;
