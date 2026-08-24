@@ -627,8 +627,9 @@
     const rand = Math.random() * 100;
     let wonPoint = 10;
 
-    if (rand < 2) wonPoint = 1000;
-    else if (rand < 7) wonPoint = 500;
+    if (rand < 2) wonPoint = 10000;
+    else if (rand < 7) wonPoint = 1000;
+    else if (rand < 10) wonPoint = 500;
     else if (rand < 17) wonPoint = 200;
     else if (rand < 35) wonPoint = 100;
     else if (rand < 65) wonPoint = 50;
