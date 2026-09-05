@@ -158,6 +158,22 @@
 <button onclick="openGiftModal()" style="width: 100%; margin-top: 10px; background: #ff9800; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
   ギフトカードでチャージ
 </button>
+    <!-- ギフトカード入力モーダル -->
+<div id="gift-modal" class="modal hidden">
+  <div class="modal-content" style="max-width:320px; background:#fff; padding:20px; border-radius:16px; text-align:center;">
+    <h3 style="margin-top:0; color:#ff9800;">ギフトカードチャージ</h3>
+    <p style="font-size:12px; color:#666; margin-bottom:15px;">カード裏面に記載のコードを入力してください</p>
+    
+    <input type="text" id="gift-code-input" placeholder="例: GFT-1000-AAAA" style="width:100%; padding:12px; font-size:16px; font-weight:bold; text-align:center; text-transform:uppercase; border:2px solid #ff9800; border-radius:8px; box-sizing:border-box;">
+
+    <button onclick="submitGiftCode()" style="width:100%; padding:12px; margin-top:15px; background:#ff9800; color:white; border:none; border-radius:8px; font-weight:bold; font-size:15px; cursor:pointer;">
+      チャージする
+    </button>
+    <button onclick="closeGiftModal()" style="width:100%; padding:10px; margin-top:8px; background:#6c757d; color:white; border:none; border-radius:8px; font-size:12px; cursor:pointer;">
+      閉じる
+    </button>
+  </div>
+</div>
 
 
     <!-- 取引履歴エリア -->
@@ -321,22 +337,7 @@
   </div>
 </div>
 
-  <!-- ギフトカード入力モーダル -->
-<div id="gift-modal" class="modal hidden">
-  <div class="modal-content" style="max-width:320px; background:#fff; padding:20px; border-radius:16px; text-align:center;">
-    <h3 style="margin-top:0; color:#ff9800;">ギフトカードチャージ</h3>
-    <p style="font-size:12px; color:#666; margin-bottom:15px;">カード裏面に記載のコードを入力してください</p>
-    
-    <input type="text" id="gift-code-input" placeholder="例: GFT-1000-AAAA" style="width:100%; padding:12px; font-size:16px; font-weight:bold; text-align:center; text-transform:uppercase; border:2px solid #ff9800; border-radius:8px; box-sizing:border-box;">
-
-    <button onclick="submitGiftCode()" style="width:100%; padding:12px; margin-top:15px; background:#ff9800; color:white; border:none; border-radius:8px; font-weight:bold; font-size:15px; cursor:pointer;">
-      チャージする
-    </button>
-    <button onclick="closeGiftModal()" style="width:100%; padding:10px; margin-top:8px; background:#6c757d; color:white; border:none; border-radius:8px; font-size:12px; cursor:pointer;">
-      閉じる
-    </button>
-  </div>
-</div>
+  
 
 
 <!-- ルーレット結果モーダル -->
