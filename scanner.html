@@ -531,12 +531,12 @@
   }
 
       // クーポン一覧の描画関数
-  function renderCoupons() {
+    function renderCoupons() {
     const listEl = document.getElementById("coupon-list");
     if (!listEl) return;
 
-    // 未使用のクーポンだけ抽出
     const activeCoupons = coupons.filter(c => !c.used);
+    const today = new Date().toISOString().split('T')[0];
 
     if (activeCoupons.length === 0) {
       listEl.innerHTML = '<div style="color:#999; padding:15px; font-size:13px; text-align:center;">利用可能なクーポンはありません</div>';
@@ -544,15 +544,31 @@
     }
 
     listEl.innerHTML = activeCoupons.map(c => {
-      // IDが存在しない場合のフォールバック（自動生成）
       const couponId = c.id || Date.now();
       c.id = couponId;
 
+      // 期限判定バッジ
+      let expireBadge = '';
+      let isExpired = false;
+
+      if (c.expire) {
+        if (c.expire < today) {
+          isExpired = true;
+          expireBadge = `<span style="background:#dc3545; color:white; font-size:10px; padding:2px 6px; border-radius:4px; margin-left:6px;">期限切れ</span>`;
+        } else if (c.expire === today) {
+          expireBadge = `<span style="background:#ffc107; color:#333; font-size:10px; padding:2px 6px; border-radius:4px; margin-left:6px; font-weight:bold;">本日まで</span>`;
+        } else {
+          expireBadge = `<span style="background:#17a2b8; color:white; font-size:10px; padding:2px 6px; border-radius:4px; margin-left:6px;">期限: ${c.expire}</span>`;
+        }
+      }
+
       return `
-        <div style="background:#f8f9fa; border:1px solid #ddd; border-radius:8px; padding:10px; margin-bottom:8px; text-align:left; display:flex; justify-content:space-between; align-items:center;">
+        <div style="background:${isExpired ? '#f0f0f0' : '#f8f9fa'}; border:1px solid #ddd; border-radius:8px; padding:10px; margin-bottom:8px; text-align:left; display:flex; justify-content:space-between; align-items:center; opacity:${isExpired ? '0.6' : '1'};">
           <div>
-            <div style="font-weight:bold; font-size:14px; color:#333;">🎟️ ${c.title}</div>
-            <div style="font-size:12px; color:#666;">${c.discount}円引き (${c.minPay}円以上で利用可)</div>
+            <div style="font-weight:bold; font-size:14px; color:#333;">
+              🎟️ ${c.title} ${expireBadge}
+            </div>
+            <div style="font-size:12px; color:#666; margin-top:2px;">${c.discount}円引き (${c.minPay}円以上で利用可)</div>
           </div>
           <button type="button" onclick="deleteSingleCouponWithPass(${couponId})" style="background:#dc3545; color:white; border:none; padding:6px 10px; border-radius:4px; font-size:12px; cursor:pointer; flex-shrink:0; margin-left:10px;">
             削除
@@ -1128,29 +1144,46 @@
       }
 
       // 2. クーポン追加の判定 (COUPON:タイトル:割引額:最低利用金額)
+           // 2. クーポン追加の判定 (COUPON:タイトル:割引額:最低利用金額:有効期限)
       if (decodedText.startsWith("COUPON:")) {
         const parts = decodedText.split(":");
         if (parts.length >= 4) {
           const title = parts[1];
           const discount = parseInt(parts[2]) || 0;
           const minPay = parseInt(parts[3]) || 0;
+          const expire = parts[4] || ""; // 有効期限 (YYYY-MM-DD)
+
+          // 読み取り時点で期限切れかチェック
+          if (expire) {
+            const today = new Date().toISOString().split('T')[0];
+            if (expire < today) {
+              playSound('error');
+              alert(`⚠️ このクーポンは有効期限切れです (${expire} まで)`);
+              return;
+            }
+          }
 
           coupons.push({
             id: Date.now(),
             title: title,
             discount: discount,
             minPay: minPay,
+            expire: expire,
             used: false
           });
 
+          localStorage.setItem(`coupons_${currentUser}`, JSON.stringify(coupons));
+          updateDisplay();
+
           playSound('win');
-          alert(`クーポンを獲得しました！\n\n【${title}】\n${discount}円引き (${minPay}円以上で利用可)`);
+          alert(`🎉 クーポンを獲得しました！\n\n【${title}】\n${discount}円引き (${minPay}円以上で利用可)${expire ? `\n有効期限: ${expire}` : ''}`);
         } else {
           playSound('error');
-          alert("無効なクーポンQRコードです");
+          alert("⚠️ 無効なクーポンQRコードです");
         }
         return;
       }
+
 
       // 3. チャージ・ポイント・決済の判定
       const isCharge = decodedText.startsWith("CHARGE_");
