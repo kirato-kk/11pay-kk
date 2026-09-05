@@ -1843,6 +1843,14 @@ function playGacha() {
   }, 2500);
 }
 
+// ガチャモーダルを閉じる関数
+function closeGachaModal() {
+  const gachaModal = document.getElementById("gacha-modal");
+  if (gachaModal) {
+    gachaModal.classList.add("hidden");
+    gachaModal.style.display = "none";
+  }
+}
 
 
 
