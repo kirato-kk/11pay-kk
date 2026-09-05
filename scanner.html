@@ -156,14 +156,6 @@
     </div>
 
   
-  <!-- ★ 追加: ギフトカードボタン ★ -->
-  <button type="button" class="gift-btn" onclick="openGiftModal()">🎁 ギフトカードでチャージ</button>
-
-  <div class="scanner-box" style="margin-top: 10px;">
-    <div id="camera-off-msg" class="camera-off-placeholder">カメラはオフです</div>
-    <div id="reader" class="hidden"></div>
-  </div>
-</div>
 
     <!-- 取引履歴エリア -->
     <div class="tx-card">
@@ -1546,43 +1538,73 @@ function submitGiftCode() {
 
 // 4. QRスキャン時の判定分岐（onScanSuccess関数の先頭付近に挿入）
 function onScanSuccess(decodedText) {
-  playSound('beep');
+// 1. クーポンの初期化（localStorageから読み込み、無ければデフォルト設定）
+let coupons = JSON.parse(localStorage.getItem('my_coupons')) || [
+  { id: 1, title: "100円引きクーポン", minPay: 500, used: false },
+  { id: 2, title: "200円引きクーポン", minPay: 1000, used: false }
+];
 
-  // ギフトカードQR判定 (GIFT:金額:コード)
-  if (decodedText.startsWith("GIFT:")) {
-    const parts = decodedText.split(":");
-    if (parts.length >= 3) {
-      const giftAmount = parseInt(parts[1]) || 0;
-      const giftCode = parts[2];
+// クーポンデータを保存する共通関数
+function saveCoupons() {
+  localStorage.setItem('my_coupons', JSON.stringify(coupons));
+}
 
-      const userKey = currentUser || 'default';
-      let usedGifts = JSON.parse(localStorage.getItem(`used_gifts_${userKey}`) || '[]');
+// 2. クーポン一覧の描画（未使用のものだけを表示）
+function renderCoupons() {
+  const list = document.getElementById("coupon-list");
+  if (!list) return;
 
-      if (usedGifts.includes(giftCode)) {
-        playSound('error');
-        alert("⚠️ このギフトカードは既に使用されています。");
-        return;
-      }
+  // usedがfalse（未利用）のクーポンのみ抽出
+  const availableCoupons = coupons.filter(c => !c.used);
 
-      balance += giftAmount;
-      usedGifts.push(giftCode);
-
-      localStorage.setItem(`used_gifts_${userKey}`, JSON.stringify(usedGifts));
-      addTransaction('残高', giftAmount, `ギフトカード適用 (${giftCode})`);
-      updateDisplay();
-
-      playSound('win');
-      alert(`🎁 ギフトカードチャージ完了！\n\n${giftAmount.toLocaleString()}円 が残高に追加されました。`);
-    } else {
-      playSound('error');
-      alert("⚠️ 無効なギフトカードQRコードです");
-    }
+  if (availableCoupons.length === 0) {
+    list.innerHTML = '<div style="color:#aaa; text-align:center; padding:15px;">利用可能なクーポンはありません</div>';
     return;
   }
 
-  // --- 以下、既存のPAY:やSEND:の判定処理 ---
+  list.innerHTML = availableCoupons.map(c => `
+    <div style="background:#f8f9fa; border:1px solid #ddd; padding:10px; border-radius:8px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <div style="font-weight:bold; font-size:13px;">🎟️ ${c.title}</div>
+        <div style="font-size:11px; color:#666;">${c.minPay}円以上で使える</div>
+      </div>
+      <button class="small-btn" style="background:#28a745;" onclick="useCoupon(${c.id})">使う</button>
+    </div>
+  `).join('');
 }
 
+// 3. クーポンの使用処理（保存処理を追加）
+function useCoupon(id) {
+  const c = coupons.find(x => x.id === id);
+  if (c) {
+    c.used = true;
+    saveCoupons(); // ★ 変更を保存
+    playSound('win');
+    alert(`クーポン「${c.title}」を適用しました！`);
+    renderCoupons();
+    closeCouponModal();
+  }
+}
+
+// 4. 新しいクーポンを追加する処理（追加機能がある場合）
+function addCoupon(title, minPay) {
+  const newCoupon = {
+    id: Date.now(), // ユニークID
+    title: title,
+    minPay: minPay,
+    used: false
+  };
+  coupons.push(newCoupon);
+  saveCoupons(); // ★ 変更を保存
+  renderCoupons();
+}
+
+// 5. クーポンを削除する処理（削除機能がある場合）
+function deleteCoupon(id) {
+  coupons = coupons.filter(c => c.id !== id);
+  saveCoupons(); // ★ 変更を保存
+  renderCoupons();
+}
 
 
   </script>
