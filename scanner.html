@@ -445,6 +445,13 @@
 
 
 <script>
+
+  // スマホ画面にエラーを表示させるデバッグコード
+window.onerror = function(message, source, lineno, colno, error) {
+  alert("⚠️ エラーが発生しました:\n" + message + "\n(" + lineno + "行目)");
+  return false;
+};
+
   let currentUser = localStorage.getItem("paypay_login_user") || "";
   let balance = 0;
   let points = 0;
