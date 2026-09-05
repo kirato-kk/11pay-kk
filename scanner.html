@@ -1739,52 +1739,111 @@ function addPoints(pts, reason) {
   updatePointDOM();
 }
 
-// ガチャ用絵文字
-const gachaEmojis = ["🎁", "💎", "⭐", "🎉", "👑", "🍕", "🧸", "🔥", "✨", "💩"];
+// --- ポイント履歴を追加する共通関数 ---
+function addPointHistory(title, amount) {
+  const now = new Date();
+  const timeStr = `${now.getMonth() + 1}/${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+  
+  // ポイント用の履歴データを作成
+  const historyItem = {
+    title: title,
+    amount: amount, // 正の数は獲得、負の数は消費
+    date: timeStr,
+    isPoint: true // ポイント履歴フラグ
+  };
 
-// --- 3. ガチャ実行関数 ---
+  // アプリの取引履歴リスト（history / transactions等）へ追加
+  if (typeof transactions !== 'undefined' && Array.isArray(transactions)) {
+    transactions.unshift(historyItem);
+  } else if (typeof history !== 'undefined' && Array.isArray(history)) {
+    history.unshift(historyItem);
+  }
+
+  // 履歴表示DOMの更新処理があれば呼び出す
+  if (typeof renderHistory === 'function') renderHistory();
+  if (typeof updateHistoryUI === 'function') updateHistoryUI();
+}
+
+// --- ポイント画面表示の強制更新 ---
+function updatePointDOM() {
+  let currentPts = 0;
+  if (typeof userPoints !== 'undefined') currentPts = Number(userPoints) || 0;
+  else if (typeof points !== 'undefined') currentPts = Number(points) || 0;
+  else currentPts = Number(window.points) || 0;
+
+  // 1. 変数の同期
+  if (typeof userPoints !== 'undefined') userPoints = currentPts;
+  if (typeof points !== 'undefined') points = currentPts;
+  window.points = currentPts;
+
+  // 2. LocalStorageの更新
+  localStorage.setItem('userPoints', currentPts);
+
+  // 3. 画面上のポイント数値を直接すべて書き換える
+  const ptLabels = document.querySelectorAll('#user-points, #point-display, .point-val, .points-val');
+  ptLabels.forEach(el => { el.innerText = currentPts; });
+
+  // テキスト内に「ポイント: XX pt」がある要素を更新
+  const allNodes = document.querySelectorAll('*');
+  allNodes.forEach(node => {
+    if (node.children.length === 0 && node.innerText && node.innerText.includes('ポイント')) {
+      node.innerText = `ポイント: ${currentPts} pt`;
+    }
+  });
+}
+
+// --- ポイント加算関数 ---
+function addPoints(pts, reason) {
+  let currentPts = (typeof userPoints !== 'undefined') ? Number(userPoints) : (Number(window.points) || 0);
+  currentPts += Number(pts);
+
+  if (typeof userPoints !== 'undefined') userPoints = currentPts;
+  if (typeof points !== 'undefined') points = currentPts;
+  window.points = currentPts;
+
+  // 履歴に追加
+  addPointHistory(reason, `+${pts} pt`);
+  
+  // 表示更新
+  updatePointDOM();
+}
+
+// --- ガチャ実行関数 ---
 function playGacha() {
   const GACHA_COST = 200;
 
-  // ポイントを数値として正確に取得
+  // 現在のポイント取得
   let currentPts = 0;
-  if (typeof userPoints !== 'undefined') {
-    currentPts = Number(userPoints) || 0;
-  } else if (typeof points !== 'undefined') {
-    currentPts = Number(points) || 0;
-  } else {
-    currentPts = Number(window.points) || 0;
-  }
+  if (typeof userPoints !== 'undefined') currentPts = Number(userPoints) || 0;
+  else if (typeof points !== 'undefined') currentPts = Number(points) || 0;
+  else currentPts = Number(window.points) || 0;
 
-  // 所持ポイント判定
   if (currentPts < GACHA_COST) {
     alert(`ポイントが足りません！（必要: ${GACHA_COST}pt / 所持: ${currentPts}pt）`);
     return;
   }
 
-  // 200pt減算
+  // 200pt 減算処理
   currentPts -= GACHA_COST;
   if (typeof userPoints !== 'undefined') userPoints = currentPts;
   if (typeof points !== 'undefined') points = currentPts;
   window.points = currentPts;
 
-  localStorage.setItem('userPoints', currentPts);
-  updatePointDOM(); // ポイント表示更新
+  // ガチャプレイの履歴を追加
+  addPointHistory("ガチャプレイ", `-${GACHA_COST} pt`);
 
-  // メニューモーダルを閉じる
+  // 表示更新
+  updatePointDOM();
+
+  // モーダル表示
   closeGameMenuModal();
-
   const gachaModal = document.getElementById("gacha-modal");
   const display = document.getElementById("roulette-display");
   const status = document.getElementById("roulette-status");
   const closeBtn = document.getElementById("gacha-close-btn");
 
-  if (!gachaModal) {
-    alert("⚠️ gacha-modal が見つかりません。HTMLのIDを確認してください。");
-    return;
-  }
+  if (!gachaModal) return;
 
-  // モーダル強制表示
   gachaModal.classList.remove("hidden");
   gachaModal.setAttribute("style", "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); display:flex !important; justify-content:center; align-items:center; z-index:99999;");
   
@@ -1792,7 +1851,7 @@ function playGacha() {
   status.innerText = "何が出るかな...？";
   display.classList.add("spinning");
 
-  // ルーレットアニメーション
+  // ルーレット開始
   let counter = 0;
   const interval = setInterval(() => {
     const randomEmoji = gachaEmojis[Math.floor(Math.random() * gachaEmojis.length)];
@@ -1801,7 +1860,7 @@ function playGacha() {
     counter++;
   }, 100);
 
-  // 2.5秒後に停止・判定
+  // 結果確定
   setTimeout(() => {
     clearInterval(interval);
     display.classList.remove("spinning");
@@ -1812,23 +1871,23 @@ function playGacha() {
     let resultEmoji = "";
 
     if (rand < 5) {
-      prize = "🎊 1等：大当り！";
+      prize = "1等：大当り！";
       rewardPts = 1000;
       resultEmoji = "👑";
     } else if (rand < 20) {
-      prize = "🎉 2等：中当り！";
+      prize = "2等：中当り！";
       rewardPts = 500;
       resultEmoji = "💎";
     } else if (rand < 50) {
-      prize = "✨ 3等：小当り！";
+      prize = "3等：小当り！";
       rewardPts = 250;
       resultEmoji = "🎁";
     } else if (rand < 80) {
-      prize = "👍 4等：プチ当り";
+      prize = "4等：プチ当り";
       rewardPts = 100;
       resultEmoji = "⭐";
     } else {
-      prize = "😅 残念... ハズレ";
+      prize = "ハズレ";
       rewardPts = 0;
       resultEmoji = "💩";
     }
@@ -1838,12 +1897,12 @@ function playGacha() {
     closeBtn.style.display = "block";
 
     if (rewardPts > 0) {
-      addPoints(rewardPts, prize);
+      addPoints(rewardPts, `ガチャ景品(${prize})`);
     }
   }, 2500);
 }
 
-// ガチャモーダルを閉じる関数
+// モーダルを閉じる関数
 function closeGachaModal() {
   const gachaModal = document.getElementById("gacha-modal");
   if (gachaModal) {
