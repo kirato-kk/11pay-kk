@@ -281,7 +281,7 @@
     </svg>
     <span>GAME</span>
   </button>
-  <button class="nav-item" onclick="openScratchModal()">
+  <button class="nav-item" onclick="openGameMenuModal()">
     <svg class="nav-svg" viewBox="0 0 24 24" width="22" height="22">
       <path d="M22 10V6c0-1.11-.9-2-2-2H4c-1.1 0-1.99.89-1.99 2v4c1.1 0 1.99.9 1.99 2s-.89 2-2 2v4c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2v-4c-1.1 0-2-.9-2-2s.9-2 2-2zm-2-1.53c-1.19.69-2 1.97-2 3.53s.81 2.84 2 3.53V18H4v-2.47c1.19-.69 2-1.97 2-3.53s-.81-2.84-2-3.53V6h16v2.47z"/>
     </svg>
@@ -302,8 +302,6 @@
   </div>
 </div>
 
-<!-- トップ画面に追加するGAMEメインボタン -->
-<button type="button" class="game-menu-btn" onclick="openGameMenuModal()">🎮 GAME</button>
 
 <!-- 1階層目: GAMEメインメニュー -->
 <div id="game-menu-modal" class="modal-overlay hidden">
@@ -1531,16 +1529,21 @@
     }
   }
 
-  // --- ポイント加算処理 ---
+  // --- ポイント加算処理（ポイント専用） ---
 function addPoints(pts, reason) {
+  // 1. ポイント変数（userPoints または points）に優先して加算
   if (typeof userPoints !== 'undefined') {
     userPoints += pts;
+  } else if (typeof points !== 'undefined') {
+    points += pts;
   } else {
-    balance += pts;
+    // 変数が未定義の場合はグローバルに points を作成して管理
+    window.points = (window.points || 0) + pts;
   }
   
+  // 2. 履歴・表示の更新
   if (typeof addTransaction === 'function') {
-    addTransaction('ポイント', pts, reason);
+    addTransaction('ポイント獲得', pts, reason);
   }
   if (typeof updateDisplay === 'function') {
     updateDisplay();
@@ -1548,8 +1551,10 @@ function addPoints(pts, reason) {
   if (typeof playSound === 'function') {
     playSound('win');
   }
-  alert(`🎉 おめでとうございます！\n${reason}で ${pts}pt 獲得しました！`);
+  
+  alert(`🎉 おめでとうございます！\n${reason} で ${pts}pt を獲得しました！`);
 }
+
 
 // --- 画面遷移（モーダル制御） ---
 function openGameMenuModal() {
@@ -1573,22 +1578,67 @@ function closeGamePlayModal() {
   document.getElementById("game-play-modal").classList.add("hidden");
 }
 
-// --- 毎日ガチャ ---
+// --- ガチャ（200pt消費して回す） ---
 function playGacha() {
-  const today = new Date().toLocaleDateString();
-  const lastPlay = localStorage.getItem('last_gacha_date');
-  if (lastPlay === today) {
-    alert("⚠️ ガチャは1日1回までです。また明日遊んでね！");
+  const gachaCost = 200;
+
+  // ポイント（または残高）の判定処理
+  const currentPts = (typeof userPoints !== 'undefined') ? userPoints : balance;
+
+  if (currentPts < gachaCost) {
+    if (typeof playSound === 'function') playSound('error');
+    alert(`⚠️ ポイントが足りません！\nガチャを引くには ${gachaCost}pt 必要です。（現在の所持: ${currentPts}pt）`);
     return;
   }
-  localStorage.setItem('last_gacha_date', today);
-  
-  const rand = Math.random() * 100;
-  let pts = 10;
-  if (rand < 10) pts = 100;
-  else if (rand < 40) pts = 50;
 
-  addPoints(pts, "毎日ガチャ");
+  // 200ptを消費
+  if (typeof userPoints !== 'undefined') {
+    userPoints -= gachaCost;
+  } else {
+    balance -= gachaCost;
+  }
+
+  if (typeof addTransaction === 'function') {
+    addTransaction('ポイント消費', -gachaCost, 'ガチャプレイ');
+  }
+
+  // 景品（獲得ポイント）の確率判定
+  const rand = Math.random() * 100;
+  let rewardPts = 0;
+  let rankName = "";
+
+  if (rand < 5) {           // 5%の確率：大当たり (1,000pt)
+    rewardPts = 1000;
+    rankName = "🥇 1等 大当り！";
+  } else if (rand < 25) {   // 20%の確率：中当たり (500pt)
+    rewardPts = 500;
+    rankName = "🥈 2等 当たり！";
+  } else if (rand < 60) {   // 35%の確率：小当たり (200pt・トントン)
+    rewardPts = 200;
+    rankName = "🥉 3等 イーブン！";
+  } else {                 // 40%の確率：はずれ (50pt)
+    rewardPts = 50;
+    rankName = "😭 4等 残念...";
+  }
+
+  // 獲得ポイントを加算
+  if (typeof userPoints !== 'undefined') {
+    userPoints += rewardPts;
+  } else {
+    balance += rewardPts;
+  }
+
+  if (typeof addTransaction === 'function') {
+    addTransaction('ポイント', rewardPts, `ガチャ結果 (${rankName})`);
+  }
+  if (typeof updateDisplay === 'function') {
+    updateDisplay();
+  }
+  if (typeof playSound === 'function') {
+    playSound(rewardPts >= gachaCost ? 'win' : 'beep');
+  }
+
+  alert(`🎰 ガチャ結果 🎰\n\n【${rankName}】\n${rewardPts}pt を獲得しました！`);
 }
 
 // --- ゲーム起動分岐 ---
