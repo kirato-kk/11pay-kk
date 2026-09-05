@@ -191,6 +191,16 @@
   z-index: 9999; /* 他の要素より手前に表示 */
 }
 
+    /* ガチャ演出用スタイル */
+#roulette-display.spinning {
+  animation: rouletteBounce 0.15s infinite alternate;
+}
+
+@keyframes rouletteBounce {
+  from { transform: scale(0.95); }
+  to { transform: scale(1.05); }
+}
+
    
   </style>
 </head>
@@ -353,8 +363,24 @@
     <button type="button" class="secondary-btn" style="width:100%; padding:8px; border-radius:8px; border:1px solid #ccc; background:#fff; cursor:pointer;" onclick="closeGamePlayModal()">ゲームを辞める</button>
   </div>
 </div>
+<!-- ガチャ・ルーレット表示用モーダル -->
+<div id="gacha-modal" class="modal-overlay hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:none; justify-content:center; align-items:center; z-index:10000;">
+  <div class="modal-content" style="background:white; padding:25px; border-radius:16px; max-width:320px; width:85%; text-align:center; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
+    <h3 style="margin-top:0; color:#ff9800; font-size:20px;">🎰 ガチャルーレット</h3>
+    
+    <!-- 絵文字が回る表示エリア -->
+    <div id="roulette-display" style="font-size:72px; margin:20px 0; height:90px; line-height:90px; background:#f5f5f5; border-radius:12px; border:3px solid #ffb74d;">
+      ❓
+    </div>
+    
+    <p id="roulette-status" style="font-weight:bold; font-size:16px; color:#333; min-height:24px;">何が出るかな...？</p>
+
+    <button id="gacha-close-btn" type="button" class="secondary-btn" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; background:#fff; margin-top:10px; font-weight:bold; display:none;" onclick="closeGachaModal()">閉じる</button>
+  </div>
+</div>
 
 
+  
 <!-- スクラッチモーダル -->
 <div id="scratch-modal" class="modal-overlay hidden">
   <div class="modal-content">
@@ -1671,67 +1697,115 @@ function closeGamePlayModal() {
   document.getElementById("game-play-modal").classList.add("hidden");
 }
 
-// --- ガチャ（200pt消費して回す） ---
+// ガチャで使用する絵文字リスト
+const gachaEmojis = ["🎁", "💎", "⭐", "🎉", "👑", "🍕", "🧸", "🔥", "✨", "💩"];
+
+// ガチャ実行関数
 function playGacha() {
-  const gachaCost = 200;
+  const GACHA_COST = 200; // 消費ポイント
 
-  // ポイント（または残高）の判定処理
-  const currentPts = (typeof userPoints !== 'undefined') ? userPoints : balance;
-
-  if (currentPts < gachaCost) {
-    if (typeof playSound === 'function') playSound('error');
-    alert(`⚠️ ポイントが足りません！\nガチャを引くには ${gachaCost}pt 必要です。（現在の所持: ${currentPts}pt）`);
+  // ポイント残高チェック
+  let currentPts = (typeof userPoints !== 'undefined') ? userPoints : (window.points || 0);
+  if (currentPts < GACHA_COST) {
+    alert(`ポイントが足りません！（必要: ${GACHA_COST}pt）`);
     return;
   }
 
-  // 200ptを消費
+  // ポイントを減算（200pt）
   if (typeof userPoints !== 'undefined') {
-    userPoints -= gachaCost;
+    userPoints -= GACHA_COST;
+  } else if (typeof points !== 'undefined') {
+    points -= GACHA_COST;
   } else {
-    balance -= gachaCost;
+    window.points = (window.points || 0) - GACHA_COST;
   }
-
+  
   if (typeof addTransaction === 'function') {
-    addTransaction('ポイント消費', -gachaCost, 'ガチャプレイ');
-  }
-
-  // 景品（獲得ポイント）の確率判定
-  const rand = Math.random() * 100;
-  let rewardPts = 0;
-  let rankName = "";
-
-  if (rand < 5) {           // 5%の確率：大当たり (1,000pt)
-    rewardPts = 1000;
-    rankName = "🥇 1等 大当り！";
-  } else if (rand < 25) {   // 20%の確率：中当たり (500pt)
-    rewardPts = 500;
-    rankName = "🥈 2等 当たり！";
-  } else if (rand < 60) {   // 35%の確率：小当たり (200pt・トントン)
-    rewardPts = 200;
-    rankName = "🥉 3等 イーブン！";
-  } else {                 // 40%の確率：はずれ (50pt)
-    rewardPts = 50;
-    rankName = "😭 4等 残念...";
-  }
-
-  // 獲得ポイントを加算
-  if (typeof userPoints !== 'undefined') {
-    userPoints += rewardPts;
-  } else {
-    balance += rewardPts;
-  }
-
-  if (typeof addTransaction === 'function') {
-    addTransaction('ポイント', rewardPts, `ガチャ結果 (${rankName})`);
+    addTransaction('ガチャプレイ', -GACHA_COST, '1回200pt');
   }
   if (typeof updateDisplay === 'function') {
     updateDisplay();
   }
-  if (typeof playSound === 'function') {
-    playSound(rewardPts >= gachaCost ? 'win' : 'beep');
-  }
 
-  alert(`🎰 ガチャ結果 🎰\n\n【${rankName}】\n${rewardPts}pt を獲得しました！`);
+  // ガチャモーダルを表示
+  closeGameMenuModal(); // GAMEメインメニューを閉じる
+  const gachaModal = document.getElementById("gacha-modal");
+  const display = document.getElementById("roulette-display");
+  const status = document.getElementById("roulette-status");
+  const closeBtn = document.getElementById("gacha-close-btn");
+
+  gachaModal.classList.remove("hidden");
+  gachaModal.style.display = "flex";
+  closeBtn.style.display = "none";
+  status.innerText = "何が出るかな...？";
+  display.classList.add("spinning");
+
+  // --- ルーレットアニメーション処理 ---
+  let counter = 0;
+  const interval = setInterval(() => {
+    // ランダムに絵文字を切り替え
+    const randomEmoji = gachaEmojis[Math.floor(Math.random() * gachaEmojis.length)];
+    display.innerText = randomEmoji;
+    if (typeof playSound === 'function') playSound('beep');
+    counter++;
+  }, 100);
+
+  // 2.5秒後に停止して結果を確定
+  setTimeout(() => {
+    clearInterval(interval);
+    display.classList.remove("spinning");
+
+    // 結果の判定（確率設定）
+    const rand = Math.random() * 100;
+    let prize = "";
+    let rewardPts = 0;
+    let resultEmoji = "";
+
+    if (rand < 5) {         // 5% : 1等
+      prize = "🎊 1等：大当り！";
+      rewardPts = 1000;
+      resultEmoji = "👑";
+    } else if (rand < 20) { // 15% : 2等
+      prize = "🎉 2等：中当り！";
+      rewardPts = 500;
+      resultEmoji = "💎";
+    } else if (rand < 50) { // 30% : 3等
+      prize = "✨ 3等：小当り！";
+      rewardPts = 250;
+      resultEmoji = "🎁";
+    } else if (rand < 80) { // 30% : 4等
+      prize = "👍 4等：プチ当り";
+      rewardPts = 100;
+      resultEmoji = "⭐";
+    } else {                // 20% : 残念
+      prize = "😅 残念... ハズレ";
+      rewardPts = 0;
+      resultEmoji = "💩";
+    }
+
+    // 結果の表示
+    display.innerText = resultEmoji;
+    status.innerText = `${prize}\n${rewardPts > 0 ? '+' + rewardPts + 'pt 獲得！' : 'また挑戦してね！'}`;
+    closeBtn.style.display = "block";
+
+    // 獲得ポイントがあれば加算
+    if (rewardPts > 0) {
+      if (typeof addPoints === 'function') {
+        addPoints(rewardPts, prize);
+      }
+    } else {
+      if (typeof playSound === 'function') playSound('boo');
+    }
+  }, 2500); // 2.5秒間回る
+}
+
+// ガチャモーダルを閉じる関数
+function closeGachaModal() {
+  const gachaModal = document.getElementById("gacha-modal");
+  if (gachaModal) {
+    gachaModal.classList.add("hidden");
+    gachaModal.style.display = "none";
+  }
 }
 
 // --- ゲーム起動分岐 ---
