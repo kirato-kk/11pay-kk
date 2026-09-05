@@ -1090,9 +1090,10 @@
     }
   }
 
-  function onScanSuccess(decodedText) {
+    function onScanSuccess(decodedText) {
     playSound('beep');
     stopScanner(() => {
+      // 1. 送金の判定
       if (decodedText.startsWith("SEND:")) {
         const parts = decodedText.split(":");
         const senderUser = parts[1];
@@ -1113,6 +1114,32 @@
         return;
       }
 
+      // 2. クーポン追加の判定 (COUPON:タイトル:割引額:最低利用金額)
+      if (decodedText.startsWith("COUPON:")) {
+        const parts = decodedText.split(":");
+        if (parts.length >= 4) {
+          const title = parts[1];
+          const discount = parseInt(parts[2]) || 0;
+          const minPay = parseInt(parts[3]) || 0;
+
+          coupons.push({
+            id: Date.now(),
+            title: title,
+            discount: discount,
+            minPay: minPay,
+            used: false
+          });
+
+          playSound('win');
+          alert(`クーポンを獲得しました！\n\n【${title}】\n${discount}円引き (${minPay}円以上で利用可)`);
+        } else {
+          playSound('error');
+          alert("無効なクーポンQRコードです");
+        }
+        return;
+      }
+
+      // 3. チャージ・ポイント・決済の判定
       const isCharge = decodedText.startsWith("CHARGE_");
       const isPoint  = decodedText.startsWith("POINT_");
       const isPay    = decodedText.startsWith("PAY_");
@@ -1124,7 +1151,7 @@
         addTransaction('残高', amount, '残高チャージ');
         updateDisplay();
         playSound('win');
-        alert(`残高に ${amount.toLocaleString()}円 チャージされました！`);
+        alert(`残高に ${amount.toLocaleString()}円 チャージされました`);
       } 
       else if (isPoint) {
         points += amount;
@@ -1139,6 +1166,7 @@
       }
     });
   }
+
 
   function openPayConfirmModal() {
     document.getElementById("confirm-pay-amount").innerText = currentScanAmount.toLocaleString();
