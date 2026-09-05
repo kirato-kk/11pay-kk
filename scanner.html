@@ -100,6 +100,94 @@
     #qr-output-container img { width: 200px; height: 200px; border-radius: 10px; }
     
     .hidden { display: none !important; }
+
+    /* メインボタン・選択肢 */
+.game-menu-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #673ab7, #512da8);
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+  box-shadow: 0 4px 10px rgba(103, 58, 183, 0.25);
+}
+
+.game-select-btn {
+  width: 100%;
+  background: #f0f0ff;
+  border: 1px solid #d0d0ff;
+  color: #333;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.2s;
+}
+.game-select-btn:hover {
+  background: #e0e0ff;
+}
+
+/* 数字順タップ用 */
+.num-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  width: 100%;
+}
+.num-btn {
+  padding: 15px;
+  font-size: 18px;
+  font-weight: bold;
+  background: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* 神経衰弱用 */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  width: 100%;
+}
+.card-btn {
+  height: 50px;
+  font-size: 20px;
+  background: #673ab7;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* タイミングストップ用 */
+.timing-display {
+  font-size: 36px;
+  font-weight: bold;
+  color: #ff9800;
+  margin: 15px 0;
+  font-family: monospace;
+}
+.timing-btn {
+  width: 100%;
+  padding: 15px;
+  font-size: 18px;
+  font-weight: bold;
+  background: #e91e63;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
    
   </style>
 </head>
@@ -214,38 +302,59 @@
   </div>
 </div>
 
-<!-- GAMEモーダル -->
-<div id="game-modal" class="modal-overlay hidden">
-  <div class="modal-content">
+<!-- トップ画面に追加するGAMEメインボタン -->
+<button type="button" class="game-menu-btn" onclick="openGameMenuModal()">🎮 GAME</button>
+
+<!-- 1階層目: GAMEメインメニュー -->
+<div id="game-menu-modal" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width:350px; text-align:center;">
+    <h3 style="margin-top:0; color:#673ab7;">🎮 GAME</h3>
+    <p style="font-size:12px; color:#666;">遊んでポイントを獲得しよう！</p>
     
-    <div id="game-menu-select">
-      <h3>GAME MENU</h3>
-      <p style="font-size: 13px; color: #666; margin-bottom: 20px;">ゲームを選んでね！</p>
-      <button class="main-btn" style="margin-bottom: 12px; background: #28a745;" onclick="startTofuGameSelect()">豆腐タワーチャレンジ</button>
-      <button class="main-btn" style="background: #ff9900;" onclick="startGachaSelect()">ポイントガチャ</button>
-      <button class="secondary-btn" style="margin-top: 15px;" onclick="closeGameModal()">閉じる</button>
-    </div>
+    <button type="button" class="main-btn" style="background:#ff9800; margin-bottom:12px;" onclick="playGacha()">
+      🎰 毎日ガチャ (1日1回)
+    </button>
+    
+    <button type="button" class="main-btn" style="background:#673ab7; margin-bottom:15px;" onclick="openSubGameMenu()">
+      🕹️ ミニゲームいろいろ
+    </button>
 
-    <div id="game-tofu-screen" class="hidden">
-      <h3>豆腐タワーチャレンジ</h3>
-      <p style="font-size: 13px; color: #666; margin-bottom: 5px;">タップしてタイミングよく豆腐を重ねよう！</p>
-      <canvas id="game-canvas" width="300" height="300"></canvas>
-      <button class="secondary-btn" onclick="backToGameMenu()">メニューに戻る</button>
-    </div>
-
-    <div id="gacha-screen" class="hidden">
-      <h3>ポイントガチャ</h3>
-      <p style="font-size: 13px; color: #666; margin-bottom: 10px;">1回 200pt で運試し！</p>
-      
-      <div id="gacha-box" style="font-size: 40px; margin: 20px 0;">🎁</div>
-      <div id="gacha-result-text" style="font-size: 18px; font-weight: bold; color: #ff0033; min-height: 28px; margin-bottom: 15px;"></div>
-
-      <button id="gacha-draw-btn" class="main-btn" style="background: #ff9900;" onclick="playGacha()">ガチャを回す (200pt)</button>
-      <button class="secondary-btn" style="margin-top: 10px;" onclick="backToGameMenu()">メニューに戻る</button>
-    </div>
-
+    <button type="button" class="secondary-btn" onclick="closeGameMenuModal()">閉じる</button>
   </div>
 </div>
+
+<!-- 2階層目: ミニゲーム一覧選択画面 -->
+<div id="sub-game-menu-modal" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width:350px; text-align:center;">
+    <h3 style="margin-top:0; color:#673ab7;">🕹️ ミニゲームいろいろ</h3>
+    <p style="font-size:12px; color:#666;">プレイしたいゲームを選んでね！</p>
+
+    <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:15px;">
+      <button type="button" class="game-select-btn" onclick="startGame('tofu')">⬜ 豆腐ゲーム</button>
+      <button type="button" class="game-select-btn" onclick="startGame('janken')">✊✌️✋ じゃんけんゲーム</button>
+      <button type="button" class="game-select-btn" onclick="startGame('highlow')">🔢 ハイ＆ロー</button>
+      <button type="button" class="game-select-btn" onclick="startGame('memory')">🎴 神経衰弱</button>
+      <button type="button" class="game-select-btn" onclick="startGame('numberTap')">1️⃣2️⃣3️⃣ 数字順タップ</button>
+      <button type="button" class="game-select-btn" onclick="startGame('timing')">⏱️ タイミングストップ</button>
+    </div>
+
+    <button type="button" class="secondary-btn" onclick="backToGameMenu()">戻る</button>
+  </div>
+</div>
+
+<!-- 3階層目: 共通ゲームプレイ画面 -->
+<div id="game-play-modal" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width:350px; text-align:center;">
+    <h3 id="game-title" style="margin-top:0; color:#673ab7;">ゲームタイトル</h3>
+    
+    <div id="game-container" style="background:#f9f9f9; border-radius:10px; padding:15px; margin:15px 0; min-height:180px; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+      <!-- JavaScriptでコンテンツを動的に生成 -->
+    </div>
+
+    <button type="button" class="secondary-btn" onclick="closeGamePlayModal()">ゲームを辞める</button>
+  </div>
+</div>
+
 
 <!-- スクラッチモーダル -->
 <div id="scratch-modal" class="modal-overlay hidden">
@@ -1421,6 +1530,267 @@
       alert("❌ パスワードが違います。");
     }
   }
+
+  // --- ポイント加算処理 ---
+function addPoints(pts, reason) {
+  if (typeof userPoints !== 'undefined') {
+    userPoints += pts;
+  } else {
+    balance += pts;
+  }
+  
+  if (typeof addTransaction === 'function') {
+    addTransaction('ポイント', pts, reason);
+  }
+  if (typeof updateDisplay === 'function') {
+    updateDisplay();
+  }
+  if (typeof playSound === 'function') {
+    playSound('win');
+  }
+  alert(`🎉 おめでとうございます！\n${reason}で ${pts}pt 獲得しました！`);
+}
+
+// --- 画面遷移（モーダル制御） ---
+function openGameMenuModal() {
+  document.getElementById("game-menu-modal").classList.remove("hidden");
+}
+function closeGameMenuModal() {
+  document.getElementById("game-menu-modal").classList.add("hidden");
+}
+function openSubGameMenu() {
+  closeGameMenuModal();
+  document.getElementById("sub-game-menu-modal").classList.remove("hidden");
+}
+function backToGameMenu() {
+  document.getElementById("sub-game-menu-modal").classList.add("hidden");
+  openGameMenuModal();
+}
+function closeGamePlayModal() {
+  if (typeof timingTimer !== 'undefined' && timingTimer) {
+    clearInterval(timingTimer);
+  }
+  document.getElementById("game-play-modal").classList.add("hidden");
+}
+
+// --- 毎日ガチャ ---
+function playGacha() {
+  const today = new Date().toLocaleDateString();
+  const lastPlay = localStorage.getItem('last_gacha_date');
+  if (lastPlay === today) {
+    alert("⚠️ ガチャは1日1回までです。また明日遊んでね！");
+    return;
+  }
+  localStorage.setItem('last_gacha_date', today);
+  
+  const rand = Math.random() * 100;
+  let pts = 10;
+  if (rand < 10) pts = 100;
+  else if (rand < 40) pts = 50;
+
+  addPoints(pts, "毎日ガチャ");
+}
+
+// --- ゲーム起動分岐 ---
+function startGame(type) {
+  document.getElementById("sub-game-menu-modal").classList.add("hidden");
+  document.getElementById("game-play-modal").classList.remove("hidden");
+  const container = document.getElementById("game-container");
+  const title = document.getElementById("game-title");
+
+  if (type === 'tofu') {
+    title.innerText = "⬜ 豆腐ゲーム";
+    container.innerHTML = `
+      <p style="font-size:13px; color:#555;">豆腐を切ってポイントゲット！</p>
+      <button class="main-btn" style="background:#4caf50;" onclick="addPoints(20, '豆腐ゲームクリア'); closeGamePlayModal();">豆腐を切る！</button>
+    `;
+  } 
+  else if (type === 'janken') {
+    title.innerText = "✊✌️✋ じゃんけん";
+    container.innerHTML = `
+      <p style="margin-bottom:15px; font-size:13px;">の手を選んでね！</p>
+      <div style="display:flex; gap:10px; width:100%;">
+        <button class="main-btn" onclick="playJanken('グー')">✊</button>
+        <button class="main-btn" onclick="playJanken('チョキ')">✌️</button>
+        <button class="main-btn" onclick="playJanken('パー')">✋</button>
+      </div>`;
+  }
+  else if (type === 'highlow') {
+    title.innerText = "🔢 ハイ＆ロー";
+    initHighLow();
+  }
+  else if (type === 'memory') {
+    title.innerText = "🎴 神経衰弱";
+    initMemoryGame();
+  }
+  else if (type === 'numberTap') {
+    title.innerText = "1️⃣2️⃣3️⃣ 数字順タップ";
+    initNumberTap();
+  }
+  else if (type === 'timing') {
+    title.innerText = "⏱️ タイミングストップ";
+    initTimingGame();
+  }
+}
+
+// --- 1. じゃんけんゲーム ---
+function playJanken(userChoice) {
+  const hands = ['グー', 'チョキ', 'パー'];
+  const cpuChoice = hands[Math.floor(Math.random() * 3)];
+  if (userChoice === cpuChoice) {
+    alert(`相手: ${cpuChoice}\n引き分け！もう一度！`);
+  } else if (
+    (userChoice === 'グー' && cpuChoice === 'チョキ') ||
+    (userChoice === 'チョキ' && cpuChoice === 'パー') ||
+    (userChoice === 'パー' && cpuChoice === 'グー')
+  ) {
+    addPoints(30, `じゃんけん勝利 (相手:${cpuChoice})`);
+    closeGamePlayModal();
+  } else {
+    alert(`相手: ${cpuChoice}\n負けました...`);
+    closeGamePlayModal();
+  }
+}
+
+// --- 2. ハイ＆ロー ---
+let currentNum = 0;
+function initHighLow() {
+  currentNum = Math.floor(Math.random() * 9) + 1;
+  document.getElementById("game-container").innerHTML = `
+    <div style="font-size:14px;">現在の数字:</div>
+    <div style="font-size:36px; font-weight:bold; color:#ff9800; margin:10px 0;">${currentNum}</div>
+    <p style="font-size:12px; color:#666;">次の数字はこれより高い？低い？(1〜9)</p>
+    <div style="display:flex; gap:10px; width:100%;">
+      <button class="main-btn" style="background:#4caf50;" onclick="checkHighLow('HIGH')">HIGH (高い)</button>
+      <button class="main-btn" style="background:#f44336;" onclick="checkHighLow('LOW')">LOW (低い)</button>
+    </div>`;
+}
+function checkHighLow(choice) {
+  const nextNum = Math.floor(Math.random() * 9) + 1;
+  let win = false;
+  if (choice === 'HIGH' && nextNum > currentNum) win = true;
+  if (choice === 'LOW' && nextNum < currentNum) win = true;
+
+  if (win) {
+    addPoints(30, `ハイ＆ロー正解 (次:${nextNum})`);
+  } else {
+    alert(`残念！次の数字は ${nextNum} でした。`);
+  }
+  closeGamePlayModal();
+}
+
+// --- 3. 神経衰弱 ---
+let cards = [], flipped = [], matched = 0;
+function initMemoryGame() {
+  cards = ['🍎', '🍎', '🍌', '🍌', '🍇', '🍇'].sort(() => Math.random() - 0.5);
+  flipped = [];
+  matched = 0;
+  renderMemoryGrid();
+}
+function renderMemoryGrid() {
+  let html = '<div class="card-grid">';
+  cards.forEach((symbol, idx) => {
+    const isFlipped = flipped.includes(idx) || cards[idx] === 'DONE';
+    html += `<button class="card-btn" onclick="flipCard(${idx})">${isFlipped ? (symbol === 'DONE' ? '✨' : symbol) : '❓'}</button>`;
+  });
+  html += '</div>';
+  document.getElementById("game-container").innerHTML = html;
+}
+function flipCard(idx) {
+  if (flipped.length >= 2 || flipped.includes(idx) || cards[idx] === 'DONE') return;
+  flipped.push(idx);
+  renderMemoryGrid();
+
+  if (flipped.length === 2) {
+    const [first, second] = flipped;
+    if (cards[first] === cards[second]) {
+      cards[first] = 'DONE';
+      cards[second] = 'DONE';
+      matched += 2;
+      flipped = [];
+      renderMemoryGrid();
+      if (matched === cards.length) {
+        setTimeout(() => {
+          addPoints(50, '神経衰弱クリア');
+          closeGamePlayModal();
+        }, 300);
+      }
+    } else {
+      setTimeout(() => {
+        flipped = [];
+        renderMemoryGrid();
+      }, 800);
+    }
+  }
+}
+
+// --- 4. 数字順タップ ---
+let currentTarget = 1;
+function initNumberTap() {
+  currentTarget = 1;
+  const nums = [1, 2, 3, 4, 5, 6].sort(() => Math.random() - 0.5);
+  let html = `<div style="margin-bottom:10px; font-size:14px;">次を押してね: <b style="color:#e91e63; font-size:20px;">${currentTarget}</b></div><div class="num-grid">`;
+  nums.forEach(n => {
+    html += `<button class="num-btn" onclick="tapNum(${n})">${n}</button>`;
+  });
+  html += '</div>';
+  document.getElementById("game-container").innerHTML = html;
+}
+function tapNum(num) {
+  if (num === currentTarget) {
+    currentTarget++;
+    if (currentTarget > 6) {
+      addPoints(40, '数字順タップクリア');
+      closeGamePlayModal();
+    } else {
+      document.querySelector("#game-container b").innerText = currentTarget;
+    }
+  } else {
+    alert("順番が違います！1から順番にタップしてね。");
+    initNumberTap();
+  }
+}
+
+// --- 5. タイミングストップ ---
+let timingTimer = null;
+let timingTime = 0;
+let timingRunning = false;
+
+function initTimingGame() {
+  timingTime = 0;
+  timingRunning = true;
+  
+  document.getElementById("game-container").innerHTML = `
+    <p style="font-size:13px; color:#555; margin:0;"><b>7.77秒</b> ピッタリで止めよう！</p>
+    <div id="timing-val" class="timing-display">0.00</div>
+    <button id="timing-stop-btn" class="timing-btn" onclick="stopTimingGame()">ストップ！</button>
+  `;
+
+  timingTimer = setInterval(() => {
+    timingTime += 0.01;
+    const displayVal = timingTime.toFixed(2);
+    const el = document.getElementById("timing-val");
+    if (el) el.innerText = displayVal;
+  }, 10);
+}
+
+function stopTimingGame() {
+  if (!timingRunning) return;
+  timingRunning = false;
+  clearInterval(timingTimer);
+
+  const finalTime = parseFloat(timingTime.toFixed(2));
+  const diff = Math.abs(finalTime - 7.77);
+
+  if (diff === 0) {
+    addPoints(100, `ピッタリ賞！(${finalTime.toFixed(2)}秒)`);
+  } else if (diff <= 0.15) {
+    addPoints(30, `惜しい！ (${finalTime.toFixed(2)}秒)`);
+  } else {
+    alert(`結果: ${finalTime.toFixed(2)}秒\n目標は7.77秒でした！また挑戦してね。`);
+  }
+  closeGamePlayModal();
+}
 
   </script>
 </body>
