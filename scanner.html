@@ -1697,15 +1697,9 @@ function closeGamePlayModal() {
   document.getElementById("game-play-modal").classList.add("hidden");
 }
 
-// ガチャで使用する絵文字リスト
-const gachaEmojis = ["🎁", "💎", "⭐", "🎉", "👑", "🍕", "🧸", "🔥", "✨", "💩"];
-
-
-// --- ガチャ実行関数（型変換・安全判定版） ---
-function playGacha() {
-  const GACHA_COST = 200; // 200pt
-
-  // 1. ポイントの値を確実に数値(Number)として取得
+  // --- 1. ポイント表示のみを更新する関数（エラー解消用） ---
+function updatePointDOM() {
+  // アプリ全体でポイント管理に使われている変数から最新値を取得
   let currentPts = 0;
   if (typeof userPoints !== 'undefined') {
     currentPts = Number(userPoints) || 0;
@@ -1715,30 +1709,69 @@ function playGacha() {
     currentPts = Number(window.points) || 0;
   }
 
-  // 2. 判定（数値同士で比較）
+  // 「ポイント: XXX pt」と書かれているHTML要素の表示を直接書き換え
+  const allElements = document.querySelectorAll('*');
+  allElements.forEach(el => {
+    if (el.children.length === 0 && el.innerText && el.innerText.includes('ポイント')) {
+      el.innerText = `ポイント: ${currentPts} pt`;
+    }
+  });
+}
+
+// --- 2. ポイント加算処理（残高・円は一切変更しない仕様） ---
+function addPoints(pts, reason) {
+  let currentPts = 0;
+  if (typeof userPoints !== 'undefined') {
+    userPoints = (Number(userPoints) || 0) + Number(pts);
+    currentPts = userPoints;
+  } else if (typeof points !== 'undefined') {
+    points = (Number(points) || 0) + Number(pts);
+    currentPts = points;
+  } else {
+    window.points = (Number(window.points) || 0) + Number(pts);
+    currentPts = window.points;
+  }
+
+  // LocalStorageに保存
+  localStorage.setItem('userPoints', currentPts);
+
+  // 画面のポイント表記だけを更新
+  updatePointDOM();
+}
+
+// ガチャ用絵文字
+const gachaEmojis = ["🎁", "💎", "⭐", "🎉", "👑", "🍕", "🧸", "🔥", "✨", "💩"];
+
+// --- 3. ガチャ実行関数 ---
+function playGacha() {
+  const GACHA_COST = 200;
+
+  // ポイントを数値として正確に取得
+  let currentPts = 0;
+  if (typeof userPoints !== 'undefined') {
+    currentPts = Number(userPoints) || 0;
+  } else if (typeof points !== 'undefined') {
+    currentPts = Number(points) || 0;
+  } else {
+    currentPts = Number(window.points) || 0;
+  }
+
+  // 所持ポイント判定
   if (currentPts < GACHA_COST) {
     alert(`ポイントが足りません！（必要: ${GACHA_COST}pt / 所持: ${currentPts}pt）`);
     return;
   }
 
-  // 3. ポイントを減算して変数に書き戻す
+  // 200pt減算
   currentPts -= GACHA_COST;
+  if (typeof userPoints !== 'undefined') userPoints = currentPts;
+  if (typeof points !== 'undefined') points = currentPts;
+  window.points = currentPts;
 
-  if (typeof userPoints !== 'undefined') {
-    userPoints = currentPts;
-  } else if (typeof points !== 'undefined') {
-    points = currentPts;
-  } else {
-    window.points = currentPts;
-  }
-
-  // LocalStorageに保存（使用している場合）
   localStorage.setItem('userPoints', currentPts);
-  
-  // ポイント表示を直接更新
-  updatePointDOM();
+  updatePointDOM(); // ポイント表示更新
 
-  // 4. ガチャモーダルの表示処理へ続く...
+  // メニューモーダルを閉じる
   closeGameMenuModal();
 
   const gachaModal = document.getElementById("gacha-modal");
@@ -1747,10 +1780,11 @@ function playGacha() {
   const closeBtn = document.getElementById("gacha-close-btn");
 
   if (!gachaModal) {
-    alert("⚠️ gacha-modal が見つかりません。");
+    alert("⚠️ gacha-modal が見つかりません。HTMLのIDを確認してください。");
     return;
   }
 
+  // モーダル強制表示
   gachaModal.classList.remove("hidden");
   gachaModal.setAttribute("style", "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); display:flex !important; justify-content:center; align-items:center; z-index:99999;");
   
@@ -1758,7 +1792,7 @@ function playGacha() {
   status.innerText = "何が出るかな...？";
   display.classList.add("spinning");
 
-  // --- ルーレット処理 ---
+  // ルーレットアニメーション
   let counter = 0;
   const interval = setInterval(() => {
     const randomEmoji = gachaEmojis[Math.floor(Math.random() * gachaEmojis.length)];
@@ -1767,6 +1801,7 @@ function playGacha() {
     counter++;
   }, 100);
 
+  // 2.5秒後に停止・判定
   setTimeout(() => {
     clearInterval(interval);
     display.classList.remove("spinning");
@@ -1809,14 +1844,6 @@ function playGacha() {
 }
 
 
-// ガチャモーダルを閉じる関数
-function closeGachaModal() {
-  const gachaModal = document.getElementById("gacha-modal");
-  if (gachaModal) {
-    gachaModal.classList.add("hidden");
-    gachaModal.style.display = "none";
-  }
-}
 
 
 // --- ゲーム起動分岐 ---
