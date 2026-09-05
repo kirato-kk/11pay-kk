@@ -1561,8 +1561,15 @@ function addPoints(pts, reason) {
 
 // --- 画面遷移（モーダル制御） ---
 function openGameMenuModal() {
-  document.getElementById("game-menu-modal").classList.remove("hidden");
+  alert("ボタンが押されました！");
+  const modal = document.getElementById("game-menu-modal");
+  console.log("取得したモーダル要素:", modal);
+  if (modal) {
+    modal.classList.remove("hidden");
+    modal.style.display = "flex"; // CSSクラスに関わらず強制的に画面表示してみる
+  }
 }
+
 function closeGameMenuModal() {
   document.getElementById("game-menu-modal").classList.add("hidden");
 }
