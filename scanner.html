@@ -100,6 +100,24 @@
     #qr-output-container img { width: 200px; height: 200px; border-radius: 10px; }
     
     .hidden { display: none !important; }
+    /* モーダルの表示制御CSS */
+.hidden {
+  display: none !important;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
   </style>
 </head>
 <body>
@@ -203,22 +221,7 @@
     <span>SCRATCH</span>
   </button>
 </div>
-    <!-- ギフトカード入力モーダル -->
-<div id="gift-modal" class="modal hidden">
-  <div class="modal-content" style="max-width:320px; background:#fff; padding:20px; border-radius:16px; text-align:center;">
-    <h3 style="margin-top:0; color:#ff9800;">ギフトカードチャージ</h3>
-    <p style="font-size:12px; color:#666; margin-bottom:15px;">カード裏面に記載のコードを入力してください</p>
-    
-    <input type="text" id="gift-code-input" placeholder="例: GFT-1000-AAAA" style="width:100%; padding:12px; font-size:16px; font-weight:bold; text-align:center; text-transform:uppercase; border:2px solid #ff9800; border-radius:8px; box-sizing:border-box;">
-
-    <button onclick="submitGiftCode()" style="width:100%; padding:12px; margin-top:15px; background:#ff9800; color:white; border:none; border-radius:8px; font-weight:bold; font-size:15px; cursor:pointer;">
-      チャージする
-    </button>
-    <button onclick="closeGiftModal()" style="width:100%; padding:10px; margin-top:8px; background:#6c757d; color:white; border:none; border-radius:8px; font-size:12px; cursor:pointer;">
-      閉じる
-    </button>
-  </div>
-</div>
+  
 
 <!-- クーポンモーダル -->
 <div id="coupon-modal" class="modal-overlay hidden">
@@ -1437,7 +1440,24 @@
       alert("❌ パスワードが違います。");
     }
   }
-  // 有効なギフトコードリスト（コード名: 金額）
+ <!-- ギフトカード入力モーダル -->
+<div id="gift-modal" class="modal hidden">
+  <div class="modal-content" style="max-width:320px; background:#fff; padding:20px; border-radius:16px; text-align:center;">
+    <h3 style="margin-top:0; color:#ff9800;">🎁 ギフトカードチャージ</h3>
+    <p style="font-size:12px; color:#666; margin-bottom:15px;">カード裏面に記載のコードを入力してください</p>
+    
+    <input type="text" id="gift-code-input" placeholder="例: GFT-1000-AAAA" style="width:100%; padding:12px; font-size:16px; font-weight:bold; text-align:center; text-transform:uppercase; border:2px solid #ff9800; border-radius:8px; box-sizing:border-box;">
+
+    <button type="button" onclick="submitGiftCode()" style="width:100%; padding:12px; margin-top:15px; background:#ff9800; color:white; border:none; border-radius:8px; font-weight:bold; font-size:15px; cursor:pointer;">
+      チャージする
+    </button>
+    <button type="button" onclick="closeGiftModal()" style="width:100%; padding:10px; margin-top:8px; background:#6c757d; color:white; border:none; border-radius:8px; font-size:12px; cursor:pointer;">
+      閉じる
+    </button>
+  </div>
+</div>
+
+    // 有効なギフトコードリスト（コード名: 金額）
   const validGiftCodes = {
     "GFT-1000-AAAA": 1000,
     "GFT-3000-BBBB": 3000,
@@ -1451,7 +1471,7 @@
     const input = document.getElementById("gift-code-input");
     
     if (!modal) {
-      alert("エラー: ギフトカードモーダル(gift-modal)がHTML内に見つかりません。");
+      alert("エラー: ギフトカードモーダル(gift-modal)が見つかりません。");
       return;
     }
     
@@ -1479,7 +1499,6 @@
       return;
     }
 
-    // ユーザー名の取得（未定義の場合は 'default'）
     const userKey = (typeof currentUser !== 'undefined') ? currentUser : 'default';
 
     // 1. 使用済み重複チェック
@@ -1494,14 +1513,12 @@
     if (validGiftCodes.hasOwnProperty(code)) {
       const amount = validGiftCodes[code];
 
-      // balanceの加算
       if (typeof balance !== 'undefined') {
         balance += amount;
       }
 
       usedGifts.push(code);
 
-      // 保存と画面更新
       localStorage.setItem(`used_gifts_${userKey}`, JSON.stringify(usedGifts));
       
       if (typeof addTransaction === 'function') {
@@ -1520,6 +1537,7 @@
       alert("❌ 無効なギフトコードです。コードを確認してください。");
     }
   }
+
 
 
 
