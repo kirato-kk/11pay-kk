@@ -1978,6 +1978,92 @@ function playGacha() {
     } else if (rand < 50) {
       prize = "✨ 3等：小当り！";
       rewardPts = 250;
+// --- ガチャ実行関数（型変換・安全判定版） ---
+function playGacha() {
+  const GACHA_COST = 200; // 200pt
+
+  // 1. ポイントの値を確実に数値(Number)として取得
+  let currentPts = 0;
+  if (typeof userPoints !== 'undefined') {
+    currentPts = Number(userPoints) || 0;
+  } else if (typeof points !== 'undefined') {
+    currentPts = Number(points) || 0;
+  } else {
+    currentPts = Number(window.points) || 0;
+  }
+
+  // 2. 判定（数値同士で比較）
+  if (currentPts < GACHA_COST) {
+    alert(`ポイントが足りません！（必要: ${GACHA_COST}pt / 所持: ${currentPts}pt）`);
+    return;
+  }
+
+  // 3. ポイントを減算して変数に書き戻す
+  currentPts -= GACHA_COST;
+
+  if (typeof userPoints !== 'undefined') {
+    userPoints = currentPts;
+  } else if (typeof points !== 'undefined') {
+    points = currentPts;
+  } else {
+    window.points = currentPts;
+  }
+
+  // LocalStorageに保存（使用している場合）
+  localStorage.setItem('userPoints', currentPts);
+  
+  // ポイント表示を直接更新
+  updatePointDOM();
+
+  // 4. ガチャモーダルの表示処理へ続く...
+  closeGameMenuModal();
+
+  const gachaModal = document.getElementById("gacha-modal");
+  const display = document.getElementById("roulette-display");
+  const status = document.getElementById("roulette-status");
+  const closeBtn = document.getElementById("gacha-close-btn");
+
+  if (!gachaModal) {
+    alert("⚠️ gacha-modal が見つかりません。");
+    return;
+  }
+
+  gachaModal.classList.remove("hidden");
+  gachaModal.setAttribute("style", "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); display:flex !important; justify-content:center; align-items:center; z-index:99999;");
+  
+  closeBtn.style.display = "none";
+  status.innerText = "何が出るかな...？";
+  display.classList.add("spinning");
+
+  // --- ルーレット処理 ---
+  let counter = 0;
+  const interval = setInterval(() => {
+    const randomEmoji = gachaEmojis[Math.floor(Math.random() * gachaEmojis.length)];
+    display.innerText = randomEmoji;
+    if (typeof playSound === 'function') playSound('beep');
+    counter++;
+  }, 100);
+
+  setTimeout(() => {
+    clearInterval(interval);
+    display.classList.remove("spinning");
+
+    const rand = Math.random() * 100;
+    let prize = "";
+    let rewardPts = 0;
+    let resultEmoji = "";
+
+    if (rand < 5) {
+      prize = "🎊 1等：大当り！";
+      rewardPts = 1000;
+      resultEmoji = "👑";
+    } else if (rand < 20) {
+      prize = "🎉 2等：中当り！";
+      rewardPts = 500;
+      resultEmoji = "💎";
+    } else if (rand < 50) {
+      prize = "✨ 3等：小当り！";
+      rewardPts = 250;
       resultEmoji = "🎁";
     } else if (rand < 80) {
       prize = "👍 4等：プチ当り";
