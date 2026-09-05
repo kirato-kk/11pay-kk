@@ -530,31 +530,37 @@
     document.getElementById("coupon-modal").classList.add("hidden");
   }
 
-    // クーポン一覧の描画関数
+      // クーポン一覧の描画関数
   function renderCoupons() {
     const listEl = document.getElementById("coupon-list");
     if (!listEl) return;
 
+    // 未使用のクーポンだけ抽出
     const activeCoupons = coupons.filter(c => !c.used);
 
     if (activeCoupons.length === 0) {
-      listEl.innerHTML = '<div style="color:#999; padding:15px; font-size:13px;">利用可能なクーポンはありません</div>';
+      listEl.innerHTML = '<div style="color:#999; padding:15px; font-size:13px; text-align:center;">利用可能なクーポンはありません</div>';
       return;
     }
 
-    listEl.innerHTML = activeCoupons.map(c => `
-      <div style="background:#f8f9fa; border:1px solid #ddd; border-radius:8px; padding:10px; margin-bottom:8px; text-align:left; display:flex; justify-content:space-between; align-items:center;">
-        <div>
-          <div style="font-weight:bold; font-size:14px; color:#333;">🎟️ ${c.title}</div>
-          <div style="font-size:12px; color:#666;">${c.discount}円引き (${c.minPay}円以上で利用可)</div>
-        </div>
-        <button onclick="deleteSingleCouponWithPass(${c.id})" style="background:#dc3545; color:white; border:none; padding:5px 8px; border-radius:4px; font-size:11px; cursor:pointer; shrink:0;">
-          削除
-        </button>
-      </div>
-    `).join('');
-  }
+    listEl.innerHTML = activeCoupons.map(c => {
+      // IDが存在しない場合のフォールバック（自動生成）
+      const couponId = c.id || Date.now();
+      c.id = couponId;
 
+      return `
+        <div style="background:#f8f9fa; border:1px solid #ddd; border-radius:8px; padding:10px; margin-bottom:8px; text-align:left; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-weight:bold; font-size:14px; color:#333;">🎟️ ${c.title}</div>
+            <div style="font-size:12px; color:#666;">${c.discount}円引き (${c.minPay}円以上で利用可)</div>
+          </div>
+          <button type="button" onclick="deleteSingleCouponWithPass(${couponId})" style="background:#dc3545; color:white; border:none; padding:6px 10px; border-radius:4px; font-size:12px; cursor:pointer; flex-shrink:0; margin-left:10px;">
+            削除
+          </button>
+        </div>
+      `;
+    }).join('');
+  }
 
   function selectCoupon(id) {
     const coupon = coupons.find(c => c.id === id);
@@ -1348,32 +1354,32 @@
     renderTransactions();
   }
 
-      // (ここには既存のいろんな関数があります)
+  function deleteSingleCouponWithPass(couponId) {
+    const ADMIN_PASS = "1111"; // パスワード
 
-    // ... 既存のコード ...
+    const inputPass = prompt("このクーポンを削除するにはパスワードが必要です:\nパスワードを入力してください");
 
-    // ★★★ ここ（</script> の直前）に「2のコード」をそのまま貼り付けます ★★★
-    function deleteSingleCouponWithPass(couponId) {
-      const ADMIN_PASS = "1111"; // 暗証番号
+    if (inputPass === null) return; // キャンセル時
 
-      const inputPass = prompt("このクーポンを削除するにはパスワードが必要です:\nパスワードを入力してください");
-
-      if (inputPass === null) return;
-
-      if (inputPass === ADMIN_PASS) {
-        coupons = coupons.filter(c => c.id !== couponId);
-        localStorage.setItem(`coupons_${currentUser}`, JSON.stringify(coupons));
-        
-        playSound('beep');
-        alert("🗑️ クーポンを削除しました。");
-        
-        renderCoupons();
-        updateDisplay();
-      } else {
-        playSound('error');
-        alert("❌ パスワードが違います。");
-      }
+    if (inputPass === ADMIN_PASS) {
+      // == を使うことで数字と文字列のID両方に対応
+      coupons = coupons.filter(c => c.id != couponId);
+      
+      // ローカルストレージを保存
+      localStorage.setItem(`coupons_${currentUser}`, JSON.stringify(coupons));
+      
+      playSound('beep');
+      alert("🗑️ クーポンを削除しました。");
+      
+      // 再描画
+      renderCoupons();
+      updateDisplay();
+    } else {
+      playSound('error');
+      alert("❌ パスワードが違います。");
     }
+  }
+
 
   </script>
 </body>
