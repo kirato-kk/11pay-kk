@@ -305,6 +305,54 @@
   </div>
 </div>
 
+<!-- 1階層目: GAMEメインメニューモーダル -->
+<div id="game-menu-modal" class="modal-overlay hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index:9999;">
+  <div class="modal-content" style="background:white; padding:20px; border-radius:12px; max-width:350px; width:90%; text-align:center;">
+    <h3 style="margin-top:0; color:#673ab7;">🎮 GAME</h3>
+    <p style="font-size:12px; color:#666;">遊んでポイントを獲得しよう！</p>
+    
+    <button type="button" class="main-btn" style="background:#ff9800; margin-bottom:12px; width:100%; padding:10px; border-radius:8px; border:none; color:white; font-weight:bold; cursor:pointer;" onclick="playGacha()">
+      🎰 ガチャ (1回 200pt)
+    </button>
+    
+    <button type="button" class="main-btn" style="background:#673ab7; margin-bottom:15px; width:100%; padding:10px; border-radius:8px; border:none; color:white; font-weight:bold; cursor:pointer;" onclick="openSubGameMenu()">
+      🕹️ ミニゲームいろいろ
+    </button>
+
+    <button type="button" class="secondary-btn" style="width:100%; padding:8px; border-radius:8px; border:1px solid #ccc; background:#fff; cursor:pointer;" onclick="closeGameMenuModal()">閉じる</button>
+  </div>
+</div>
+
+<!-- 2階層目: ミニゲーム一覧選択モーダル -->
+<div id="sub-game-menu-modal" class="modal-overlay hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index:9999;">
+  <div class="modal-content" style="background:white; padding:20px; border-radius:12px; max-width:350px; width:90%; text-align:center;">
+    <h3 style="margin-top:0; color:#673ab7;">🕹️ ミニゲームいろいろ</h3>
+    <p style="font-size:12px; color:#666;">プレイしたいゲームを選んでね！</p>
+
+    <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:15px;">
+      <button type="button" class="game-select-btn" onclick="startGame('tofu')">⬜ 豆腐ゲーム</button>
+      <button type="button" class="game-select-btn" onclick="startGame('janken')">✊✌️✋ じゃんけんゲーム</button>
+      <button type="button" class="game-select-btn" onclick="startGame('highlow')">🔢 ハイ＆ロー</button>
+      <button type="button" class="game-select-btn" onclick="startGame('memory')">🎴 神経衰弱</button>
+      <button type="button" class="game-select-btn" onclick="startGame('numberTap')">1️⃣2️⃣3️⃣ 数字順タップ</button>
+      <button type="button" class="game-select-btn" onclick="startGame('timing')">⏱️ タイミングストップ</button>
+    </div>
+
+    <button type="button" class="secondary-btn" style="width:100%; padding:8px; border-radius:8px; border:1px solid #ccc; background:#fff; cursor:pointer;" onclick="backToGameMenu()">戻る</button>
+  </div>
+</div>
+
+<!-- 3階層目: 共通ゲームプレイモーダル -->
+<div id="game-play-modal" class="modal-overlay hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index:9999;">
+  <div class="modal-content" style="background:white; padding:20px; border-radius:12px; max-width:350px; width:90%; text-align:center;">
+    <h3 id="game-title" style="margin-top:0; color:#673ab7;">ゲームタイトル</h3>
+    
+    <div id="game-container" style="background:#f9f9f9; border-radius:10px; padding:15px; margin:15px 0; min-height:180px; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+    </div>
+
+    <button type="button" class="secondary-btn" style="width:100%; padding:8px; border-radius:8px; border:1px solid #ccc; background:#fff; cursor:pointer;" onclick="closeGamePlayModal()">ゲームを辞める</button>
+  </div>
+</div>
 
 
 <!-- スクラッチモーダル -->
@@ -1489,54 +1537,6 @@ window.onerror = function(message, source, lineno, colno, error) {
     }
   }
 
-<!-- 1階層目: GAMEメインメニューモーダル -->
-<div id="game-menu-modal" class="modal-overlay hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index:9999;">
-  <div class="modal-content" style="background:white; padding:20px; border-radius:12px; max-width:350px; width:90%; text-align:center;">
-    <h3 style="margin-top:0; color:#673ab7;">🎮 GAME</h3>
-    <p style="font-size:12px; color:#666;">遊んでポイントを獲得しよう！</p>
-    
-    <button type="button" class="main-btn" style="background:#ff9800; margin-bottom:12px; width:100%; padding:10px; border-radius:8px; border:none; color:white; font-weight:bold; cursor:pointer;" onclick="playGacha()">
-      🎰 ガチャ (1回 200pt)
-    </button>
-    
-    <button type="button" class="main-btn" style="background:#673ab7; margin-bottom:15px; width:100%; padding:10px; border-radius:8px; border:none; color:white; font-weight:bold; cursor:pointer;" onclick="openSubGameMenu()">
-      🕹️ ミニゲームいろいろ
-    </button>
-
-    <button type="button" class="secondary-btn" style="width:100%; padding:8px; border-radius:8px; border:1px solid #ccc; background:#fff; cursor:pointer;" onclick="closeGameMenuModal()">閉じる</button>
-  </div>
-</div>
-
-<!-- 2階層目: ミニゲーム一覧選択モーダル -->
-<div id="sub-game-menu-modal" class="modal-overlay hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index:9999;">
-  <div class="modal-content" style="background:white; padding:20px; border-radius:12px; max-width:350px; width:90%; text-align:center;">
-    <h3 style="margin-top:0; color:#673ab7;">🕹️ ミニゲームいろいろ</h3>
-    <p style="font-size:12px; color:#666;">プレイしたいゲームを選んでね！</p>
-
-    <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:15px;">
-      <button type="button" class="game-select-btn" onclick="startGame('tofu')">⬜ 豆腐ゲーム</button>
-      <button type="button" class="game-select-btn" onclick="startGame('janken')">✊✌️✋ じゃんけんゲーム</button>
-      <button type="button" class="game-select-btn" onclick="startGame('highlow')">🔢 ハイ＆ロー</button>
-      <button type="button" class="game-select-btn" onclick="startGame('memory')">🎴 神経衰弱</button>
-      <button type="button" class="game-select-btn" onclick="startGame('numberTap')">1️⃣2️⃣3️⃣ 数字順タップ</button>
-      <button type="button" class="game-select-btn" onclick="startGame('timing')">⏱️ タイミングストップ</button>
-    </div>
-
-    <button type="button" class="secondary-btn" style="width:100%; padding:8px; border-radius:8px; border:1px solid #ccc; background:#fff; cursor:pointer;" onclick="backToGameMenu()">戻る</button>
-  </div>
-</div>
-
-<!-- 3階層目: 共通ゲームプレイモーダル -->
-<div id="game-play-modal" class="modal-overlay hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index:9999;">
-  <div class="modal-content" style="background:white; padding:20px; border-radius:12px; max-width:350px; width:90%; text-align:center;">
-    <h3 id="game-title" style="margin-top:0; color:#673ab7;">ゲームタイトル</h3>
-    
-    <div id="game-container" style="background:#f9f9f9; border-radius:10px; padding:15px; margin:15px 0; min-height:180px; display:flex; flex-direction:column; justify-content:center; align-items:center;">
-    </div>
-
-    <button type="button" class="secondary-btn" style="width:100%; padding:8px; border-radius:8px; border:1px solid #ccc; background:#fff; cursor:pointer;" onclick="closeGamePlayModal()">ゲームを辞める</button>
-  </div>
-</div>
 
   
   // --- ポイント加算処理（ポイント専用） ---
