@@ -1566,16 +1566,54 @@ function addPoints(pts, reason) {
 }
 
 
-// --- 画面遷移（モーダル制御） ---
+// --- 安全版：画面遷移（モーダル制御） ---
 function openGameMenuModal() {
-  alert("ボタンが押されました！");
   const modal = document.getElementById("game-menu-modal");
-  console.log("取得したモーダル要素:", modal);
   if (modal) {
     modal.classList.remove("hidden");
-    modal.style.display = "flex"; // CSSクラスに関わらず強制的に画面表示してみる
+    modal.style.display = "flex"; // CSSの指定に関わらず強制表示
+  } else {
+    alert("⚠️ エラー: game-menu-modal が見つかりません。HTMLのID名を確認してください。");
   }
 }
+
+function closeGameMenuModal() {
+  const modal = document.getElementById("game-menu-modal");
+  if (modal) {
+    modal.classList.add("hidden");
+    modal.style.display = "none";
+  }
+}
+
+function openSubGameMenu() {
+  closeGameMenuModal();
+  const modal = document.getElementById("sub-game-menu-modal");
+  if (modal) {
+    modal.classList.remove("hidden");
+    modal.style.display = "flex";
+  }
+}
+
+function backToGameMenu() {
+  const modal = document.getElementById("sub-game-menu-modal");
+  if (modal) {
+    modal.classList.add("hidden");
+    modal.style.display = "none";
+  }
+  openGameMenuModal();
+}
+
+function closeGamePlayModal() {
+  if (typeof timingTimer !== 'undefined' && timingTimer) {
+    clearInterval(timingTimer);
+  }
+  const modal = document.getElementById("game-play-modal");
+  if (modal) {
+    modal.classList.add("hidden");
+    modal.style.display = "none";
+  }
+}
+
 
 function closeGameMenuModal() {
   document.getElementById("game-menu-modal").classList.add("hidden");
