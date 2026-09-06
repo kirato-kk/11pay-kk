@@ -573,18 +573,31 @@
     localStorage.setItem("paypay_users", JSON.stringify(users));
   }
 
-// 非表示IDリストを更新
+// 全画面を確実に非表示にする関数
 function hideAllGameScreens() {
   const screens = [
-    "game-first-select", "game-menu-select", "game-tofu-screen",
-    "gacha-screen", "game-janken-screen", "game-highlow-screen",
-    "game-memory-screen", "game-whack-screen", "game-crane-screen",
-    "game-dice-screen", "game-timing-screen", "game-nummem-screen",
-    "game-chicken-screen", "game-diff-screen", "game-bomb-screen"
+    "game-first-select",
+    "game-menu-select",
+    "game-tofu-screen",
+    "gacha-screen",
+    "game-janken-screen",
+    "game-highlow-screen",
+    "game-memory-screen",
+    "game-whack-screen",
+    "game-crane-screen",
+    "game-dice-screen",
+    "game-timing-screen",
+    "game-nummem-screen",
+    "game-chicken-screen",
+    "game-diff-screen",
+    "game-bomb-screen"
   ];
+
   screens.forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.classList.add("hidden");
+    if (el) {
+      el.classList.add("hidden");
+    }
   });
 }
 
