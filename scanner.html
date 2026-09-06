@@ -567,35 +567,31 @@
   function saveUsers(users) {
     localStorage.setItem("paypay_users", JSON.stringify(users));
   }
-
 function hideAllGameScreens() {
-  // すべてのゲーム画面のIDをリスト化
-  const gameScreenIds = [
-    'game-first-select',
-    'game-menu-select',
-    'game-tofu-screen',
-    'gacha-screen',
-    'game-janken-screen',
-    'game-highlow-screen',
-    'game-memory-screen',
-    'game-whack-screen',
-    'game-crane-screen',
-    'game-dice-screen',      // 8. サイコロ
-    'game-timing-screen',    // 9. 5.55秒
-    'game-nummem-screen',    // 10. 数字記憶
-    'game-chicken-screen',   // 11. チキンレース
-    'game-diff-screen',      // 12. 間違い探し
-    'game-bomb-screen'       // 13. 爆弾処理
+  const screens = [
+    "game-first-select",
+    "game-menu-select",
+    "game-tofu-screen",
+    "gacha-screen",
+    "game-janken-screen",
+    "game-highlow-screen",
+    "game-memory-screen",
+    "game-whack-screen",
+    "game-crane-screen",
+    "game-dice-screen",
+    "game-timing-screen",
+    "game-nummem-screen",
+    "game-chicken-screen",
+    "game-diff-screen",
+    "game-bomb-screen"
   ];
 
-  // 全画面に対して安全に hidden クラスを付与
-  gameScreenIds.forEach(id => {
-    const screen = document.getElementById(id);
-    if (screen) {
-      screen.classList.add('hidden');
+  screens.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.classList.add("hidden");
     }
   });
-} 
 
   // モーダル内のスクロール位置を一番上に戻す
   const modalContent = document.querySelector(".modal-content");
