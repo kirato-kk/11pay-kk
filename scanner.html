@@ -154,6 +154,12 @@
       </div>
     </div>
 
+    <button onclick="openGiftModal()" style="background:#ff9800; color:white; border:none; padding:10px 15px; border-radius:8px; font-weight:bold; cursor:pointer;">
+  🎁 ギフトコード入力
+</button>
+
+
+
     <!-- 取引履歴エリア -->
     <div class="tx-card">
       <div class="tx-title">📋 取引履歴</div>
@@ -198,6 +204,24 @@
   </button>
 </div>
 
+<!-- ギフトカードコード入力モーダル -->
+<div id="gift-modal" class="modal hidden">
+  <div class="modal-content" style="max-width:320px; background:#fff; padding:20px; border-radius:16px; text-align:center;">
+    <h3 style="margin-top:0; color:#ff0033;">🎁 ギフトカードのチャージ</h3>
+    <p style="font-size:12px; color:#666;">カード裏面に記載されている英数字コードを入力してください</p>
+   
+    <input type="text" id="gift-code-input" placeholder="例: GFT-9876-ABCD" style="width:100%; padding:10px; font-size:16px; font-weight:bold; text-align:center; text-transform:uppercase; border:2px solid #ddd; border-radius:8px; margin-top:10px; box-sizing:border-box;">
+
+    <button onclick="submitGiftCode()" style="width:100%; padding:12px; margin-top:15px; background:#ff0033; color:white; border:none; border-radius:8px; font-weight:bold; font-size:14px; cursor:pointer;">
+      チャージする
+    </button>
+    <button onclick="closeGiftModal()" style="width:100%; padding:10px; margin-top:8px; background:#6c757d; color:white; border:none; border-radius:8px; font-size:12px; cursor:pointer;">
+      閉じる
+    </button>
+  </div>
+</div> 
+
+  
 <!-- クーポンモーダル -->
 <div id="coupon-modal" class="modal-overlay hidden">
   <div class="modal-content">
@@ -1313,6 +1337,67 @@
     showAllTransactions = !showAllTransactions;
     renderTransactions();
   }
+
+ // 有効なギフトコードの一覧（管理者・店舗側で発行するコード）
+  // コード名: チャージ金額
+  const validGiftCodes = {
+    "GFT-1000-AAAA": 1000,
+    "GFT-3000-BBBB": 3000,
+    "GFT-5000-CCCC": 5000,
+    "LUCKY-777": 777
+  };
+
+  // ギフトカード入力モーダルを開く/閉じる
+  function openGiftModal() {
+    document.getElementById("gift-code-input").value = "";
+    document.getElementById("gift-modal").classList.remove("hidden");
+  }
+
+  function closeGiftModal() {
+    document.getElementById("gift-modal").classList.add("hidden");
+  }
+
+  // コード入力実行処理
+  function submitGiftCode() {
+    const rawInput = document.getElementById("gift-code-input").value.trim().toUpperCase();
+
+    if (!rawInput) {
+      alert("コードを入力してください。");
+      return;
+    }
+
+    // 1. 使用済みチェック
+    let usedGifts = JSON.parse(localStorage.getItem(`used_gifts_${currentUser}`) || '[]');
+    if (usedGifts.includes(rawInput)) {
+      playSound('error');
+      alert("⚠️ このギフトコードは既に使用されています。");
+      return;
+    }
+
+    // 2. コードの有効性チェック
+    if (validGiftCodes.hasOwnProperty(rawInput)) {
+      const amount = validGiftCodes[rawInput];
+
+      // 残高に加算
+      balance += amount;
+      usedGifts.push(rawInput);
+
+      // 保存と表示更新
+      localStorage.setItem(`used_gifts_${currentUser}`, JSON.stringify(usedGifts));
+      addTransaction('残高', amount, `ギフトコード適用 (${rawInput})`);
+      updateDisplay();
+
+      playSound('win');
+      alert(`🎁 チャージ成功！\n\n${amount.toLocaleString()}円 が残高に追加されました。`);
+      closeGiftModal();
+    } else {
+      playSound('error');
+      alert("❌ 無効なギフトコードです。\nコードを確認して再度お試しください。");
+    }
+  }
+
+
+  
 </script>
 
 </body>
