@@ -1792,60 +1792,7 @@ function updatePointDOM() {
   });
 }
 
-// --- ポイント加算関数 ---
-function addPoints(pts, reason) {
-  let currentPts = (typeof userPoints !== 'undefined') ? Number(userPoints) : (Number(window.points) || 0);
-  currentPts += Number(pts);
 
-  if (typeof userPoints !== 'undefined') userPoints = currentPts;
-  if (typeof points !== 'undefined') points = currentPts;
-  window.points = currentPts;
-
-  // --- ポイント取引履歴を追加する修正版関数 ---
-function addPointHistory(title, amount) {
-  const now = new Date();
-  const dateStr = `${now.getMonth() + 1}/${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
-  
-  // アプリ既存の addTransaction 関数が存在する場合はそちらを利用
-  if (typeof addTransaction === 'function') {
-    // 既存関数が型判定やUI更新をすべて正しく行ってくれる場合
-    try {
-      addTransaction(title, amount, dateStr, 'pt');
-      return;
-    } catch (e) {
-      console.log("addTransaction fallback");
-    }
-  }
-
-  // 手動で配列に追加する場合のフォーマット合わせ
-  const numVal = typeof amount === 'number' ? amount : parseInt(amount, 10);
-  const formattedAmount = (numVal > 0 ? `+${numVal}` : `${numVal}`) + " pt";
-
-  const historyItem = {
-    title: title,
-    name: title,
-    type: 'ポイント',
-    amount: numVal,
-    displayAmount: formattedAmount,
-    date: dateStr,
-    timestamp: dateStr,
-    unit: 'pt'
-  };
-
-  // 履歴配列に追加
-  if (typeof transactions !== 'undefined' && Array.isArray(transactions)) {
-    transactions.unshift(historyItem);
-  } else if (typeof historyData !== 'undefined' && Array.isArray(historyData)) {
-    historyData.unshift(historyItem);
-  } else if (typeof history !== 'undefined' && Array.isArray(history)) {
-    history.unshift(historyItem);
-  }
-
-  // 画面の履歴一覧UIを更新
-  if (typeof renderHistory === 'function') renderHistory();
-  else if (typeof updateHistoryUI === 'function') updateHistoryUI();
-  else if (typeof displayHistory === 'function') displayHistory();
-}
 
 
 // --- ガチャ実行関数 ---
@@ -1869,10 +1816,7 @@ function playGacha() {
   if (typeof points !== 'undefined') points = currentPts;
   window.points = currentPts;
 
-  // 変更前: addPoints(rewardPts, `ガチャ景品(${prize})`);
-// 変更後:
-addPoints(rewardPts, `ガチャ景品: ${prize}`);
-
+  
 
   // 表示更新
   updatePointDOM();
