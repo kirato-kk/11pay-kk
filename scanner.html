@@ -573,7 +573,7 @@
     localStorage.setItem("paypay_users", JSON.stringify(users));
   }
 
-// 全画面を確実に非表示にする関数
+// 全てのゲーム画面・メニュー画面を非表示にする関数
 function hideAllGameScreens() {
   const screens = [
     "game-first-select",
@@ -600,6 +600,7 @@ function hideAllGameScreens() {
     }
   });
 }
+
 
 function backToGameMenu() {
   playSound('beep');
