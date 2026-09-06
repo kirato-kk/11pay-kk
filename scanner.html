@@ -599,7 +599,15 @@ function hideAllGameScreens() {
       el.classList.add("hidden");
     }
   });
+
+  // モーダル内のスクロール位置を一番上に戻す
+  const modalContent = document.querySelector(".modal-content");
+  if (modalContent) {
+    modalContent.scrollTop = 0;
+  }
 }
+
+
 
 
 function backToGameMenu() {
@@ -1380,12 +1388,18 @@ function cutWire(idx) {
   }
 
   function backToGameMenu() {
-    gameActive = false;
-    cancelAnimationFrame(gameAnimationId);
-    document.getElementById("game-menu-select").classList.remove("hidden");
-    document.getElementById("game-tofu-screen").classList.add("hidden");
-    document.getElementById("gacha-screen").classList.add("hidden");
+  playSound('beep');
+  hideAllGameScreens();
+  
+  const menu = document.getElementById("game-menu-select");
+  if (menu) {
+    menu.classList.remove("hidden");
   }
+  
+  // 画面のスクロール位置を最上部に固定
+  window.scrollTo(0, 0);
+}
+
 
   function startTofuGameSelect() {
     playSound('beep');
@@ -2282,6 +2296,15 @@ Object.assign(GAME_CONFIG, {
   bomb: { safe: 30, clearBonus: 200 } // 爆弾処理：成功ごとに30pt、全解除で200pt
 });
 
+  /* 強制的に非表示にする指定 */
+.hidden {
+  display: none !important;
+}
+
+/* モーダル表示時に毎回スクロール位置を最上部に戻す */
+.modal-content, #game-modal {
+  overflow-y: auto;
+} 
   
 </script>
 
