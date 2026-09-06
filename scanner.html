@@ -2296,7 +2296,14 @@ Object.assign(GAME_CONFIG, {
   bomb: { safe: 30, clearBonus: 200 } // 爆弾処理：成功ごとに30pt、全解除で200pt
 });
 
- 
+ #game-dice-screen.hidden,
+#game-timing-screen.hidden,
+#game-nummem-screen.hidden,
+#game-chicken-screen.hidden,
+#game-diff-screen.hidden,
+#game-bomb-screen.hidden {
+  display: none !important;
+} 
 </script>
 
 </body>
