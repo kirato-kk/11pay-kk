@@ -100,25 +100,6 @@
     #qr-output-container img { width: 200px; height: 200px; border-radius: 10px; }
    
     .hidden { display: none !important; }
-
- .gift-charge-btn {
-  margin-top: 16px; /* 上の要素との間の余白 */
-  padding: 12px 20px;
-  background-color: #ff9800; /* オレンジ色の背景 */
-  color: #ffffff;
-  font-weight: bold;
-  border: none;
-  border-radius: 8px; /* 角丸 */
-  cursor: pointer;
-  
-  /* ボタン自体を中央寄せにしたい場合 */
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-
-    
   </style>
 </head>
 <body>
@@ -173,14 +154,6 @@
       </div>
     </div>
 
-<!-- ギフトカードでチャージボタン -->
-<button id="open-gift-modal-btn" class="gift-charge-btn" onclick="openGiftModal()">
-  🎁 ギフトカードでチャージ
-</button>
-
-
-   
-
     <!-- 取引履歴エリア -->
     <div class="tx-card">
       <div class="tx-title">📋 取引履歴</div>
@@ -225,25 +198,6 @@
   </button>
 </div>
 
-<!-- ギフトカードコード入力モーダル -->
-<div id="gift-modal" class="modal-overlay hidden">
-  <div class="modal-content">
-    <h3 style="margin-top:0; color:#ff0033;">🎁 ギフトカードのチャージ</h3>
-    <p style="font-size:12px; color:#666;">カード裏面に記載されている英数字コードを入力してください</p>
-    
-    <input type="text" id="gift-code-input" placeholder="例: GFT-1000-AAAA" style="width:100%; padding:10px; font-size:16px; font-weight:bold; text-align:center; text-transform:uppercase; border:2px solid #ddd; border-radius:8px; margin-top:10px; box-sizing:border-box;">
-
-    <button onclick="submitGiftCode()" class="main-btn" style="margin-top:15px;">
-      チャージする
-    </button>
-    <button onclick="closeGiftModal()" class="secondary-btn">
-      閉じる
-    </button>
-  </div>
-</div>
-
-
-  
 <!-- クーポンモーダル -->
 <div id="coupon-modal" class="modal-overlay hidden">
   <div class="modal-content">
@@ -255,122 +209,38 @@
     <button class="secondary-btn" style="margin-top: 15px;" onclick="closeCouponModal()">閉じる</button>
   </div>
 </div>
+
 <!-- GAMEモーダル -->
 <div id="game-modal" class="modal-overlay hidden">
   <div class="modal-content">
-    
-    <!-- 第1階層：最初の選択画面（ミニゲーム or ガチャ） -->
-    <div id="game-first-select">
-      <h3>🎮 GAME</h3>
-      <p style="font-size: 13px; color: #666; margin-bottom: 20px;">モードを選んでね！</p>
-      
-      <div style="display: flex; flex-direction: column; gap: 12px;">
-        <button class="main-btn" style="background: #28a745; font-size: 16px; padding: 15px;" onclick="goToGameMenu()">
-          🕹️ ミニゲーム
-        </button>
-        <button class="main-btn" style="background: #ff9900; font-size: 16px; padding: 15px;" onclick="startGachaSelect()">
-          🎰 ガチャ (200pt)
-        </button>
-      </div>
-
+   
+    <div id="game-menu-select">
+      <h3>🎮 ゲームメニュー</h3>
+      <p style="font-size: 13px; color: #666; margin-bottom: 20px;">遊ぶゲームを選んでね！</p>
+      <button class="main-btn" style="margin-bottom: 12px; background: #28a745;" onclick="startTofuGameSelect()">🧊 豆腐タワー</button>
+      <button class="main-btn" style="background: #ff9900;" onclick="startGachaSelect()">🎰 ポイントガチャ (1回 200pt)</button>
       <button class="secondary-btn" style="margin-top: 15px;" onclick="closeGameModal()">閉じる</button>
     </div>
 
-    <!-- ミニゲームメニュー（ボタン追加版） -->
-<div id="game-menu-select" class="hidden">
-  <h3>🕹️ ミニゲームメニュー</h3>
-  <p style="font-size: 13px; color: #666; margin-bottom: 15px;">遊ぶゲームを選んでね！</p>
-  
-  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-    <button class="main-btn" style="background: #28a745; font-size: 13px; padding: 10px 4px;" onclick="startTofuGameSelect()">🧊 豆腐タワー</button>
-    <button class="main-btn" style="background: #007bff; font-size: 13px; padding: 10px 4px;" onclick="startJankenGame()">✊ じゃんけん</button>
-    <button class="main-btn" style="background: #6f42c1; font-size: 13px; padding: 10px 4px;" onclick="startHighLowGame()">🃏 ハイ＆ロー</button>
-    <button class="main-btn" style="background: #fd7e14; font-size: 13px; padding: 10px 4px;" onclick="startMemoryGame()">🎴 神経衰弱</button>
-    <button class="main-btn" style="background: #e83e8c; font-size: 13px; padding: 10px 4px;" onclick="startWhackGame()">🔨 モグラ叩き</button>
-    <button class="main-btn" style="background: #17a2b8; font-size: 13px; padding: 10px 4px;" onclick="startCraneGame()">🏗️ クレーン</button>
-    
-
-  <button class="secondary-btn" style="margin-top: 15px;" onclick="backToFirstMenu()">戻る</button>
-</div>
-
-    <!-- 1. 豆腐タワー -->
     <div id="game-tofu-screen" class="hidden">
-      <h3>🧊 豆腐タワー</h3>
-      <canvas id="game-canvas" width="300" height="250"></canvas>
+      <h3>🧊 豆腐タワーチャレンジ</h3>
+      <p style="font-size: 13px; color: #666; margin-bottom: 5px;">タップしてタイミングよく豆腐を重ねよう！</p>
+      <canvas id="game-canvas" width="300" height="300"></canvas>
       <button class="secondary-btn" onclick="backToGameMenu()">メニューに戻る</button>
     </div>
 
-    <!-- 2. ガチャ -->
     <div id="gacha-screen" class="hidden">
       <h3>🎰 ポイントガチャ</h3>
-      <div id="gacha-box" style="font-size: 40px; margin: 15px 0;">🎁</div>
-      <div id="gacha-result-text" style="font-size: 16px; font-weight: bold; color: #ff0033; min-height: 24px; margin-bottom: 10px;"></div>
+      <p style="font-size: 13px; color: #666; margin-bottom: 10px;">1回 200pt で運試し！</p>
+     
+      <div id="gacha-box" style="font-size: 40px; margin: 20px 0;">🎁</div>
+      <div id="gacha-result-text" style="font-size: 18px; font-weight: bold; color: #ff0033; min-height: 28px; margin-bottom: 15px;"></div>
+
       <button id="gacha-draw-btn" class="main-btn" style="background: #ff9900;" onclick="playGacha()">ガチャを回す (200pt)</button>
-      <button class="secondary-btn" style="margin-top: 10px;" onclick="backToFirstMenu()">戻る</button>
+      <button class="secondary-btn" style="margin-top: 10px;" onclick="backToGameMenu()">メニューに戻る</button>
     </div>
 
-    <!-- 3. じゃんけん -->
-    <div id="game-janken-screen" class="hidden">
-      <h3>✊ じゃんけん勝負</h3>
-      <p style="font-size: 12px; color: #666;">勝つと pt ゲット！</p>
-      <div id="janken-opponent" style="font-size: 50px; margin: 15px 0;">❓</div>
-      <div id="janken-result-text" style="font-weight: bold; margin-bottom: 15px; min-height: 20px;">手を選んでね</div>
-      <div style="display: flex; gap: 8px; justify-content: center;">
-        <button class="main-btn" style="padding: 10px; background: #ff4d4d;" onclick="playJanken('✊')">✊</button>
-        <button class="main-btn" style="padding: 10px; background: #28a745;" onclick="playJanken('✌️')">✌️</button>
-        <button class="main-btn" style="padding: 10px; background: #007bff;" onclick="playJanken('✋')">✋</button>
-      </div>
-      <button class="secondary-btn" style="margin-top: 15px;" onclick="backToGameMenu()">メニューに戻る</button>
-    </div>
-
-    <!-- 4. ハイ＆ロー -->
-    <div id="game-highlow-screen" class="hidden">
-      <h3>🃏 ハイ＆ロー</h3>
-      <p style="font-size: 12px; color: #666;">次の数字は今より大きい？小さい？ (1〜13)</p>
-      <div id="highlow-card" style="font-size: 48px; font-weight: bold; color: #ff0033; margin: 10px 0;">?</div>
-      <div id="highlow-streak" style="font-size: 13px; color: #333; margin-bottom: 10px;">現在の連勝: 0</div>
-      <div id="highlow-btns" style="display: flex; gap: 10px; justify-content: center;">
-        <button class="main-btn" style="background: #ff0033;" onclick="playHighLow('HIGH')">HIGH (大きい)</button>
-        <button class="main-btn" style="background: #007bff;" onclick="playHighLow('LOW')">LOW (小さい)</button>
-      </div>
-      <button class="secondary-btn" style="margin-top: 15px;" onclick="backToGameMenu()">メニューに戻る</button>
-    </div>
-
-    <!-- 5. 神経衰弱 (6ペア/12枚) -->
-    <div id="game-memory-screen" class="hidden">
-      <h3>🎴 神経衰弱</h3>
-      <p style="font-size: 12px; color: #666;">全部揃えてポイントゲット！</p>
-      <div id="memory-board" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 15px 0;"></div>
-      <button class="secondary-btn" onclick="backToGameMenu()">メニューに戻る</button>
-    </div>
-
-    <!-- 6. モグラ叩き -->
-    <div id="game-whack-screen" class="hidden">
-      <h3>🔨 モグラ叩き</h3>
-      <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: bold; margin-bottom: 8px;">
-        <div>タイム: <span id="whack-time">15</span>s</div>
-        <div>スコア: <span id="whack-score">0</span></div>
-      </div>
-      <div id="whack-board" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px;"></div>
-      <button id="whack-start-btn" class="main-btn" onclick="startWhackGameLogic()">スタート</button>
-      <button class="secondary-btn" style="margin-top: 8px;" onclick="backToGameMenu()">メニューに戻る</button>
-    </div>
-
-    <!-- 7. クレーンゲーム -->
-    <div id="game-crane-screen" class="hidden">
-      <h3>🏗️ クレーンゲーム</h3>
-      <div style="position: relative; width: 260px; height: 180px; background: #eef2f5; border: 2px solid #ccc; border-radius: 10px; margin: 0 auto 10px; overflow: hidden;">
-        <div id="crane-arm" style="position: absolute; top: 0; left: 110px; font-size: 24px; transition: all 0.1s linear;">🏗️</div>
-        <div id="crane-item-1" style="position: absolute; bottom: 10px; left: 30px; font-size: 24px;">🥇</div>
-        <div id="crane-item-2" style="position: absolute; bottom: 10px; left: 110px; font-size: 24px;">🥈</div>
-        <div id="crane-item-3" style="position: absolute; bottom: 10px; left: 190px; font-size: 24px;">🥉</div>
-      </div>
-      <div id="crane-status" style="font-size: 13px; font-weight: bold; margin-bottom: 10px; min-height: 18px;">タイミングを合わせてボタンを押そう！</div>
-      <button id="crane-action-btn" class="main-btn" onclick="triggerCraneAction()">キャッチ！</button>
-      <button class="secondary-btn" style="margin-top: 8px;" onclick="backToGameMenu()">メニューに戻る</button>
-    </div>
-
-
+  </div>
 </div>
 
 <!-- スクラッチモーダル -->
@@ -467,9 +337,6 @@
   let html5QrCode = null;
   let isCameraOn = false;
 
-
-
-  
   // クーポン管理
   let activeDiscount = 0;
   let coupons = [
@@ -500,607 +367,7 @@
   function saveUsers(users) {
     localStorage.setItem("paypay_users", JSON.stringify(users));
   }
-function hideAllGameScreens() {
-  // アカウント初期画面 (game-first-select) を除外したゲーム画面のみのリスト
-  const gameScreenIds = [
-    'game-menu-select',
-    'game-tofu-screen',
-    'gacha-screen',
-    'game-janken-screen',
-    'game-highlow-screen',
-    'game-memory-screen',
-    'game-whack-screen',
-    'game-crane-screen',
-    'game-dice-screen',
-    'game-timing-screen',
-    'game-nummem-screen',
-    'game-chicken-screen',
-    'game-diff-screen',
-    'game-bomb-screen'
-  ];
 
-  gameScreenIds.forEach(id => {
-    const screen = document.getElementById(id);
-    if (screen) {
-      screen.classList.add('hidden');
-    }
-  });
-} 
-
-
-function backToGameMenu() {
-  playSound('beep');
-  gameActive = false;
-  cancelAnimationFrame(gameAnimationId);
-  clearInterval(whackTimer);
-  clearInterval(whackMoleTimer);
-  clearInterval(craneAnimTimer);
-  
-  hideAllGameScreens();
-  document.getElementById("game-menu-select").classList.remove("hidden");
-}
-
-// --- じゃんけん ---
-function startJankenGame() {
-  playSound('beep');
-  hideAllGameScreens();
-  document.getElementById("game-janken-screen").classList.remove("hidden");
-  document.getElementById("janken-opponent").innerText = "❓";
-  document.getElementById("janken-result-text").innerText = "手を選んでね";
-}
-
-function playJanken(playerHand) {
-  const hands = ["✊", "✌️", "✋"];
-  const enemyHand = hands[Math.floor(Math.random() * hands.length)];
-  document.getElementById("janken-opponent").innerText = enemyHand;
-
-  const resText = document.getElementById("janken-result-text");
-
-  if (playerHand === enemyHand) {
-    playSound('tick');
-    const pt = GAME_CONFIG.janken.draw;
-    resText.innerText = `あいこ！ (+${pt}pt)`;
-    points += pt;
-    addTransaction('ポイント', pt, 'じゃんけん (引き分け)');
-  } else if (
-    (playerHand === "✊" && enemyHand === "✌️") ||
-    (playerHand === "✌️" && enemyHand === "✋") ||
-    (playerHand === "✋" && enemyHand === "✊")
-  ) {
-    playSound('win');
-    const pt = GAME_CONFIG.janken.win;
-    resText.innerText = `勝ち！ 🎉 (+${pt}pt)`;
-    points += pt;
-    addTransaction('ポイント', pt, 'じゃんけん 勝利');
-  } else {
-    playSound('error');
-    resText.innerText = "まけ...";
-  }
-  updateDisplay();
-}
-
-// --- ハイ＆ロー ---
-let hlCurrentCard = 0;
-let hlStreak = 0;
-
-function startHighLowGame() {
-  playSound('beep');
-  hideAllGameScreens();
-  document.getElementById("game-highlow-screen").classList.remove("hidden");
-  hlCurrentCard = Math.floor(Math.random() * 13) + 1;
-  hlStreak = 0;
-  updateHighLowUI();
-}
-
-function updateHighLowUI() {
-  document.getElementById("highlow-card").innerText = hlCurrentCard;
-  document.getElementById("highlow-streak").innerText = `現在の連勝: ${hlStreak}`;
-}
-
-function playHighLow(choice) {
-  const nextCard = Math.floor(Math.random() * 13) + 1;
-
-  if (nextCard === hlCurrentCard) {
-    playSound('tick');
-    alert(`同じ数字 (${nextCard}) でした！もう一度`);
-    return;
-  }
-
-  const isHigh = nextCard > hlCurrentCard;
-  const win = (choice === 'HIGH' && isHigh) || (choice === 'LOW' && !isHigh);
-
-  if (win) {
-    playSound('win');
-    hlStreak++;
-    const earned = GAME_CONFIG.highLow.correct;
-    points += earned;
-    addTransaction('ポイント', earned, 'ハイ＆ロー 的中');
-    updateDisplay();
-
-    if (hlStreak >= GAME_CONFIG.highLow.maxWins) {
-      alert(`🎊 ${GAME_CONFIG.highLow.maxWins}連勝達成！お見事！`);
-      startHighLowGame();
-      return;
-    }
-  } else {
-    playSound('error');
-    alert(`残念！次のカードは ${nextCard} でした。`);
-    hlStreak = 0;
-  }
-
-  hlCurrentCard = nextCard;
-  updateHighLowUI();
-}
-
-// --- 神経衰弱 (6ペア化) ---
-function startMemoryGame() {
-  playSound('beep');
-  hideAllGameScreens();
-  document.getElementById("game-memory-screen").classList.remove("hidden");
-
-  // 6種類の絵柄（6ペア＝12枚）
-  const icons = ['🍎', '🍌', '🍓', '🍇', '🍑', '🍒'];
-  memoryCards = [...icons, ...icons].sort(() => Math.random() - 0.5);
-  memoryFlipped = [];
-  memoryMatched = 0;
-
-  const board = document.getElementById("memory-board");
-  // 3列配置にすることで12枚が綺麗に収まります
-  board.style.gridTemplateColumns = "repeat(3, 1fr)";
-  board.innerHTML = memoryCards.map((icon, idx) => `
-    <button id="card-${idx}" class="main-btn" style="height: 50px; font-size: 20px; background: #6c757d; padding:0;" onclick="flipMemoryCard(${idx})">❓</button>
-  `).join('');
-}
-
-function flipMemoryCard(idx) {
-  if (memoryFlipped.length >= 2 || memoryFlipped.includes(idx)) return;
-
-  playSound('tick');
-  const btn = document.getElementById(`card-${idx}`);
-  btn.innerText = memoryCards[idx];
-  btn.style.background = "#007bff";
-  memoryFlipped.push(idx);
-
-  if (memoryFlipped.length === 2) {
-    const [first, second] = memoryFlipped;
-    if (memoryCards[first] === memoryCards[second]) {
-      playSound('win');
-      memoryMatched += 2;
-      memoryFlipped = [];
-
-      if (memoryMatched === memoryCards.length) {
-        setTimeout(() => {
-          const pt = GAME_CONFIG.memory.clearReward;
-          points += pt;
-          addTransaction('ポイント', pt, '神経衰弱 クリア');
-          updateDisplay();
-          alert(`🎉 全ペア獲得！ +${pt}pt GET!`);
-          startMemoryGame();
-        }, 300);
-      }
-    } else {
-      setTimeout(() => {
-        playSound('error');
-        document.getElementById(`card-${first}`).innerText = '❓';
-        document.getElementById(`card-${first}`).style.background = '#6c757d';
-        document.getElementById(`card-${second}`).innerText = '❓';
-        document.getElementById(`card-${second}`).style.background = '#6c757d';
-        memoryFlipped = [];
-      }, 700);
-    }
-  }
-}
-
-// --- モグラ叩き ---
-let whackScore = 0;
-let whackTimeLeft = 0;
-let whackTimer, whackMoleTimer;
-
-function startWhackGame() {
-  playSound('beep');
-  hideAllGameScreens();
-  document.getElementById("game-whack-screen").classList.remove("hidden");
-  document.getElementById("whack-score").innerText = "0";
-  document.getElementById("whack-time").innerText = GAME_CONFIG.whack.duration;
-  document.getElementById("whack-start-btn").classList.remove("hidden");
-
-  const board = document.getElementById("whack-board");
-  board.innerHTML = Array(6).fill(0).map((_, i) => `
-    <button id="hole-${i}" class="main-btn" style="height: 60px; font-size: 26px; background: #8b4513;" onclick="hitMole(${i})">🕳️</button>
-  `).join('');
-}
-
-function startWhackGameLogic() {
-  playSound('beep');
-  whackScore = 0;
-  whackTimeLeft = GAME_CONFIG.whack.duration;
-  document.getElementById("whack-score").innerText = "0";
-  document.getElementById("whack-start-btn").classList.add("hidden");
-
-  whackTimer = setInterval(() => {
-    whackTimeLeft--;
-    document.getElementById("whack-time").innerText = whackTimeLeft;
-    if (whackTimeLeft <= 0) {
-      clearInterval(whackTimer);
-      clearInterval(whackMoleTimer);
-      playSound('win');
-
-      const earned = whackScore * GAME_CONFIG.whack.pointPerHit;
-      if (earned > 0) {
-        points += earned;
-        addTransaction('ポイント', earned, 'モグラ叩き報酬');
-        updateDisplay();
-      }
-      alert(`タイムアップ！\n叩いた回数: ${whackScore}回\n👉 ${earned}pt 獲得！`);
-      document.getElementById("whack-start-btn").classList.remove("hidden");
-    }
-  }, 1000);
-
-  whackMoleTimer = setInterval(() => {
-    const holes = Array(6).fill(0);
-    const activeIndex = Math.floor(Math.random() * 6);
-    for (let i = 0; i < 6; i++) {
-      const btn = document.getElementById(`hole-${i}`);
-      if (i === activeIndex) {
-        btn.innerText = "🐹";
-        btn.dataset.active = "true";
-      } else {
-        btn.innerText = "🕳️";
-        btn.dataset.active = "false";
-      }
-    }
-  }, 600);
-}
-
-function hitMole(idx) {
-  const btn = document.getElementById(`hole-${idx}`);
-  if (btn.dataset.active === "true") {
-    playSound('tick');
-    whackScore++;
-    document.getElementById("whack-score").innerText = whackScore;
-    btn.innerText = "💥";
-    btn.dataset.active = "false";
-  }
-}
-
-// --- クレーンゲーム ---
-let cranePos = 110;
-let craneDir = 1;
-let craneAnimTimer = null;
-let craneIsMoving = false;
-
-function startCraneGame() {
-  playSound('beep');
-  hideAllGameScreens();
-  document.getElementById("game-crane-screen").classList.remove("hidden");
-  document.getElementById("crane-status").innerText = "タイミングを合わせてボタンを押そう！";
-
-  cranePos = 10;
-  craneDir = 1;
-  craneIsMoving = true;
-  document.getElementById("crane-action-btn").disabled = false;
-
-  clearInterval(craneAnimTimer);
-  craneAnimTimer = setInterval(() => {
-    if (!craneIsMoving) return;
-    cranePos += 5 * craneDir;
-    if (cranePos >= 210 || cranePos <= 10) craneDir *= -1;
-    document.getElementById("crane-arm").style.left = `${cranePos}px`;
-  }, 15);
-}
-
-function triggerCraneAction() {
-  if (!craneIsMoving) return;
-  craneIsMoving = false;
-  playSound('beep');
-  document.getElementById("crane-action-btn").disabled = true;
-
-  const arm = document.getElementById("crane-arm");
-  arm.style.top = "110px";
-
-  setTimeout(() => {
-    let earned = 0;
-    let prizeName = "";
-
-    // アーム位置の判定 (🥇:30px, 🥈:110px, 🥉:190px 付近)
-    if (Math.abs(cranePos - 30) < 20) {
-      earned = GAME_CONFIG.crane.gold;
-      prizeName = "金のカプセル 🥇";
-    } else if (Math.abs(cranePos - 110) < 20) {
-      earned = GAME_CONFIG.crane.silver;
-      prizeName = "銀のカプセル 🥈";
-    } else if (Math.abs(cranePos - 190) < 20) {
-      earned = GAME_CONFIG.crane.bronze;
-      prizeName = "銅のカプセル 🥉";
-    }
-
-    arm.style.top = "0px";
-
-    setTimeout(() => {
-      if (earned > 0) {
-        playSound('win');
-        points += earned;
-        addTransaction('ポイント', earned, `クレーン (${prizeName})`);
-        updateDisplay();
-        document.getElementById("crane-status").innerText = `🎉 GET! ${prizeName} (+${earned}pt)`;
-      } else {
-        playSound('error');
-        document.getElementById("crane-status").innerText = "スカッ！何も掴めなかった...";
-      }
-
-      setTimeout(() => {
-        startCraneGame();
-      }, 1500);
-    }, 400);
-  }, 500);
-}
-
-// 8. サイコロ
-function startDiceGame() {
-  playSound('beep');
-  hideAllGameScreens();
-  document.getElementById("game-dice-screen").classList.remove("hidden");
-  document.getElementById("dice-display").innerText = "🎲";
-  document.getElementById("dice-result").innerText = "出目を予想してね！";
-}
-function playDice(choice) {
-  const num = Math.floor(Math.random() * 6) + 1;
-  const diceIcons = ["", "⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
-  document.getElementById("dice-display").innerText = diceIcons[num];
-  
-  const isEven = num % 2 === 0;
-  const win = (choice === 'EVEN' && isEven) || (choice === 'ODD' && !isEven);
-  
-  if (win) {
-    playSound('win');
-    const pt = 50;
-    points += pt;
-    addTransaction('ポイント', pt, `サイコロ的中 (${num})`);
-    document.getElementById("dice-result").innerText = `🎯 アタリ！ (${num}) +${pt}pt`;
-  } else {
-    playSound('error');
-    document.getElementById("dice-result").innerText = `❌ ハズレ... (${num})`;
-  }
-  updateDisplay();
-}
-
-// 9. 5.55秒ストップ
-let timingStartTime = 0;
-let timingTimer = null;
-let timingRunning = false;
-
-function startTimingGame() {
-  playSound('beep');
-  hideAllGameScreens();
-  document.getElementById("game-timing-screen").classList.remove("hidden");
-  document.getElementById("timing-display").innerText = "0.00";
-  document.getElementById("timing-btn").innerText = "スタート";
-  document.getElementById("timing-btn").style.background = "#28a745";
-  timingRunning = false;
-}
-function toggleTimingTimer() {
-  const btn = document.getElementById("timing-btn");
-  if (!timingRunning) {
-    playSound('beep');
-    timingRunning = true;
-    timingStartTime = performance.now();
-    btn.innerText = "ストップ！";
-    btn.style.background = "#dc3545";
-    
-    timingTimer = setInterval(() => {
-      const elapsed = (performance.now() - timingStartTime) / 1000;
-      document.getElementById("timing-display").innerText = elapsed.toFixed(2);
-    }, 10);
-  } else {
-    clearInterval(timingTimer);
-    timingRunning = false;
-    btn.innerText = "もう一度";
-    btn.style.background = "#007bff";
-    
-    const finalTime = parseFloat(document.getElementById("timing-display").innerText);
-    const diff = Math.abs(finalTime - 5.55);
-    
-    if (diff === 0) {
-      playSound('win');
-      const pt = GAME_CONFIG.timing.exact;
-      points += pt;
-      addTransaction('ポイント', pt, '5.55秒 ピッタリ賞');
-      alert(`🎉 奇跡のピッタリ 5.55秒！ +${pt}pt GET!`);
-    } else if (diff <= 0.1) {
-      playSound('win');
-      const pt = GAME_CONFIG.timing.near;
-      points += pt;
-      addTransaction('ポイント', pt, '5.55秒 惜しい賞');
-      alert(`👏 惜しい！ (${finalTime}秒) +${pt}pt GET!`);
-    } else {
-      playSound('error');
-      alert(`記録: ${finalTime}秒 (目標 5.55秒)`);
-    }
-    updateDisplay();
-  }
-}
-
-// 10. 数字記憶
-let numMemTarget = "";
-let numMemLevel = 3;
-
-function startNumMemGame() {
-  playSound('beep');
-  hideAllGameScreens();
-  document.getElementById("game-nummem-screen").classList.remove("hidden");
-  numMemLevel = 3;
-  nextNumMemLevel();
-}
-function nextNumMemLevel() {
-  document.getElementById("nummem-status").innerText = `${numMemLevel}桁の数字を覚えてね`;
-  document.getElementById("nummem-input-area").classList.add("hidden");
-  
-  numMemTarget = Array.from({length: numMemLevel}, () => Math.floor(Math.random() * 10)).join('');
-  document.getElementById("nummem-display").innerText = numMemTarget;
-  
-  setTimeout(() => {
-    document.getElementById("nummem-display").innerText = "???";
-    document.getElementById("nummem-input-area").classList.remove("hidden");
-    document.getElementById("nummem-input").value = "";
-    document.getElementById("nummem-input").focus();
-  }, 1500);
-}
-function submitNumMem() {
-  const val = document.getElementById("nummem-input").value;
-  if (val === numMemTarget) {
-    playSound('win');
-    const pt = GAME_CONFIG.numberMemory.perLevel;
-    points += pt;
-    addTransaction('ポイント', pt, `数字記憶クリア (${numMemLevel}桁)`);
-    updateDisplay();
-    alert(`⭕ 正解！ +${pt}pt`);
-    numMemLevel++;
-    nextNumMemLevel();
-  } else {
-    playSound('error');
-    alert(`❌ 不正解！ 正解は ${numMemTarget} でした。`);
-    startNumMemGame();
-  }
-}
-
-// 11. チキンレース
-let chickenStock = 0;
-let chickenSize = 1;
-let chickenExplodeChance = 0.1;
-
-function startChickenGame() {
-  playSound('beep');
-  hideAllGameScreens();
-  document.getElementById("game-chicken-screen").classList.remove("hidden");
-  chickenStock = 0;
-  chickenSize = 1;
-  chickenExplodeChance = 0.1;
-  updateChickenUI();
-}
-function updateChickenUI() {
-  const balloon = document.getElementById("chicken-balloon");
-  balloon.innerText = "🎈";
-  balloon.style.transform = `scale(${chickenSize})`;
-  document.getElementById("chicken-info").innerText = `現在のストック: ${chickenStock} pt`;
-}
-function pumpChicken() {
-  if (Math.random() < chickenExplodeChance) {
-    playSound('error');
-    document.getElementById("chicken-balloon").innerText = "💥";
-    alert(`💥 破裂した！ ポイント獲得失敗...`);
-    startChickenGame();
-  } else {
-    playSound('tick');
-    chickenStock += GAME_CONFIG.chicken.base;
-    chickenSize += 0.25;
-    chickenExplodeChance += 0.15;
-    updateChickenUI();
-  }
-}
-function stopChicken() {
-  if (chickenStock > 0) {
-    playSound('win');
-    points += chickenStock;
-    addTransaction('ポイント', chickenStock, 'チキンレース成功');
-    updateDisplay();
-    alert(`🎉 利確成功！ +${chickenStock}pt 獲得！`);
-  }
-  startChickenGame();
-}
-
-// 12. 間違い探し
-function startDiffGame() {
-  playSound('beep');
-  hideAllGameScreens();
-  document.getElementById("game-diff-screen").classList.remove("hidden");
-  
-  const normalEmojis = ['😀', '🐶', '🐱', '🍎', '⚽', '🚗'];
-  const diffMap = {'😀':'😁', '🐶':'🐕', '🐱':'🐈', '🍎':'🍏', '⚽':'🏀', '🚗':'🚙'};
-  
-  const base = normalEmojis[Math.floor(Math.random() * normalEmojis.length)];
-  const diff = diffMap[base];
-  const targetIdx = Math.floor(Math.random() * 8);
-  
-  const board = document.getElementById("diff-board");
-  board.innerHTML = Array(8).fill(0).map((_, i) => `
-    <button class="main-btn" style="height: 55px; font-size: 24px; background: #f0f0f0; border:1px solid #ccc;" onclick="checkDiff(${i === targetIdx})">
-      ${i === targetIdx ? diff : base}
-    </button>
-  `).join('');
-}
-function checkDiff(isCorrect) {
-  if (isCorrect) {
-    playSound('win');
-    const pt = GAME_CONFIG.findDiff.win;
-    points += pt;
-    addTransaction('ポイント', pt, '間違い探し正解');
-    updateDisplay();
-    alert(`🎯 正解！ +${pt}pt`);
-    startDiffGame();
-  } else {
-    playSound('error');
-    alert("❌ おしい！違うよ");
-  }
-}
-
-// 13. 爆弾処理
-let bombSafeCount = 0;
-let bombBoomIndex = -1;
-
-function startBombGame() {
-  playSound('beep');
-  hideAllGameScreens();
-  document.getElementById("game-bomb-screen").classList.remove("hidden");
-  
-  bombSafeCount = 0;
-  bombBoomIndex = Math.floor(Math.random() * 4);
-  
-  document.getElementById("bomb-status").innerText = "安全なコードを切ろう！";
-  const colors = [
-    { name: '赤コード', color: '#dc3545' },
-    { name: '青コード', color: '#0d6efd' },
-    { name: '黄コード', color: '#ffc107' },
-    { name: '緑コード', color: '#198754' }
-  ];
-  
-  const area = document.getElementById("bomb-wires");
-  area.innerHTML = colors.map((item, idx) => `
-    <button id="wire-${idx}" class="main-btn" style="background: ${item.color}; font-weight: bold;" onclick="cutWire(${idx})">
-      ✂️ ${item.name}を切る
-    </button>
-  `).join('');
-}
-function cutWire(idx) {
-  const btn = document.getElementById(`wire-${idx}`);
-  btn.disabled = true;
-  btn.style.opacity = "0.3";
-  
-  if (idx === bombBoomIndex) {
-    playSound('error');
-    alert("💥 爆発した！！処理失敗...");
-    startBombGame();
-  } else {
-    playSound('tick');
-    bombSafeCount++;
-    const pt = GAME_CONFIG.bomb.safe;
-    points += pt;
-    addTransaction('ポイント', pt, '爆弾処理 (切断成功)');
-    updateDisplay();
-    
-    if (bombSafeCount === 3) {
-      playSound('win');
-      const bonus = GAME_CONFIG.bomb.clearBonus;
-      points += bonus;
-      addTransaction('ポイント', bonus, '爆弾処理 完全解除ボーナス');
-      updateDisplay();
-      alert(`🎉 完璧！全解除成功！ ボーナス +${bonus}pt`);
-      startBombGame();
-    } else {
-      document.getElementById("bomb-status").innerText = `成功！ 残り安全なコード: ${3 - bombSafeCount}本`;
-    }
-  }
-    }
-  
   // --- 効果音 ---
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -1306,15 +573,12 @@ function cutWire(idx) {
   }
 
   function backToGameMenu() {
-  playSound('beep');
-  hideAllGameScreens();
-  
-  const menu = document.getElementById("game-menu-select");
-  if (menu) {
-    menu.classList.remove("hidden");
+    gameActive = false;
+    cancelAnimationFrame(gameAnimationId);
+    document.getElementById("game-menu-select").classList.remove("hidden");
+    document.getElementById("game-tofu-screen").classList.add("hidden");
+    document.getElementById("gacha-screen").classList.add("hidden");
   }
-  
- 
 
   function startTofuGameSelect() {
     playSound('beep');
@@ -1335,22 +599,14 @@ function cutWire(idx) {
     updateTofuGame();
   }
 
-  // ガチャ画面を開く関数
-function startGachaSelect() {
-  playSound('beep');
- 
-  // ★ すべての画面（最初の画面含む）を非表示にする
-  hideAllGameScreens();
- 
-  // ガチャ画面だけを表示する
-  document.getElementById("gacha-screen").classList.remove("hidden");
- 
-  // 表示の初期化
-  document.getElementById("gacha-box").innerText = "🎁";
-  document.getElementById("gacha-result-text").innerText = "";
-  document.getElementById("gacha-draw-btn").disabled = false;
-} 
-
+  function startGachaSelect() {
+    playSound('beep');
+    document.getElementById("game-menu-select").classList.add("hidden");
+    document.getElementById("gacha-screen").classList.remove("hidden");
+    document.getElementById("gacha-box").innerText = "🎁";
+    document.getElementById("gacha-result-text").innerText = "";
+    document.getElementById("gacha-draw-btn").classList.remove("hidden");
+  }
 
   function playGacha() {
     if (points < 200) {
@@ -2057,161 +1313,6 @@ function startGachaSelect() {
     showAllTransactions = !showAllTransactions;
     renderTransactions();
   }
- 
-// 有効なギフトコードの一覧（管理者・店舗側で発行するコード）
-  // コード名: チャージ金額
-  const validGiftCodes = {
-    "GFT-1000-AAAA": 1000,
-    "GFT-3000-BBBB": 3000,
-    "GFT-5000-CCCC": 5000,
-    "LUCKY-777": 777
-  };
-
-  // ギフトカード入力モーダルを開く/閉じる
-  function openGiftModal() {
-    document.getElementById("gift-code-input").value = "";
-    document.getElementById("gift-modal").classList.remove("hidden");
-  }
-
-  function closeGiftModal() {
-    document.getElementById("gift-modal").classList.add("hidden");
-  }
-
-  // コード入力実行処理
-  function submitGiftCode() {
-    const rawInput = document.getElementById("gift-code-input").value.trim().toUpperCase();
-
-    if (!rawInput) {
-      alert("コードを入力してください。");
-      return;
-    }
-
-    // 1. 使用済みチェック
-    let usedGifts = JSON.parse(localStorage.getItem(`used_gifts_${currentUser}`) || '[]');
-    if (usedGifts.includes(rawInput)) {
-      playSound('error');
-      alert("⚠️ このギフトコードは既に使用されています。");
-      return;
-    }
-
-    // 2. コードの有効性チェック
-    if (validGiftCodes.hasOwnProperty(rawInput)) {
-      const amount = validGiftCodes[rawInput];
-
-      // 残高に加算
-      balance += amount;
-      usedGifts.push(rawInput);
-
-      // 保存と表示更新
-      localStorage.setItem(`used_gifts_${currentUser}`, JSON.stringify(usedGifts));
-      addTransaction('残高', amount, `ギフトコード適用 (${rawInput})`);
-      updateDisplay();
-
-      playSound('win');
-      alert(`🎁 チャージ成功！\n\n${amount.toLocaleString()}円 が残高に追加されました。`);
-      closeGiftModal();
-    } else {
-      playSound('error');
-      alert("❌ 無効なギフトコードです。\nコードを確認して再度お試しください。");
-    }
-  }
-
- // モーダルを開いたときは最初の選択画面を表示
-function openGameModal() {
-  playSound('beep');
-  hideAllGameScreens();
-  document.getElementById("game-first-select").classList.remove("hidden");
-  document.getElementById("game-modal").classList.remove("hidden");
-}
-
-function closeGameModal() {
-  playSound('beep');
-  document.getElementById("game-modal").classList.add("hidden");
-  backToFirstMenu();
-}
-
-// 画面全体の非表示化
-function hideAllGameScreens() {
-  const screens = [
-    "game-first-select", "game-menu-select", "game-tofu-screen",
-    "gacha-screen", "game-janken-screen", "game-highlow-screen",
-    "game-memory-screen", "game-whack-screen", "game-crane-screen"
-  ];
-  screens.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.classList.add("hidden");
-  });
-}
-
-// 「ミニゲーム」ボタンを押してメニュー一覧へ移動
-function goToGameMenu() {
-  playSound('beep');
-  hideAllGameScreens();
-  document.getElementById("game-menu-select").classList.remove("hidden");
-}
-
-// 最初（ミニゲーム or ガチャ）の選択画面に戻る
-function backToFirstMenu() {
-  playSound('beep');
-  stopAllGameTimers();
-  hideAllGameScreens();
-  document.getElementById("game-first-select").classList.remove("hidden");
-}
-
-// 各ゲームから「ミニゲームメニュー」に戻る
-function backToGameMenu() {
-  playSound('beep');
-  stopAllGameTimers();
-  hideAllGameScreens();
-  document.getElementById("game-menu-select").classList.remove("hidden");
-}
-
-
-// ループ処理やタイマーのクリアまとめ
-function stopAllGameTimers() {
-  gameActive = false;
-  if (typeof gameAnimationId !== 'undefined') cancelAnimationFrame(gameAnimationId);
-  if (typeof whackTimer !== 'undefined') clearInterval(whackTimer);
-  if (typeof whackMoleTimer !== 'undefined') clearInterval(whackMoleTimer);
-  if (typeof craneAnimTimer !== 'undefined') clearInterval(craneAnimTimer);
-}
-
-// === ミニゲームのポイント設定（自由に変更可能） ===
-const GAME_CONFIG = {
-  janken: {
-    win: 50,      // 勝利時
-    draw: 20,      // 引き分け時
-    lose: 0        // 敗北時
-  },
-  highLow: {
-    correct: 30,   // 正解ごとに獲得
-    maxWins: 5     // 連続挑戦の上限回数
-  },
-  memory: {
-    clearReward: 200 // クリア報酬
-  },
-  whack: {
-    pointPerHit: 10, // 1ヒットあたりのポイント
-    duration: 10     // 制限時間（秒）
-  },
-  crane: {
-    gold: 300,     // 金カプセル
-    silver: 150,   // 銀カプセル
-    bronze: 50     // 銅カプセル
-  }
-}; 
-
-    // 追加のポイント設定
-Object.assign(GAME_CONFIG, {
-  dice: { winMultiplier: 2 },        // サイコロ：的中時に掛けptが2倍
-  timing: { exact: 300, near: 50 },  // タイミング：ピッタリで300pt、前後0.1秒以内で50pt
-  numberMemory: { perLevel: 50 },    // 数字記憶：1レベルクリアごとに50pt
-  chicken: { base: 20 },             // チキン：膨らませるごとに基本ptアップ
-  findDiff: { win: 100 },            // 間違い探し：正解で100pt
-  bomb: { safe: 30, clearBonus: 200 } // 爆弾処理：成功ごとに30pt、全解除で200pt
-});
-
-
 </script>
 
 </body>
