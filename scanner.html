@@ -226,21 +226,22 @@
 </div>
 
 <!-- ギフトカードコード入力モーダル -->
-<div id="gift-modal" class="modal hidden">
-  <div class="modal-content" style="max-width:320px; background:#fff; padding:20px; border-radius:16px; text-align:center;">
+<div id="gift-modal" class="modal-overlay hidden">
+  <div class="modal-content">
     <h3 style="margin-top:0; color:#ff0033;">🎁 ギフトカードのチャージ</h3>
     <p style="font-size:12px; color:#666;">カード裏面に記載されている英数字コードを入力してください</p>
-   
-    <input type="text" id="gift-code-input" placeholder="例: GFT-9876-ABCD" style="width:100%; padding:10px; font-size:16px; font-weight:bold; text-align:center; text-transform:uppercase; border:2px solid #ddd; border-radius:8px; margin-top:10px; box-sizing:border-box;">
+    
+    <input type="text" id="gift-code-input" placeholder="例: GFT-1000-AAAA" style="width:100%; padding:10px; font-size:16px; font-weight:bold; text-align:center; text-transform:uppercase; border:2px solid #ddd; border-radius:8px; margin-top:10px; box-sizing:border-box;">
 
-    <button onclick="submitGiftCode()" style="width:100%; padding:12px; margin-top:15px; background:#ff0033; color:white; border:none; border-radius:8px; font-weight:bold; font-size:14px; cursor:pointer;">
+    <button onclick="submitGiftCode()" class="main-btn" style="margin-top:15px;">
       チャージする
     </button>
-    <button onclick="closeGiftModal()" style="width:100%; padding:10px; margin-top:8px; background:#6c757d; color:white; border:none; border-radius:8px; font-size:12px; cursor:pointer;">
+    <button onclick="closeGiftModal()" class="secondary-btn">
       閉じる
     </button>
   </div>
-</div> 
+</div>
+
 
   
 <!-- クーポンモーダル -->
@@ -382,14 +383,6 @@
   let html5QrCode = null;
   let isCameraOn = false;
 
-// モーダルを開く関数
-function openGiftModal() {
-  const modal = document.getElementById('gift-modal'); // 作成済みモーダルのID指定
-  if (modal) {
-    modal.classList.remove('hidden'); // hiddenクラスを外す場合
-    // または modal.style.display = 'flex'; など既存モーダルの表示方法に合わせる
-  }
-}
 
 
   
@@ -1369,13 +1362,17 @@ function openGiftModal() {
     showAllTransactions = !showAllTransactions;
     renderTransactions();
   }
- // 手入力用データベース（発行したコードと金額のリスト）
+ 
+// 有効なギフトコードの一覧（管理者・店舗側で発行するコード）
+  // コード名: チャージ金額
   const validGiftCodes = {
     "GFT-1000-AAAA": 1000,
     "GFT-3000-BBBB": 3000,
-    "GFT-5000-CCCC": 5000
+    "GFT-5000-CCCC": 5000,
+    "LUCKY-777": 777
   };
 
+  // ギフトカード入力モーダルを開く/閉じる
   function openGiftModal() {
     document.getElementById("gift-code-input").value = "";
     document.getElementById("gift-modal").classList.remove("hidden");
@@ -1385,42 +1382,44 @@ function openGiftModal() {
     document.getElementById("gift-modal").classList.add("hidden");
   }
 
+  // コード入力実行処理
   function submitGiftCode() {
-    const code = document.getElementById("gift-code-input").value.trim().toUpperCase();
+    const rawInput = document.getElementById("gift-code-input").value.trim().toUpperCase();
 
-    if (!code) {
-      alert("ギフトコードを入力してください。");
+    if (!rawInput) {
+      alert("コードを入力してください。");
       return;
     }
 
     // 1. 使用済みチェック
     let usedGifts = JSON.parse(localStorage.getItem(`used_gifts_${currentUser}`) || '[]');
-    if (usedGifts.includes(code)) {
+    if (usedGifts.includes(rawInput)) {
       playSound('error');
       alert("⚠️ このギフトコードは既に使用されています。");
       return;
     }
 
-    // 2. 有効コード判定
-    if (validGiftCodes.hasOwnProperty(code)) {
-      const amount = validGiftCodes[code];
+    // 2. コードの有効性チェック
+    if (validGiftCodes.hasOwnProperty(rawInput)) {
+      const amount = validGiftCodes[rawInput];
 
+      // 残高に加算
       balance += amount;
-      usedGifts.push(code);
+      usedGifts.push(rawInput);
 
+      // 保存と表示更新
       localStorage.setItem(`used_gifts_${currentUser}`, JSON.stringify(usedGifts));
-      addTransaction('残高', amount, `ギフトコード入力 (${code})`);
+      addTransaction('残高', amount, `ギフトコード適用 (${rawInput})`);
       updateDisplay();
 
       playSound('win');
-      alert(`🎁 チャージ成功！\n\n${amount.toLocaleString()}円 を残高にチャージしました。`);
+      alert(`🎁 チャージ成功！\n\n${amount.toLocaleString()}円 が残高に追加されました。`);
       closeGiftModal();
     } else {
       playSound('error');
-      alert("❌ 無効なギフトコードです。コードを確認してください。");
+      alert("❌ 無効なギフトコードです。\nコードを確認して再度お試しください。");
     }
   }
-
 
  
   
