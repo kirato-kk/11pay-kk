@@ -2228,13 +2228,17 @@ function backToFirstMenu() {
   document.getElementById("game-first-select").classList.remove("hidden");
 }
 
-// 各ゲームからミニゲームメニューに戻る
+// 「メニューに戻る」ボタンを押したときの処理
 function backToGameMenu() {
   playSound('beep');
-  stopAllGameTimers();
-  hideAllGameScreens();
+  
+  // ★ ここで全画面を一度消すのが必須です！
+  hideAllGameScreens(); 
+  
+  // その後で「ミニゲームメニュー」だけを表示する
   document.getElementById("game-menu-select").classList.remove("hidden");
 }
+
 
 // ループ処理やタイマーのクリアまとめ
 function stopAllGameTimers() {
