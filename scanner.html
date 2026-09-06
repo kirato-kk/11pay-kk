@@ -2220,7 +2220,7 @@ function goToGameMenu() {
   document.getElementById("game-menu-select").classList.remove("hidden");
 }
 
-// 最初（ミニゲーム or ガチャ）の画面に戻る
+// 最初（ミニゲーム or ガチャ）の選択画面に戻る
 function backToFirstMenu() {
   playSound('beep');
   stopAllGameTimers();
@@ -2228,14 +2228,11 @@ function backToFirstMenu() {
   document.getElementById("game-first-select").classList.remove("hidden");
 }
 
-// 「メニューに戻る」ボタンを押したときの処理
+// 各ゲームから「ミニゲームメニュー」に戻る
 function backToGameMenu() {
   playSound('beep');
-  
-  // ★ ここで全画面を一度消すのが必須です！
-  hideAllGameScreens(); 
-  
-  // その後で「ミニゲームメニュー」だけを表示する
+  stopAllGameTimers();
+  hideAllGameScreens();
   document.getElementById("game-menu-select").classList.remove("hidden");
 }
 
