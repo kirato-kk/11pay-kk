@@ -100,6 +100,25 @@
     #qr-output-container img { width: 200px; height: 200px; border-radius: 10px; }
    
     .hidden { display: none !important; }
+
+ .gift-charge-btn {
+  margin-top: 16px; /* 上の要素との間の余白 */
+  padding: 12px 20px;
+  background-color: #ff9800; /* オレンジ色の背景 */
+  color: #ffffff;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px; /* 角丸 */
+  cursor: pointer;
+  
+  /* ボタン自体を中央寄せにしたい場合 */
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+
+    
   </style>
 </head>
 <body>
@@ -154,27 +173,10 @@
       </div>
     </div>
 
-<!-- トップ画面またはメニュー内のボタン -->
-<button onclick="openGiftModal()" style="background:#ff9800; color:white; border:none; padding:12px 20px; border-radius:8px; font-weight:bold; font-size:15px; cursor:pointer;">
+<!-- ギフトカードでチャージボタン -->
+<button id="open-gift-modal-btn" class="gift-charge-btn" onclick="openGiftModal()">
   🎁 ギフトカードでチャージ
 </button>
-    <!-- ギフトカードコード入力モーダル -->
-<div id="gift-modal" class="modal hidden">
-  <div class="modal-content" style="max-width:320px; background:#fff; padding:20px; border-radius:16px; text-align:center;">
-    <h3 style="margin-top:0; color:#ff0033;">🎁 ギフトカードのチャージ</h3>
-    <p style="font-size:12px; color:#666;">カード裏面に記載されている英数字コードを入力してください</p>
-   
-    <input type="text" id="gift-code-input" placeholder="例: GFT-9876-ABCD" style="width:100%; padding:10px; font-size:16px; font-weight:bold; text-align:center; text-transform:uppercase; border:2px solid #ddd; border-radius:8px; margin-top:10px; box-sizing:border-box;">
-
-    <button onclick="submitGiftCode()" style="width:100%; padding:12px; margin-top:15px; background:#ff0033; color:white; border:none; border-radius:8px; font-weight:bold; font-size:14px; cursor:pointer;">
-      チャージする
-    </button>
-    <button onclick="closeGiftModal()" style="width:100%; padding:10px; margin-top:8px; background:#6c757d; color:white; border:none; border-radius:8px; font-size:12px; cursor:pointer;">
-      閉じる
-    </button>
-  </div>
-</div> 
-
 
 
    
@@ -223,6 +225,22 @@
   </button>
 </div>
 
+<!-- ギフトカードコード入力モーダル -->
+<div id="gift-modal" class="modal hidden">
+  <div class="modal-content" style="max-width:320px; background:#fff; padding:20px; border-radius:16px; text-align:center;">
+    <h3 style="margin-top:0; color:#ff0033;">🎁 ギフトカードのチャージ</h3>
+    <p style="font-size:12px; color:#666;">カード裏面に記載されている英数字コードを入力してください</p>
+   
+    <input type="text" id="gift-code-input" placeholder="例: GFT-9876-ABCD" style="width:100%; padding:10px; font-size:16px; font-weight:bold; text-align:center; text-transform:uppercase; border:2px solid #ddd; border-radius:8px; margin-top:10px; box-sizing:border-box;">
+
+    <button onclick="submitGiftCode()" style="width:100%; padding:12px; margin-top:15px; background:#ff0033; color:white; border:none; border-radius:8px; font-weight:bold; font-size:14px; cursor:pointer;">
+      チャージする
+    </button>
+    <button onclick="closeGiftModal()" style="width:100%; padding:10px; margin-top:8px; background:#6c757d; color:white; border:none; border-radius:8px; font-size:12px; cursor:pointer;">
+      閉じる
+    </button>
+  </div>
+</div> 
 
   
 <!-- クーポンモーダル -->
@@ -364,6 +382,17 @@
   let html5QrCode = null;
   let isCameraOn = false;
 
+// モーダルを開く関数
+function openGiftModal() {
+  const modal = document.getElementById('gift-modal'); // 作成済みモーダルのID指定
+  if (modal) {
+    modal.classList.remove('hidden'); // hiddenクラスを外す場合
+    // または modal.style.display = 'flex'; など既存モーダルの表示方法に合わせる
+  }
+}
+
+
+  
   // クーポン管理
   let activeDiscount = 0;
   let coupons = [
