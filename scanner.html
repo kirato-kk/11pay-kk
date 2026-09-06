@@ -786,7 +786,7 @@ function startCraneGame() {
     cranePos += 5 * craneDir;
     if (cranePos >= 210 || cranePos <= 10) craneDir *= -1;
     document.getElementById("crane-arm").style.left = `${cranePos}px`;
-  }, 30);
+  }, 15);
 }
 
 function triggerCraneAction() {
@@ -1314,10 +1314,7 @@ function cutWire(idx) {
     menu.classList.remove("hidden");
   }
   
-  // 画面のスクロール位置を最上部に固定
-  window.scrollTo(0, 0);
-}
-
+ 
 
   function startTofuGameSelect() {
     playSound('beep');
@@ -2182,24 +2179,24 @@ function stopAllGameTimers() {
 // === ミニゲームのポイント設定（自由に変更可能） ===
 const GAME_CONFIG = {
   janken: {
-    win: 100,      // 勝利時
+    win: 50,      // 勝利時
     draw: 20,      // 引き分け時
     lose: 0        // 敗北時
   },
   highLow: {
-    correct: 50,   // 正解ごとに獲得
+    correct: 30,   // 正解ごとに獲得
     maxWins: 5     // 連続挑戦の上限回数
   },
   memory: {
-    clearReward: 300 // クリア報酬
+    clearReward: 200 // クリア報酬
   },
   whack: {
     pointPerHit: 10, // 1ヒットあたりのポイント
-    duration: 15     // 制限時間（秒）
+    duration: 10     // 制限時間（秒）
   },
   crane: {
-    gold: 500,     // 金カプセル
-    silver: 200,   // 銀カプセル
+    gold: 300,     // 金カプセル
+    silver: 150,   // 銀カプセル
     bronze: 50     // 銅カプセル
   }
 }; 
