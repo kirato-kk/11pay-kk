@@ -1053,14 +1053,22 @@ function triggerCraneAction() {
     updateTofuGame();
   }
 
-  function startGachaSelect() {
-    playSound('beep');
-    document.getElementById("game-menu-select").classList.add("hidden");
-    document.getElementById("gacha-screen").classList.remove("hidden");
-    document.getElementById("gacha-box").innerText = "🎁";
-    document.getElementById("gacha-result-text").innerText = "";
-    document.getElementById("gacha-draw-btn").classList.remove("hidden");
-  }
+  // ガチャ画面を開く関数
+function startGachaSelect() {
+  playSound('beep');
+ 
+  // ★ すべての画面（最初の画面含む）を非表示にする
+  hideAllGameScreens();
+ 
+  // ガチャ画面だけを表示する
+  document.getElementById("gacha-screen").classList.remove("hidden");
+ 
+  // 表示の初期化
+  document.getElementById("gacha-box").innerText = "🎁";
+  document.getElementById("gacha-result-text").innerText = "";
+  document.getElementById("gacha-draw-btn").disabled = false;
+} 
+
 
   function playGacha() {
     if (points < 200) {
