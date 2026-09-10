@@ -1053,7 +1053,15 @@ function restartScanner() {
   }
 } 
 
-  function onScanSuccess(decodedText) {
+ // 修正版：QR読み取り成功時の処理
+function onScanSuccess(decodedText) {
+  // 1. クーポン追加処理を実行
+  handleCouponQRScan(decodedText);
+
+  // 2. 連続して次のQRも読み取れるようにするため、ストップさせずにそのままスキャンを継続させるか、
+  //    もし一度止めたい場合は、ボタンの表示を「カメラOFF」から「カメラON」に切り替える処理をここに挟みます。
+  //    ※今回は「続けてすぐ他のQRも読み込める」ように、あえて stop() をせずにアラートを出したあともカメラを生かしておくのが一番スムーズです！
+
     playSound('beep');
     stopScanner(() => {
       if (decodedText.startsWith("SEND:")) {
