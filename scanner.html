@@ -1442,25 +1442,25 @@
   // ⚙️ ポイント獲得量の設定（ここを変更するとポイントが変わります）
   // =========================================================
   const GAME_REWARDS = {
-    janken: 50,       // じゃんけん
-    highlow: 60,      // ハイ＆ロー
-    memory: 150,      // 神経衰弱
-    moleMultiplier: 10,// モグラ叩き（1匹につき）
-    dice: 50,         // サイコロ
-    just555: 300,     // 5.55秒ストップ
-    nummem: 120,      // 数字記憶
-    chickenMultiplier: 2, // チキンレース（数字×）
-    diff: 120,        // 間違い探し
-    bomb: 150,        // 爆弾処理
-    craneGift: 150,   // クレーン（ギフト箱）
-    craneBear: 100,   // クレーン（くま）
+    janken: 20,       // じゃんけん
+    highlow: 30,      // ハイ＆ロー
+    memory: 100,      // 神経衰弱
+    moleMultiplier: 5,// モグラ叩き（1匹につき）
+    dice: 30,         // サイコロ
+    just555: 150,     // 5.55秒ストップ
+    nummem: 100,      // 数字記憶
+    chickenMultiplier: 1, // チキンレース（数字×）
+    diff: 100,        // 間違い探し
+    bomb: 50,        // 爆弾処理
+    craneGift: 100,   // クレーン（ギフト箱）
+    craneBear: 50,   // クレーン（くま）
     craneDiamond: 200,// クレーン（ダイヤ）
    
     // 【新ゲーム】
-    tapRushMultiplier: 5, // 連打ゲーム（1回タップにつき）
-    balloon: 150,         // 風船あおぎ
-    numSequence: 150,     // 順番タップ
-    anagram: 120           // アナグラム
+    tapRushMultiplier: 2, // 連打ゲーム（1回タップにつき）
+    balloon: 50,         // 風船あおぎ
+    numSequence: 80,     // 順番タップ
+    anagram: 60           // アナグラム
   };
 
   const VALID_GIFTS = {
@@ -1668,10 +1668,10 @@
       if (moveInterval) return;
       moveInterval = setInterval(() => {
         if (armX < 210) {
-          armX += 4;
+          armX += 8;
           arm.style.left = armX + "px";
         }
-      }, 30);
+      }, 15);
     };
 
     const stopMove = function() { clearInterval(moveInterval); moveInterval = null; };
