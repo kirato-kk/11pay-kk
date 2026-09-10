@@ -1316,7 +1316,7 @@
 </script>
 
 <!-- ========================================== -->
-<!-- 12種ミニゲーム＆ギフトカード (UI重なり＆クレーン修正版) -->
+<!-- クレーンゲーム実装 ＆ UI重複修正版 -->
 <!-- ========================================== -->
 
 <style>
@@ -1362,7 +1362,46 @@
   .btn-color-11 { background-color: #007bff; }
   .btn-color-12 { background-color: #343a40; }
 
-  /* ギフトカードボタンのデザイン */
+  /* クレーンゲーム専用スタイル */
+  .crane-box {
+    position: relative;
+    width: 100%;
+    height: 180px;
+    background: #222;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 10px;
+    border: 3px solid #17a2b8;
+  }
+  .crane-arm {
+    position: absolute;
+    top: 0;
+    left: 10px;
+    width: 30px;
+    height: 30px;
+    font-size: 24px;
+    text-align: center;
+    line-height: 30px;
+    transition: left 0.1s linear, top 0.1s linear;
+    z-index: 10;
+  }
+  .crane-prize {
+    position: absolute;
+    bottom: 10px;
+    font-size: 28px;
+  }
+  .crane-hole {
+    position: absolute;
+    bottom: 0;
+    left: 10px;
+    width: 45px;
+    height: 15px;
+    background: #000;
+    border-radius: 5px 5px 0 0;
+    border: 1px dashed #fff;
+  }
+
+  /* ギフトカードボタン Design */
   .home-gift-btn-container {
     width: 100%;
     margin: 14px 0;
@@ -1384,9 +1423,8 @@
     justify-content: center;
     gap: 8px;
   }
-  .home-gift-btn:active { transform: scale(0.98); }
 
-  /* モーダル等共通スタイル */
+  /* モーダル共通 */
   .gift-input-box { width: 100%; padding: 12px; font-size: 16px; letter-spacing: 2px; text-transform: uppercase; text-align: center; border: 2px dashed #ff0033; border-radius: 12px; margin: 15px 0; box-sizing: border-box; }
   .game-stage-box { background: #f8f9fa; border-radius: 12px; padding: 15px; margin: 10px 0; min-height: 220px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
   .memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; width: 100%; }
@@ -1468,7 +1506,6 @@
     }
   };
 
-  // カメラ領域の下にギフトカードボタンを確実に配置
   function injectGiftButton() {
     if (document.getElementById("home-gift-btn-wrapper")) return;
 
@@ -1498,12 +1535,10 @@
     }
   }
 
-  // メニューのUI構造をクリーンアップ＆構築
   function buildGameMenuUI() {
     const gameMenuSelect = document.getElementById("game-menu-select");
     if (!gameMenuSelect) return;
 
-    // カテゴリ選択画面のHTML（表示制御用スタイルを追加）
     gameMenuSelect.innerHTML = `
       <div id="game-category-content">
         <h3>🎮 ゲーム＆ガチャ</h3>
@@ -1521,7 +1556,7 @@
           <button class="game-item-btn btn-color-3" onclick="playGame('highlow')">🎴 ハイ＆ロー</button>
           <button class="game-item-btn btn-color-4" onclick="playGame('memory')">🎴 神経衰弱</button>
           <button class="game-item-btn btn-color-5" onclick="playGame('mole')">🔨 モグラ叩き</button>
-          <button class="game-item-btn btn-color-6" onclick="triggerCraneGame()">🏗️ クレーン</button>
+          <button class="game-item-btn btn-color-6" onclick="startCraneGame()">🏗️ クレーン</button>
           <button class="game-item-btn btn-color-7" onclick="playGame('dice')">🎲 サイコロ</button>
           <button class="game-item-btn btn-color-8" onclick="playGame('just555')">⏱️ 5.55秒ストップ</button>
           <button class="game-item-btn btn-color-9" onclick="playGame('nummem')">🧠 数字記憶</button>
@@ -1534,7 +1569,6 @@
     `;
   }
 
-  // 初期化処理
   function init() {
     injectGiftButton();
     buildGameMenuUI();
@@ -1547,7 +1581,6 @@
   }
   window.addEventListener('load', init);
 
-  // ミニゲーム一覧を開く（カテゴリ画面を非表示にする）
   window.openMiniGameMenu = function() {
     if (typeof playSound === 'function') playSound('beep');
     const catContent = document.getElementById("game-category-content");
@@ -1556,7 +1589,6 @@
     if (miniMenu) miniMenu.classList.remove("hidden");
   };
 
-  // カテゴリ選択に戻る
   window.backToGameCategory = function() {
     if (typeof playSound === 'function') playSound('beep');
     const catContent = document.getElementById("game-category-content");
@@ -1581,7 +1613,6 @@
     document.getElementById("minigame-play-modal").classList.add("hidden");
   };
 
-  // 豆腐タワー起動
   window.triggerTofuGame = function() {
     if (typeof playSound === 'function') playSound('beep');
     if (typeof startTofuGameSelect === "function") {
@@ -1591,14 +1622,102 @@
     }
   };
 
-  // クレーンゲーム起動
-  window.triggerCraneGame = function() {
+  // ==========================================
+  // クレーンゲームの実装
+  // ==========================================
+  window.startCraneGame = function() {
     if (typeof playSound === 'function') playSound('beep');
-    if (typeof startCraneGame === "function") {
-      startCraneGame();
-    } else {
-      alert("クレーンゲームの起動関数(startCraneGame)が見つかりません。");
-    }
+    const modal = document.getElementById("minigame-play-modal");
+    const title = document.getElementById("minigame-title");
+    const stage = document.getElementById("minigame-stage");
+    modal.classList.remove("hidden");
+
+    title.innerText = "🏗️ クレーンゲーム";
+
+    stage.innerHTML = `
+      <div class="crane-box" id="crane-box">
+        <div class="crane-hole"></div>
+        <div class="crane-arm" id="crane-arm">🏗️</div>
+        <div class="crane-prize" style="left: 70px;">🎁</div>
+        <div class="crane-prize" style="left: 130px;">🧸</div>
+        <div class="crane-prize" style="left: 190px;">💎</div>
+      </div>
+      <p style="font-size:12px; color:#666;">ボタンを押してアームを移動・キャッチ！</p>
+      <div style="display:flex; gap:10px; width:100%;">
+        <button class="main-btn" id="crane-move-btn" style="flex:1; background:#007bff;">👉 右へ移動</button>
+        <button class="main-btn" id="crane-catch-btn" style="flex:1; background:#28a745;" disabled>👇 キャッチ！</button>
+      </div>
+    `;
+
+    let armX = 10;
+    let moveInterval = null;
+    const arm = document.getElementById("crane-arm");
+    const moveBtn = document.getElementById("crane-move-btn");
+    const catchBtn = document.getElementById("crane-catch-btn");
+
+    // 右移動処理
+    moveBtn.onmousedown = moveBtn.ontouchstart = function(e) {
+      e.preventDefault();
+      catchBtn.disabled = false;
+      if (moveInterval) return;
+      moveInterval = setInterval(() => {
+        if (armX < 210) {
+          armX += 4;
+          arm.style.left = armX + "px";
+        }
+      }, 30);
+    };
+
+    const stopMove = function() {
+      clearInterval(moveInterval);
+      moveInterval = null;
+    };
+    moveBtn.onmouseup = moveBtn.ontouchend = stopMove;
+
+    // キャッチ（アーム降下）処理
+    catchBtn.onclick = function() {
+      moveBtn.disabled = true;
+      catchBtn.disabled = true;
+      let armY = 0;
+
+      // 降下
+      const downInterval = setInterval(() => {
+        armY += 4;
+        arm.style.top = armY + "px";
+        if (armY >= 120) {
+          clearInterval(downInterval);
+
+          // 景品判定
+          let caught = false;
+          let prizeName = "ポイント";
+          let rewardPt = 100;
+
+          if (armX >= 55 && armX <= 95) { caught = true; prizeName = "🎁 ギフト箱 (150pt)"; rewardPt = 150; }
+          else if (armX >= 115 && armX <= 155) { caught = true; prizeName = "🧸 くまのぬいぐるみ (100pt)"; rewardPt = 100; }
+          else if (armX >= 175 && armX <= 205) { caught = true; prizeName = "💎 ダイヤ (200pt)"; rewardPt = 200; }
+
+          // 上昇
+          const upInterval = setInterval(() => {
+            armY -= 4;
+            arm.style.top = armY + "px";
+            if (armY <= 0) {
+              clearInterval(upInterval);
+              if (caught) {
+                if (typeof points !== 'undefined') points += rewardPt;
+                if (typeof addTransaction === 'function') addTransaction('ポイント', rewardPt, `クレーンゲーム: ${prizeName}`);
+                if (typeof updateDisplay === 'function') updateDisplay();
+                if (typeof playSound === 'function') playSound('win');
+                alert(`🎉 ゲット！ ${prizeName} を獲得しました！`);
+              } else {
+                if (typeof playSound === 'function') playSound('error');
+                alert("😭 残念！何も掴めませんでした...");
+              }
+              closeMiniGamePlayModal();
+            }
+          }, 30);
+        }
+      }, 30);
+    };
   };
 
   window.playGame = function(type) {
@@ -1796,7 +1915,7 @@
       window.runDiff = function(win) {
         if(win) {
           if (typeof points !== 'undefined') points += 120;
-          if (typeof addTransaction === 'function') addTransaction('ポイント', 120, '間違い探し超難問クリア');
+          if (typeof addTransaction === 'function') addTransaction('ポイント', 120, '間違い探しクリア');
           if (typeof updateDisplay === 'function') updateDisplay();
           if (typeof playSound === 'function') playSound('win');
           alert("🎉 大正解！ 120pt獲得！");
@@ -1834,7 +1953,7 @@
           document.getElementById("bomb-status").innerText = `成功数: ${safeCutCount} / 2`;
           if (safeCutCount >= 2) {
             if (typeof points !== 'undefined') points += 150;
-            if (typeof addTransaction === 'function') addTransaction('ポイント', 150, '爆弾処理2本成功');
+            if (typeof addTransaction === 'function') addTransaction('ポイント', 150, '爆弾処理成功');
             if (typeof updateDisplay === 'function') updateDisplay();
             if (typeof playSound === 'function') playSound('win');
             alert("✂️ 見事に2本切断成功！爆弾解除完了！ 150pt獲得！");
