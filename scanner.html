@@ -223,14 +223,14 @@
     </div>
 
     <div id="game-tofu-screen" class="hidden">
-      <h3>🧊 豆腐タワーチャレンジ</h3>
+      <h3>豆腐タワーチャレンジ</h3>
       <p style="font-size: 13px; color: #666; margin-bottom: 5px;">タップしてタイミングよく豆腐を重ねよう！</p>
       <canvas id="game-canvas" width="300" height="300"></canvas>
       <button class="secondary-btn" onclick="backToGameMenu()">メニューに戻る</button>
     </div>
 
     <div id="gacha-screen" class="hidden">
-      <h3>🎰 ポイントガチャ</h3>
+      <h3>11Payガチャ</h3>
       <p style="font-size: 13px; color: #666; margin-bottom: 10px;">1回 200pt で運試し！</p>
      
       <div id="gacha-box" style="font-size: 40px; margin: 20px 0;">🎁</div>
@@ -1423,7 +1423,7 @@ function onScanSuccess(decodedText) {
     craneDiamond: 200,// クレーン（ダイヤ）
    
     // 【新ゲーム】
-    tapRushMultiplier: 2, // 連打ゲーム（1回タップにつき）
+    tapRushMultiplier: 1, // 連打ゲーム（1回タップにつき）
     balloon: 50,         // 風船あおぎ
     numSequence: 80,     // 順番タップ
     anagram: 60           // アナグラム
@@ -1634,10 +1634,10 @@ function onScanSuccess(decodedText) {
       if (moveInterval) return;
       moveInterval = setInterval(() => {
         if (armX < 210) {
-          armX += 8;
+          armX += 12;
           arm.style.left = armX + "px";
         }
-      }, 15);
+      }, 5);
     };
 
     const stopMove = function() { clearInterval(moveInterval); moveInterval = null; };
