@@ -2068,10 +2068,7 @@
 // 🎟️ クーポン機能（QR追加 ＆ パスワード削除対応版）
 // ==========================================
 
-// 削除用パスワード設定
-const COUPON_DELETE_PASS = "1234"; // ← 好きなパスワードに変更可能
-
-// クーポン管理データ（LocalStorageがあればそこから読み込む、なければ初期データ）
+const COUPON_DELETE_PASS = "1234"; // 削除用パスワード
 let activeDiscount = 0;
 let coupons = JSON.parse(localStorage.getItem('my_coupons')) || [
   { id: 1, title: "コンビニ限定 100円OFF", discount: 100, minPay: 200, used: false },
@@ -2079,25 +2076,21 @@ let coupons = JSON.parse(localStorage.getItem('my_coupons')) || [
   { id: 3, title: "11Pay感謝祭 500円OFF", discount: 500, minPay: 1000, used: false }
 ];
 
-// データを保存する関数
 function saveCouponsToStorage() {
   localStorage.setItem('my_coupons', JSON.stringify(coupons));
 }
 
-// モーダルを開く
 function openCouponModal() {
   playSound('beep');
   renderCoupons();
   document.getElementById("coupon-modal").classList.remove("hidden");
 }
 
-// モーダルを閉じる
 function closeCouponModal() {
   playSound('beep');
   document.getElementById("coupon-modal").classList.add("hidden");
 }
 
-// クーポン一覧の描画（削除ボタン ＆ セットボタン付き）
 function renderCoupons() {
   const container = document.getElementById("coupon-list");
   if (!container) return;
@@ -2108,14 +2101,11 @@ function renderCoupons() {
       <div style="border: 2px dashed ${c.used ? '#ccc' : '#ff0033'}; padding: 12px; border-radius: 12px; margin-bottom: 10px; background: ${c.used ? '#f9f9f9' : '#fff5f5'};">
         <div style="font-weight: bold; font-size: 15px; color: ${c.used ? '#888' : '#333'};">${c.title}</div>
         <div style="font-size: 12px; color: #666; margin: 4px 0;">${c.minPay}円以上のお支払いで利用可能</div>
-       
         <div style="display: flex; gap: 8px; margin-top: 8px;">
           <button class="main-btn" style="flex: 1; padding: 6px 12px; font-size: 13px; margin: 0; background: ${c.used ? '#ccc' : isSelected ? '#28a745' : '#ff0033'};"
             onclick="selectCoupon(${c.id})" ${c.used ? 'disabled' : ''}>
             ${c.used ? '使用済み' : isSelected ? 'セット中 (解除)' : 'セットする'}
           </button>
-         
-          <!-- パスワード付き個別削除ボタン -->
           <button onclick="deleteCouponWithPassword(${c.id})" style="background: #dc3545; color: #fff; border: none; border-radius: 8px; padding: 6px 10px; font-size: 12px; font-weight: bold; cursor: pointer;">
             🗑️ 削除
           </button>
@@ -2125,7 +2115,6 @@ function renderCoupons() {
   }).join('');
 }
 
-// クーポンのセット・解除
 function selectCoupon(id) {
   const coupon = coupons.find(c => c.id === id);
   if (!coupon || coupon.used) return;
@@ -2142,12 +2131,9 @@ function selectCoupon(id) {
   renderCoupons();
 }
 
-// ==========================================
-// 🔑 パスワード認証付きの個別削除関数
-// ==========================================
 function deleteCouponWithPassword(id) {
   const inputPass = prompt("このクーポンを削除するにはパスワードを入力してください:");
-  if (inputPass === null) return; // キャンセル
+  if (inputPass === null) return;
 
   if (inputPass === COUPON_DELETE_PASS) {
     coupons = coupons.filter(c => c.id !== id);
@@ -2161,10 +2147,6 @@ function deleteCouponWithPassword(id) {
   }
 }
 
-// ==========================================
-// 📷 QRコード読み込みによる追加関数
-// （カメラの成功時にこの関数に文字列を渡してください）
-// ==========================================
 function handleCouponQRScan(qrText) {
   if (!qrText || !qrText.startsWith("COUPON:")) {
     return alert("❌ 無効なクーポンQRコードです");
@@ -2177,9 +2159,11 @@ function handleCouponQRScan(qrText) {
 
   const discountVal = Number(parts[2]);
   const minPayVal = Number(parts[3]);
-  const expireVal = parts[4];
 
-  // 新規クーポンの作成
+  if (coupons.some(c => c.title === parts[1] && c.discount === discountVal)) {
+    return alert(`ℹ️ 【${parts[1]}】はすでに追加されています。`);
+  }
+
   const newCoupon = {
     id: Date.now(),
     title: parts[1],
@@ -2188,42 +2172,20 @@ function handleCouponQRScan(qrText) {
     used: false
   };
 
-  // 既存のデータを取得して追加
-  let coupons = JSON.parse(localStorage.getItem('my_coupons')) || [];
-  
-  if (coupons.some(c => c.title === parts[1] && c.discount === discountVal)) {
-    return alert(`ℹ️ 【${parts[1]}】はすでに追加されています。`);
-  }
-
   coupons.push(newCoupon);
-  localStorage.setItem('my_coupons', JSON.stringify(coupons));
+  saveCouponsToStorage();
 
+  playSound('win');
   alert(`🎉 クーポン【${parts[1]}】を追加しました！`);
-  
-  // 画面の表示を更新
-  if (typeof renderCoupons === 'function') {
-    renderCoupons();
-  }
+  renderCoupons();
 }
 
-  // 重複チェック
-  const exists = coupons.some(c => c.title.includes(parts[1]) && c.discount === discountVal);
-  if (exists) {
-    playSound('error');
-    return alert(`ℹ️ 【${parts[1]}】はすでに追加されています。`);
-  }
-} 
-
-  // カメラがQRを捉えたときに実行される関数
-function onScanSuccess(decodedText, decodedResult) {
-  // 読み取った文字列をそのまま上の関数に渡す
+function onScanSuccess(decodedText) {
   handleCouponQRScan(decodedText);
-
-  // （必要に応じて）読み取り後にカメラを停止する処理
   if (typeof html5QrCode !== 'undefined' && html5QrCode.isScanning) {
     html5QrCode.stop().catch(err => console.log(err));
   }
-}
+} 
 
 
 </script> 
