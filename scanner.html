@@ -1314,8 +1314,9 @@
     renderTransactions();
   }
 </script>
-<!-- ========================================== -->
-<!-- 12種ミニゲーム＆ギフトカード (位置修正版) -->
+
+ <!-- ========================================== -->
+<!-- 12種ミニゲーム＆ギフトカード (完全修正版) -->
 <!-- ========================================== -->
 
 <style>
@@ -1364,7 +1365,7 @@
   /* ギフトカードボタンのデザイン */
   .home-gift-btn-container { 
     width: 100%; 
-    margin: 12px 0; 
+    margin: 14px 0; 
     box-sizing: border-box;
   }
   .home-gift-btn {
@@ -1467,7 +1468,7 @@
     }
   };
 
-  // 下部エリアではなく、上のコンテンツエリア内に配置
+  // カメラ領域の下にギフトカードボタンを確実に差し込み
   function injectGiftButton() {
     if (document.getElementById("home-gift-btn-wrapper")) return;
 
@@ -1476,18 +1477,27 @@
     btnWrapper.className = "home-gift-btn-container";
     btnWrapper.innerHTML = `<button class="home-gift-btn" onclick="openGiftModal()">🎁 ギフトカードコード入力</button>`;
 
-    // 残高カード・メインカード等の下部を取得
-    const cardElement = document.querySelector(".card") || document.querySelector(".balance-card") || document.querySelector(".container");
-    
-    if (cardElement && cardElement.parentNode) {
-      // 最初のカード要素のすぐ下に配置
-      cardElement.parentNode.insertBefore(btnWrapper, cardElement.nextSibling);
-    } else {
-      // 画面一番上の要素の後ろ
-      const bodyFirst = document.body.firstElementChild;
-      if (bodyFirst) {
-        document.body.insertBefore(btnWrapper, bodyFirst.nextSibling);
+    // 1. 「カメラはオフです」またはカメラ枠の要素を探す
+    const allDivs = Array.from(document.querySelectorAll("div"));
+    const cameraDiv = allDivs.find(d => d.textContent.includes("カメラはオフです") || (d.id && d.id.includes("camera")));
+
+    if (cameraDiv) {
+      // カメラの黒い枠自体の親要素を取得
+      let cameraContainer = cameraDiv;
+      while (cameraContainer.parentElement && cameraContainer.parentElement.tagName !== 'BODY' && !cameraContainer.classList.contains('container')) {
+        if (cameraContainer.offsetHeight > 100) break; // カメラの大きな黒いボックス枠
+        cameraContainer = cameraContainer.parentElement;
       }
+      if (cameraContainer && cameraContainer.parentNode) {
+        cameraContainer.parentNode.insertBefore(btnWrapper, cameraContainer.nextSibling);
+        return;
+      }
+    }
+
+    // 2. カメラ要素が見つからない場合は「取引履歴」の上に配置
+    const targetBtn = allDivs.find(d => d.textContent.includes("取引履歴"));
+    if (targetBtn && targetBtn.parentNode) {
+      targetBtn.parentNode.insertBefore(btnWrapper, targetBtn);
     }
   }
 
@@ -1578,15 +1588,19 @@
     document.getElementById("minigame-play-modal").classList.add("hidden");
   };
 
+  // 豆腐タワー起動（全体モーダルを完全に隠す）
   window.triggerTofuGame = function() {
     if (typeof playSound === 'function') playSound('beep');
-    document.getElementById("minigame-menu-select").classList.add("hidden");
+    const gameModal = document.getElementById("game-modal");
+    if (gameModal) gameModal.classList.add("hidden");
     if (typeof startTofuGameSelect === "function") startTofuGameSelect();
   };
 
+  // クレーンゲーム起動（全体モーダルを完全に隠す）
   window.triggerCraneGame = function() {
     if (typeof playSound === 'function') playSound('beep');
-    document.getElementById("minigame-menu-select").classList.add("hidden");
+    const gameModal = document.getElementById("game-modal");
+    if (gameModal) gameModal.classList.add("hidden");
     if (typeof startCraneGame === "function") startCraneGame();
   };
 
@@ -1835,7 +1849,7 @@
   };
 
 })();
-</script>
+</script> 
           
    
 </body>
