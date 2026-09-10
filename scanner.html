@@ -1314,9 +1314,8 @@
     renderTransactions();
   }
 </script>
-
-  <!-- ========================================== -->
-<!-- 14種のミニゲーム ＆ ギフトカード 完全拡張コード -->
+<!-- ========================================== -->
+<!-- 12種のミニゲーム ＆ ホーム配置ギフトカード -->
 <!-- ========================================== -->
 
 <style>
@@ -1346,10 +1345,38 @@
   }
   .game-item-btn:active { transform: scale(0.96); }
   .gift-input-box { width: 100%; padding: 12px; font-size: 16px; letter-spacing: 2px; text-transform: uppercase; text-align: center; border: 2px dashed #ff0033; border-radius: 12px; margin: 15px 0; }
-  .game-stage-box { background: #f8f9fa; border-radius: 12px; padding: 15px; margin: 10px 0; min-height: 180px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+  .game-stage-box { background: #f8f9fa; border-radius: 12px; padding: 15px; margin: 10px 0; min-height: 200px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+  
+  /* 神経衰弱用スタイル */
+  .memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; width: 100%; }
+  .memory-card { height: 50px; background: #007bff; color: #fff; font-size: 20px; font-weight: bold; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .memory-card.open { background: #fff; color: #333; border: 2px solid #007bff; }
+  
+  /* モグラ叩き用スタイル */
+  .mole-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; }
+  .mole-hole { height: 60px; background: #8b4513; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; }
+
+  /* ホーム画面用ギフトボタンデザイン */
+  .home-gift-btn {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    background: linear-gradient(135deg, #ff416c, #ff4b2b);
+    color: white;
+    font-weight: bold;
+    font-size: 15px;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(255, 65, 108, 0.3);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
 </style>
 
-<!-- ギフトカード用モーダル -->
+<!-- ギフトカードモーダル -->
 <div id="gift-modal" class="modal-overlay hidden">
   <div class="modal-content">
     <h3>🎁 ギフトカード残高チャージ</h3>
@@ -1360,7 +1387,7 @@
   </div>
 </div>
 
-<!-- 汎用ミニゲームプレイモーダル -->
+<!-- ミニゲーム実行モーダル -->
 <div id="minigame-play-modal" class="modal-overlay hidden">
   <div class="modal-content">
     <h3 id="minigame-title">🎮 ミニゲーム</h3>
@@ -1372,7 +1399,7 @@
 <script>
 (function() {
 
-  // --- ギフトカード定義 ---
+  // ギフト定義
   const VALID_GIFTS = {
     "GIFT1000": { amount: 1000, type: "残高", name: "1000円ギフト" },
     "GIFT5000": { amount: 5000, type: "残高", name: "5000円ギフト" },
@@ -1402,74 +1429,73 @@
       localStorage.setItem(`used_gifts_${currentUser}`, JSON.stringify(usedGifts));
       if (giftData.type === "残高") { balance += giftData.amount; addTransaction('残高', giftData.amount, `ギフト: ${giftData.name}`); }
       else { points += giftData.amount; addTransaction('ポイント', giftData.amount, `ギフト: ${giftData.name}`); }
-      updateDisplay();
-      playSound('win');
+      updateDisplay(); playSound('win');
       alert(`🎉 チャージ成功！\n${giftData.name} を受取りました！`);
       closeGiftModal();
     } else {
-      playSound('error');
-      alert("無効なギフトコードです");
+      playSound('error'); alert("無効なギフトコードです");
     }
   };
 
-  // --- ナビゲーションへの「ギフト」追加 ＆ ゲームUI再構築 ---
+  // UI初期設定（ホーム画面の「カメラ」と「取引履歴」の間にギフトボタンを配置）
   window.addEventListener('DOMContentLoaded', () => {
-    const nav = document.getElementById("bottom-nav");
-    if (nav && !document.getElementById("nav-gift-btn")) {
+    // 既存ボトムナビの「ギフト」ボタンを除去
+    const existingNavGift = document.getElementById("nav-gift-btn");
+    if (existingNavGift) existingNavGift.remove();
+
+    // ホーム画面要素への挿入
+    const historyBtn = document.querySelector("button[onclick*='openHistoryModal']");
+    if (historyBtn && !document.getElementById("home-gift-btn")) {
       const giftBtn = document.createElement("button");
-      giftBtn.id = "nav-gift-btn";
-      giftBtn.className = "nav-item";
+      giftBtn.id = "home-gift-btn";
+      giftBtn.className = "home-gift-btn";
       giftBtn.onclick = openGiftModal;
-      giftBtn.innerHTML = `
-        <svg class="nav-svg" viewBox="0 0 24 24" width="22" height="22">
-          <path d="M20 6h-3.17c.41-.52.67-1.19.67-1.92C17.5 2.59 16.22 1.3 14.63 1.3c-.99 0-1.85.5-2.38 1.25L12 2.89l-.25-.34C11.22 1.8 10.36 1.3 9.37 1.3 7.78 1.3 6.5 2.59 6.5 4.08c0 .73.26 1.4.67 1.92H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5.37-3.2c.55 0 1 .45 1 1s-.45 1-1 1h-2.12c.38-.63 1.03-1 2.12-1zM8.37 3.8c1.09 0 1.74.37 2.12 1H8.37c-.55 0-1-.45-1-1s.45-1 1-1zM20 20H4V8h16v12z"/>
-        </svg>
-        <span>ギフト</span>`;
-      nav.insertBefore(giftBtn, nav.firstChild);
+      giftBtn.innerHTML = `🎁 ギフトカードコード入力`;
+      historyBtn.parentNode.insertBefore(giftBtn, historyBtn);
     }
 
-    // GAMEモーダルの初期画面構造の再構築
+    // GAMEモーダルのメニュー構築
     const gameMenuSelect = document.getElementById("game-menu-select");
     if (gameMenuSelect) {
       gameMenuSelect.innerHTML = `
         <h3>🎮 ゲーム＆ガチャ</h3>
         <p style="font-size: 13px; color: #666; margin-bottom: 20px;">どちらで遊ぶか選んでね！</p>
-        <button class="main-btn" style="margin-bottom: 12px; background: #007bff;" onclick="openMiniGameMenu()">🕹️ ミニゲーム (全14種)</button>
+        <button class="main-btn" style="margin-bottom: 12px; background: #007bff;" onclick="openMiniGameMenu()">🕹️ ミニゲームメニュー</button>
         <button class="main-btn" style="background: #ff9900;" onclick="startGachaSelect()">🎰 ポイントガチャ (1回 200pt)</button>
         <button class="secondary-btn" style="margin-top: 15px;" onclick="closeGameModal()">閉じる</button>
       `;
 
-      // ミニゲームメニュー画面（隠し領域）を追加
       const modalContent = gameMenuSelect.parentElement;
-      const miniGameMenuDiv = document.createElement("div");
-      miniGameMenuDiv.id = "minigame-menu-select";
-      miniGameMenuDiv.className = "hidden";
+      let miniGameMenuDiv = document.getElementById("minigame-menu-select");
+      if (!miniGameMenuDiv) {
+        miniGameMenuDiv = document.createElement("div");
+        miniGameMenuDiv.id = "minigame-menu-select";
+        miniGameMenuDiv.className = "hidden";
+        modalContent.appendChild(miniGameMenuDiv);
+      }
+
       miniGameMenuDiv.innerHTML = `
         <h3>🕹️ ミニゲームメニュー</h3>
         <p style="font-size: 12px; color: #666; margin-bottom: 10px;">遊ぶゲームを選んでね！</p>
         <div class="game-grid">
           <button class="game-item-btn" onclick="startTofuGameSelect()">🧊 豆腐タワー</button>
-          <button class="game-item-btn" onclick="playGame(1)">✊ じゃんけん</button>
-          <button class="game-item-btn" onclick="playGame(2)">🪙 コイントス</button>
-          <button class="game-item-btn" onclick="playGame(3)">🎲 サイコロ大小</button>
-          <button class="game-item-btn" onclick="playGame(4)">👆 10秒連打</button>
-          <button class="game-item-btn" onclick="playGame(5)">⏱️ ジャスト7秒</button>
-          <button class="game-item-btn" onclick="playGame(6)">🎴 ハイ＆ロー</button>
-          <button class="game-item-btn" onclick="playGame(7)">🔢 数字当て</button>
-          <button class="game-item-btn" onclick="playGame(8)">🎰 3連スロット</button>
-          <button class="game-item-btn" onclick="playGame(9)">⚡ 早押し判定</button>
-          <button class="game-item-btn" onclick="playGame(10)">💣 爆弾回避</button>
-          <button class="game-item-btn" onclick="playGame(11)">🎨 色当てテスト</button>
-          <button class="game-item-btn" onclick="playGame(12)">🧮 算数スピード</button>
-          <button class="game-item-btn" onclick="playGame(13)">🏗️ クレーン</button>
+          <button class="game-item-btn" onclick="playGame('memory')">🃏 神経衰弱(6ペア)</button>
+          <button class="game-item-btn" onclick="playGame('highlow')">🎴 ハイアンドロー</button>
+          <button class="game-item-btn" onclick="playGame('janken')">✊ じゃんけん</button>
+          <button class="game-item-btn" onclick="playGame('mole')">🔨 モグラ叩き</button>
+          <button class="game-item-btn" onclick="playGame('crane')">🏗️ クレーン</button>
+          <button class="game-item-btn" onclick="playGame('dice')">🎲 奇数偶数(サイコロ)</button>
+          <button class="game-item-btn" onclick="playGame('just555')">⏱️ ピッタリ(5.55)</button>
+          <button class="game-item-btn" onclick="playGame('nummem')">🧠 数字記憶</button>
+          <button class="game-item-btn" onclick="playGame('chicken')">🐔 チキンレース</button>
+          <button class="game-item-btn" onclick="playGame('diff')">🔍 間違い探し</button>
+          <button class="game-item-btn" onclick="playGame('bomb')">💣 爆弾処理</button>
         </div>
         <button class="secondary-btn" style="margin-top: 15px;" onclick="backToGameCategory()">カテゴリに戻る</button>
       `;
-      modalContent.appendChild(miniGameMenuDiv);
     }
   });
 
-  // 画面遷移切り替え処理
   window.openMiniGameMenu = function() {
     playSound('beep');
     document.getElementById("game-menu-select").classList.add("hidden");
@@ -1482,220 +1508,184 @@
     document.getElementById("game-menu-select").classList.remove("hidden");
   };
 
-  const originalBackToGameMenu = window.backToGameMenu;
-  window.backToGameMenu = function() {
-    if (originalBackToGameMenu) originalBackToGameMenu();
-    document.getElementById("minigame-menu-select").classList.add("hidden");
-    document.getElementById("game-menu-select").classList.remove("hidden");
-  };
-
   window.closeMiniGamePlayModal = function() {
     playSound('beep');
     document.getElementById("minigame-play-modal").classList.add("hidden");
   };
 
-  // --- 14種類のミニゲーム処理 ---
-  window.playGame = function(id) {
+  // --- 各ミニゲーム処理 ---
+  window.playGame = function(type) {
     playSound('beep');
     const modal = document.getElementById("minigame-play-modal");
     const title = document.getElementById("minigame-title");
     const stage = document.getElementById("minigame-stage");
     modal.classList.remove("hidden");
 
-    if (id === 1) { // じゃんけん
-      title.innerText = "✊ じゃんけん勝負";
-      stage.innerHTML = `
-        <p>出す手を選んでね！(勝つと 50pt)</p>
-        <div style="display:flex; gap:10px;">
-          <button class="main-btn" onclick="runJanken('✊')">✊</button>
-          <button class="main-btn" onclick="runJanken('✌️')">✌️</button>
-          <button class="main-btn" onclick="runJanken('✋')">✋</button>
-        </div>`;
-    } else if (id === 2) { // コイントス
-      title.innerText = "🪙 コイントス";
-      stage.innerHTML = `
-        <p>表か裏か予想してね！(正解で 50pt)</p>
-        <div style="display:flex; gap:10px;">
-          <button class="main-btn" onclick="runCoin('表')">表</button>
-          <button class="main-btn" onclick="runCoin('裏')">裏</button>
-        </div>`;
-    } else if (id === 3) { // サイコロ
-      title.innerText = "🎲 サイコロ大小";
-      stage.innerHTML = `
-        <p>出目が『大(4-6)』か『小(1-3)』か予想！(正解で 50pt)</p>
-        <div style="display:flex; gap:10px;">
-          <button class="main-btn" onclick="runDice('小')">小 (1~3)</button>
-          <button class="main-btn" onclick="runDice('大')">大 (4~6)</button>
-        </div>`;
-    } else if (id === 4) { // 10秒連打
-      title.innerText = "👆 10秒連打チャレンジ";
-      let count = 0, timer = null;
-      stage.innerHTML = `<h2 id="tap-count">0 次</h2><button class="main-btn" id="tap-btn" onclick="tapCount()">スタート！</button>`;
-      window.tapCount = function() {
-        if (!timer) {
-          timer = setTimeout(() => {
-            const reward = count * 2;
-            points += reward; addTransaction('ポイント', reward, '連打ゲーム報酬'); updateDisplay();
-            playSound('win'); alert(`タイムアップ！${count}回連打！ ${reward}pt ゲット！`);
-            closeMiniGamePlayModal();
-          }, 10000);
+    if (type === 'memory') { // 神経衰弱 (6ペア)
+      title.innerText = "🃏 神経衰弱 (6ペア)";
+      const icons = ['🍎','🍎','🐶','🐶','⚽','⚽','🚗','🚗','🎁','🎁','💎','💎'].sort(() => Math.random() - 0.5);
+      let openCards = [], matched = 0;
+      stage.innerHTML = `<div class="memory-grid">${icons.map((ic, i) => `<div class="memory-card" id="mc-${i}" onclick="flipCard(${i}, '${ic}')">❓</div>`).join('')}</div>`;
+      window.flipCard = function(i, ic) {
+        const card = document.getElementById(`mc-${i}`);
+        if (card.classList.contains("open") || openCards.length >= 2) return;
+        card.classList.add("open"); card.innerText = ic;
+        openCards.push({ idx: i, icon: ic });
+        if (openCards.length === 2) {
+          if (openCards[0].icon === openCards[1].icon) {
+            matched++; openCards = [];
+            if (matched === 6) {
+              points += 150; addTransaction('ポイント', 150, '神経衰弱クリア'); updateDisplay(); playSound('win');
+              alert("🎉 全ペア獲得！ 150pt ゲット！"); closeMiniGamePlayModal();
+            }
+          } else {
+            setTimeout(() => {
+              document.getElementById(`mc-${openCards[0].idx}`).classList.remove("open");
+              document.getElementById(`mc-${openCards[0].idx}`).innerText = "❓";
+              document.getElementById(`mc-${openCards[1].idx}`).classList.remove("open");
+              document.getElementById(`mc-${openCards[1].idx}`).innerText = "❓";
+              openCards = [];
+            }, 800);
+          }
         }
-        count++; playSound('tick');
-        document.getElementById("tap-count").innerText = `${count} 回`;
-        document.getElementById("tap-btn").innerText = "連打！！";
       };
-    } else if (id === 5) { // ジャスト7秒
-      title.innerText = "⏱️ ジャスト7秒ストップ";
+
+    } else if (type === 'highlow') { // ハイアンドロー
+      title.innerText = "🎴 ハイアンドロー";
+      const baseNum = Math.floor(Math.random() * 8) + 2;
+      stage.innerHTML = `<p>現在の数字: <b style="font-size:24px;">${baseNum}</b></p><p>次の数字はこれより大きい？小さい？</p>
+        <div style="display:flex; gap:10px;"><button class="main-btn" onclick="runHL(${baseNum},'H')">HIGH</button><button class="main-btn" onclick="runHL(${baseNum},'L')">LOW</button></div>`;
+      window.runHL = function(b, c) {
+        const n = Math.floor(Math.random() * 9) + 1;
+        if ((c === 'H' && n > b) || (c === 'L' && n < b)) {
+          points += 60; addTransaction('ポイント', 60, 'ハイアンドロー勝利'); updateDisplay(); playSound('win'); alert(`次: ${n} で当たり！ 60pt獲得！`);
+        } else alert(`次: ${n} で残念！`);
+        closeMiniGamePlayModal();
+      };
+
+    } else if (type === 'janken') { // じゃんけん
+      title.innerText = "✊ じゃんけん";
+      stage.innerHTML = `<div style="display:flex; gap:10px;"><button class="main-btn" onclick="runJK('✊')">✊</button><button class="main-btn" onclick="runJK('✌️')">✌️</button><button class="main-btn" onclick="runJK('✋')">✋</button></div>`;
+      window.runJK = function(u) {
+        const c = ['✊','✌️','✋'][Math.floor(Math.random()*3)];
+        if ((u==='✊'&&c==='✌️')||(u==='✌️'&&c==='✋')||(u==='✋'&&c==='✊')) {
+          points += 50; addTransaction('ポイント', 50, 'じゃんけん勝利'); updateDisplay(); playSound('win'); alert(`相手: ${c}\n勝ち！ 50pt獲得！`);
+        } else alert(`相手: ${c}\n${u===c?'あいこ':'負け'}`);
+        closeMiniGamePlayModal();
+      };
+
+    } else if (type === 'mole') { // モグラ叩き
+      title.innerText = "🔨 モグラ叩き (10秒)";
+      let score = 0, timer = null, interval = null;
+      stage.innerHTML = `<h3 id="mole-score">スコア: 0</h3><div class="mole-grid">${[0,1,2,3,4,5].map(i=>`<div class="mole-hole" id="mh-${i}" onclick="hitMole(${i})">🕳️</div>`).join('')}</div>`;
+      let activeHole = -1;
+      interval = setInterval(() => {
+        if(activeHole !== -1) document.getElementById(`mh-${activeHole}`).innerText = "🕳️";
+        activeHole = Math.floor(Math.random()*6);
+        document.getElementById(`mh-${activeHole}`).innerText = "🐹";
+      }, 700);
+      setTimeout(() => {
+        clearInterval(interval);
+        points += score * 10; addTransaction('ポイント', score * 10, 'モグラ叩き報酬'); updateDisplay(); playSound('win');
+        alert(`タイムアップ！${score}匹叩いて ${score * 10}pt 獲得！`); closeMiniGamePlayModal();
+      }, 10000);
+      window.hitMole = function(i) {
+        if(i === activeHole) { score++; playSound('tick'); document.getElementById("mole-score").innerText = `スコア: ${score}`; activeHole = -1; document.getElementById(`mh-${i}`).innerText = "💥"; }
+      };
+
+    } else if (type === 'crane') { // クレーン
+      closeMiniGamePlayModal(); if (window.startCraneGame) window.startCraneGame();
+
+    } else if (type === 'dice') { // 奇数偶数当て
+      title.innerText = "🎲 奇数・偶数当て";
+      stage.innerHTML = `<p>サイコロの出目は奇数？偶数？</p><div style="display:flex; gap:10px;"><button class="main-btn" onclick="runDiceEx('奇数')">奇数 (1,3,5)</button><button class="main-btn" onclick="runDiceEx('偶数')">偶数 (2,4,6)</button></div>`;
+      window.runDiceEx = function(u) {
+        const v = Math.floor(Math.random()*6)+1; const res = v % 2 === 0 ? '偶数' : '奇数';
+        if (u === res) { points += 50; addTransaction('ポイント', 50, 'サイコロ的中'); updateDisplay(); playSound('win'); alert(`出目: ${v} (${res})！ 50pt獲得！`); }
+        else alert(`出目: ${v} (${res}) でハズレ！`);
+        closeMiniGamePlayModal();
+      };
+
+    } else if (type === 'just555') { // ピッタリチャレンジ (5.55秒)
+      title.innerText = "⏱️ ピッタリチャレンジ (5.55秒)";
       let start = 0;
-      stage.innerHTML = `<p id="time-msg">7秒ピッタリでボタンを押そう！</p><button class="main-btn" id="time-btn" onclick="runTimerGame()">スタート</button>`;
-      window.runTimerGame = function() {
-        const btn = document.getElementById("time-btn");
-        if (!start) {
-          start = Date.now(); btn.innerText = "7秒でストップ！";
-          document.getElementById("time-msg").innerText = "計測中...";
-        } else {
-          const diff = Math.abs((Date.now() - start) / 1000 - 7.0);
-          if (diff < 0.3) {
-            points += 200; addTransaction('ポイント', 200, 'ジャスト7秒報酬'); updateDisplay();
-            playSound('win'); alert(`すごい！誤差 ${diff.toFixed(2)}秒！ 200ptゲット！`);
-          } else { playSound('error'); alert(`残念！誤差 ${diff.toFixed(2)}秒でした`); }
+      stage.innerHTML = `<p id="p-msg">5.55秒ピッタリで止めよう！</p><button class="main-btn" id="p-btn" onclick="runP()">スタート</button>`;
+      window.runP = function() {
+        if (!start) { start = Date.now(); document.getElementById("p-btn").innerText = "ストップ！"; document.getElementById("p-msg").innerText = "計測中..."; }
+        else {
+          const diff = Math.abs((Date.now() - start) / 1000 - 5.55);
+          if (diff < 0.2) { points += 300; addTransaction('ポイント', 300, 'ピッタリ成功'); updateDisplay(); playSound('win'); alert(`神業！誤差 ${diff.toFixed(2)}秒！ 300pt獲得！`); }
+          else alert(`結果: 誤差 ${diff.toFixed(2)}秒でした`);
           closeMiniGamePlayModal();
         }
       };
-    } else if (id === 6) { // ハイ＆ロー
-      title.innerText = "🎴 ハイ＆ロー";
-      const baseNum = Math.floor(Math.random() * 8) + 2;
-      stage.innerHTML = `<p>今の数字: <b style="font-size:24px;">${baseNum}</b></p><p>次の数字はこれより大きい？小さい？</p>
-        <div style="display:flex; gap:10px;">
-          <button class="main-btn" onclick="runHighLow(${baseNum}, 'HIGH')">HIGH (大きい)</button>
-          <button class="main-btn" onclick="runHighLow(${baseNum}, 'LOW')">LOW (小さい)</button>
-        </div>`;
-    } else if (id === 7) { // 数字当て
-      title.innerText = "🔢 数字当て (1〜5)";
-      stage.innerHTML = `<p>1〜5の中から当たりを当てよう！(当たれば 100pt)</p>
-        <div style="display:flex; gap:5px;">
-          ${[1,2,3,4,5].map(n => `<button class="main-btn" onclick="runNumGuess(${n})">${n}</button>`).join('')}
-        </div>`;
-    } else if (id === 8) { // 3連スロット
-      title.innerText = "🎰 3連スロット";
-      stage.innerHTML = `<h1 id="slot-disp">❓ ❓ ❓</h1><button class="main-btn" onclick="runSlot()">スロットを回す</button>`;
-    } else if (id === 9) { // 早押し判定
-      title.innerText = "⚡ 早押し判定";
-      stage.innerHTML = `<p id="reflex-msg">「押せ！」が出たら素早く押してね！</p><button class="main-btn" id="reflex-btn" onclick="startReflex()">スタート準備</button>`;
-      window.startReflex = function() {
-        const btn = document.getElementById("reflex-btn");
-        btn.disabled = true; btn.innerText = "じっと待って...";
-        setTimeout(() => {
-          const startTime = Date.now();
-          btn.innerText = "🔥 押せ！！！"; btn.style.background = "#28a745"; btn.disabled = false;
-          btn.onclick = () => {
-            const resTime = (Date.now() - startTime) / 1000;
-            const reward = resTime < 0.4 ? 100 : 30;
-            points += reward; addTransaction('ポイント', reward, '早押し報酬'); updateDisplay();
-            playSound('win'); alert(`反応速度: ${resTime.toFixed(3)}秒！ ${reward}pt 獲得！`);
-            closeMiniGamePlayModal();
-          };
-        }, Math.random() * 3000 + 2000);
+
+    } else if (type === 'nummem') { // 数字記憶
+      title.innerText = "🧠 数字記憶";
+      const target = Math.floor(1000 + Math.random() * 9000).toString();
+      stage.innerHTML = `<p>数字を覚えてね！</p><h1 id="mem-num">${target}</h1>`;
+      setTimeout(() => {
+        stage.innerHTML = `<p>覚えた4桁の数字を入力してね！</p><input type="number" id="mem-in" style="font-size:20px; text-align:center; padding:5px;"><br><br><button class="main-btn" onclick="checkMem('${target}')">回答する</button>`;
+      }, 2000);
+      window.checkMem = function(ans) {
+        const val = document.getElementById("mem-in").value;
+        if(val === ans) { points += 100; addTransaction('ポイント', 100, '数字記憶クリア'); updateDisplay(); playSound('win'); alert("正解！ 100pt獲得！"); }
+        else alert(`不正解！正解は ${ans} でした`);
+        closeMiniGamePlayModal();
       };
-    } else if (id === 10) { // 爆弾回避
-      title.innerText = "💣 爆弾回避";
-      stage.innerHTML = `<p>4つの箱のうち1つは爆弾！safeを開けてptゲット！</p>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-          ${[0,1,2,3].map(i => `<button class="main-btn" onclick="runBomb(${i})">📦 宝箱 ${i+1}</button>`).join('')}
+
+    } else if (type === 'chicken') { // チキンレース
+      title.innerText = "🐔 チキンレース";
+      let num = 0, timer = null;
+      stage.innerHTML = `<h1 id="chk-num">0</h1><p>100に達する前にストップ！(近いほど高pt/100超えでドボン)</p><button class="main-btn" id="chk-btn" onclick="stopChk()">ストップ！</button>`;
+      timer = setInterval(() => {
+        num += Math.floor(Math.random() * 5) + 2;
+        if(document.getElementById("chk-num")) document.getElementById("chk-num").innerText = num;
+        if(num > 100) { clearInterval(timer); playSound('error'); alert("💥 100を超えて爆発しました！0pt"); closeMiniGamePlayModal(); }
+      }, 150);
+      window.stopChk = function() {
+        clearInterval(timer);
+        if(num <= 100) {
+          const pt = num * 2; points += pt; addTransaction('ポイント', pt, 'チキンレース成功'); updateDisplay(); playSound('win');
+          alert(`記録: ${num}！ ${pt}pt 獲得！`);
+        }
+        closeMiniGamePlayModal();
+      };
+
+    } else if (type === 'diff') { // 間違い探し
+      title.innerText = "🔍 間違い探し";
+      stage.innerHTML = `<p>1つだけ違う記号をタップ！</p>
+        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px;">
+          ${[0,1,2,3,4].map(()=>`<button class="main-btn" onclick="runDiff(false)">⭐️</button>`).join('')}
+          <button class="main-btn" onclick="runDiff(true)">🌟</button>
         </div>`;
-    } else if (id === 11) { // 色当て
-      title.innerText = "🎨 文字の色当て";
-      stage.innerHTML = `<p>文字の「色」を答えてね！</p><h2 style="color:red;">あお</h2>
-        <div style="display:flex; gap:10px;">
-          <button class="main-btn" onclick="runColor('赤')">赤</button>
-          <button class="main-btn" onclick="runColor('青')">青</button>
+      window.runDiff = function(win) {
+        if(win) { points += 80; addTransaction('ポイント', 80, '間違い探し成功'); updateDisplay(); playSound('win'); alert("正解！ 80pt獲得！"); }
+        else alert("ハズレ！");
+        closeMiniGamePlayModal();
+      };
+
+    } else if (type === 'bomb') { // 爆弾処理
+      title.innerText = "💣 爆弾処理";
+      const safe = Math.floor(Math.random() * 3);
+      stage.innerHTML = `<p>解除コード（線）を1本切れ！</p>
+        <div style="display:flex; flex-direction:column; gap:8px; width:100%;">
+          <button class="main-btn" style="background:red;" onclick="runB(${safe},0)">🔴 赤い線</button>
+          <button class="main-btn" style="background:blue;" onclick="runB(${safe},1)">🔵 青い線</button>
+          <button class="main-btn" style="background:green;" onclick="runB(${safe},2)">🟢 線の線</button>
         </div>`;
-    } else if (id === 12) { // 算数スピード
-      title.innerText = "🧮 暗算スピード";
-      const a = Math.floor(Math.random()*20)+1, b = Math.floor(Math.random()*20)+1;
-      const ans = a + b;
-      stage.innerHTML = `<h2>${a} + ${b} = ?</h2>
-        <div style="display:flex; gap:10px;">
-          <button class="main-btn" onclick="runMath(${ans}, ${ans})">${ans}</button>
-          <button class="main-btn" onclick="runMath(${ans+2}, ${ans})">${ans+2}</button>
-          <button class="main-btn" onclick="runMath(${ans-1}, ${ans})">${ans-1}</button>
-        </div>`;
-    } else if (id === 13) { // クレーンゲーム
-      closeMiniGamePlayModal();
-      if (window.startCraneGame) window.startCraneGame();
+      window.runB = function(s, u) {
+        if(s === u) { points += 120; addTransaction('ポイント', 120, '爆弾解除成功'); updateDisplay(); playSound('win'); alert("✂️ 解除成功！ 120pt獲得！"); }
+        else { playSound('error'); alert("💣 💥 ボカン！！爆破されました！"); }
+        closeMiniGamePlayModal();
+      };
     }
-  };
-
-  // アクションロジック群
-  window.runJanken = function(user) {
-    const hands = ['✊','✌️','✋']; const com = hands[Math.floor(Math.random()*3)];
-    if ((user==='✊'&&com==='✌️')||(user==='✌️'&&com==='✋')||(user==='✋'&&com==='✊')) {
-      points += 50; addTransaction('ポイント', 50, 'じゃんけん勝利'); updateDisplay(); playSound('win'); alert(`相手: ${com}\n勝ち！ 50pt 獲得！`);
-    } else alert(`相手: ${com}\n${user===com ? 'あいこ！' : '負け！'}`);
-    closeMiniGamePlayModal();
-  };
-
-  window.runCoin = function(user) {
-    const res = Math.random() < 0.5 ? '表' : '裏';
-    if (user === res) { points += 50; addTransaction('ポイント', 50, 'コイントス的中'); updateDisplay(); playSound('win'); alert(`結果: ${res}\n正解！ 50pt 獲得！`); }
-    else alert(`結果: ${res}\n残念！外れ！`);
-    closeMiniGamePlayModal();
-  };
-
-  window.runDice = function(user) {
-    const val = Math.floor(Math.random()*6)+1; const res = val >= 4 ? '大' : '小';
-    if (user === res) { points += 50; addTransaction('ポイント', 50, 'サイコロ的中'); updateDisplay(); playSound('win'); alert(`出目: ${val} (${res})\n正解！ 50pt 獲得！`); }
-    else alert(`出目: ${val} (${res})\n残念！外れ！`);
-    closeMiniGamePlayModal();
-  };
-
-  window.runHighLow = function(base, choice) {
-    const next = Math.floor(Math.random()*9)+1;
-    const isHigh = next > base;
-    if ((choice === 'HIGH' && isHigh) || (choice === 'LOW' && !isHigh)) {
-      points += 60; addTransaction('ポイント', 60, 'ハイ＆ロー的中'); updateDisplay(); playSound('win'); alert(`次の数字: ${next}\n正解！ 60pt 獲得！`);
-    } else alert(`次の数字: ${next}\n残念！外れ！`);
-    closeMiniGamePlayModal();
-  };
-
-  window.runNumGuess = function(user) {
-    const target = Math.floor(Math.random()*5)+1;
-    if (user === target) { points += 100; addTransaction('ポイント', 100, '数字当て的中'); updateDisplay(); playSound('win'); alert(`当たり: ${target}！\n見事的中！ 100pt 獲得！`); }
-    else alert(`当たりは ${target} でした...`);
-    closeMiniGamePlayModal();
-  };
-
-  window.runSlot = function() {
-    const icons = ["🍎", "7️⃣", "💎"];
-    const a = icons[Math.floor(Math.random()*3)], b = icons[Math.floor(Math.random()*3)], c = icons[Math.floor(Math.random()*3)];
-    document.getElementById("slot-disp").innerText = `${a} ${b} ${c}`;
-    if (a === b && b === c) {
-      points += 300; addTransaction('ポイント', 300, 'スロット大当り'); updateDisplay(); playSound('win'); alert("🎊 大当たり！ 300pt 獲得！");
-    } else alert("残念！揃いませんでした");
-    closeMiniGamePlayModal();
-  };
-
-  window.runBomb = function(user) {
-    const bomb = Math.floor(Math.random()*4);
-    if (user === bomb) { playSound('error'); alert("💣 ドカーン！爆弾でした！"); }
-    else { points += 80; addTransaction('ポイント', 80, '爆弾回避成功'); updateDisplay(); playSound('win'); alert("✨ セーフ！ 80pt 獲得！"); }
-    closeMiniGamePlayModal();
-  };
-
-  window.runColor = function(user) {
-    if (user === '赤') { points += 40; addTransaction('ポイント', 40, '色当て成功'); updateDisplay(); playSound('win'); alert("正解！ 40pt 獲得！"); }
-    else alert("不正解！文字の色は『赤』でした");
-    closeMiniGamePlayModal();
-  };
-
-  window.runMath = function(user, ans) {
-    if (user === ans) { points += 50; addTransaction('ポイント', 50, '暗算成功'); updateDisplay(); playSound('win'); alert("正解！ 50pt 獲得！"); }
-    else alert("間違え！正解は " + ans);
-    closeMiniGamePlayModal();
   };
 
 })();
 </script>
 
+  
+   
 </body>
 </html> 
