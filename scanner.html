@@ -1055,15 +1055,7 @@ function restartScanner() {
 
 // 修正版：QR読み取り成功時の処理
 function onScanSuccess(decodedText) {
-  // 1. クーポン追加処理を実行
-  handleCouponQRScan(decodedText);
-
-  // 2. 読み取ったら確実にカメラを安全にストップし、ボタンを「カメラON」の状態に戻す
-  stopScanner(() => {
-    // 必要であれば、追加したあとに自動でクーポンモーダルを開くこともできます
-    // openCouponModal();
-  });
-} 
+ 
     playSound('beep');
     stopScanner(() => {
       if (decodedText.startsWith("SEND:")) {
