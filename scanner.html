@@ -1314,12 +1314,13 @@
     renderTransactions();
   }
 </script>
- <!-- ========================================== -->
-<!-- 12種ミニゲーム (カラフルデザイン) ＆ ギフトカード -->
+             
+<!-- ========================================== -->
+<!-- 12種ミニゲーム＆取引履歴上ギフトカード（修正版） -->
 <!-- ========================================== -->
 
 <style>
-  /* ゲームメニューのグリッドレイアウト */
+  /* ミニゲームメニュー グリッド設定 */
   .game-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1329,7 +1330,7 @@
     padding: 8px 4px;
   }
 
-  /* 写真のデザインを再現したカラフルなボタン基本形 */
+  /* 画像通りのカラフルボタンデザイン */
   .game-item-btn {
     padding: 14px 10px;
     font-size: 14px;
@@ -1338,17 +1339,16 @@
     border-radius: 16px;
     color: #ffffff;
     cursor: pointer;
-    transition: transform 0.1s, opacity 0.2s;
+    transition: transform 0.1s;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    letter-spacing: 0.5px;
   }
-  .game-item-btn:active { transform: scale(0.95); opacity: 0.9; }
+  .game-item-btn:active { transform: scale(0.95); }
 
-  /* 写真通りの個別カラー指定 */
+  /* 個別カラー */
   .btn-color-1  { background-color: #28a745; } /* 豆腐タワー (緑) */
   .btn-color-2  { background-color: #007bff; } /* じゃんけん (青) */
   .btn-color-3  { background-color: #6f42c1; } /* ハイ＆ロー (紫) */
@@ -1362,11 +1362,10 @@
   .btn-color-11 { background-color: #007bff; } /* 間違い探し (青) */
   .btn-color-12 { background-color: #343a40; } /* 爆弾処理 (ダークグレー) */
 
-  /* ホーム画面用 ギフトカードボタン (大きく見やすく表示) */
+  /* ギフトカードボタンデザイン */
   .home-gift-btn-container {
     width: 100%;
-    padding: 10px 0;
-    box-sizing: border-box;
+    margin: 10px 0;
   }
   .home-gift-btn {
     width: 100%;
@@ -1374,7 +1373,7 @@
     background: linear-gradient(135deg, #ff416c, #ff4b2b);
     color: white;
     font-weight: bold;
-    font-size: 16px;
+    font-size: 15px;
     border: none;
     border-radius: 14px;
     box-shadow: 0 4px 12px rgba(255, 65, 108, 0.35);
@@ -1383,21 +1382,21 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    transition: transform 0.1s;
   }
   .home-gift-btn:active { transform: scale(0.98); }
 
-  /* 入力モーダル・共通 */
+  /* 共通UI */
   .gift-input-box { width: 100%; padding: 12px; font-size: 16px; letter-spacing: 2px; text-transform: uppercase; text-align: center; border: 2px dashed #ff0033; border-radius: 12px; margin: 15px 0; box-sizing: border-box; }
-  .game-stage-box { background: #f8f9fa; border-radius: 12px; padding: 15px; margin: 10px 0; min-height: 200px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+  .game-stage-box { background: #f8f9fa; border-radius: 12px; padding: 15px; margin: 10px 0; min-height: 220px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
   .memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; width: 100%; }
   .memory-card { height: 50px; background: #007bff; color: #fff; font-size: 20px; font-weight: bold; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
   .memory-card.open { background: #fff; color: #333; border: 2px solid #007bff; }
   .mole-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; }
   .mole-hole { height: 60px; background: #8b4513; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; }
+  .diff-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; }
 </style>
 
-<!-- ギフトカード用モーダル -->
+<!-- ギフトカードモーダル -->
 <div id="gift-modal" class="modal-overlay hidden">
   <div class="modal-content">
     <h3>🎁 ギフトカード残高チャージ</h3>
@@ -1420,7 +1419,6 @@
 <script>
 (function() {
 
-  // ギフトコードデータ
   const VALID_GIFTS = {
     "GIFT1000": { amount: 1000, type: "残高", name: "1000円ギフト" },
     "GIFT5000": { amount: 5000, type: "残高", name: "5000円ギフト" },
@@ -1458,38 +1456,33 @@
     }
   };
 
-  // ギフトボタンの自動生成・挿入ロジック（確実にホーム画面へ挿入）
-  function setupGiftButton() {
+  // 「取引履歴」ボタンの真上にギフトボタンを配置する設定
+  function insertGiftButtonAboveHistory() {
     if (document.getElementById("home-gift-btn-wrapper")) return;
 
-    // ホーム表示画面（またはカメラ・履歴のあるコンテナ）を自動検知
-    const homeView = document.getElementById("home-view") || document.querySelector(".view.active") || document.body;
-    const historyBtn = document.querySelector("button[onclick*='openHistoryModal']") || document.querySelector("button[onclick*='History']");
-
-    const btnWrapper = document.createElement("div");
-    btnWrapper.id = "home-gift-btn-wrapper";
-    btnWrapper.className = "home-gift-btn-container";
-    btnWrapper.innerHTML = `<button class="home-gift-btn" onclick="openGiftModal()">🎁 ギフトカードコード入力</button>`;
-
+    // 「取引履歴」ボタンを検索
+    const historyBtn = Array.from(document.querySelectorAll("button")).find(btn => btn.innerText.includes("取引履歴") || (btn.getAttribute("onclick") && btn.getAttribute("onclick").includes("History")));
+    
     if (historyBtn && historyBtn.parentNode) {
-      // 取引履歴ボタンの前に挿入
+      const btnWrapper = document.createElement("div");
+      btnWrapper.id = "home-gift-btn-wrapper";
+      btnWrapper.className = "home-gift-btn-container";
+      btnWrapper.innerHTML = `<button class="home-gift-btn" onclick="openGiftModal()">🎁 ギフトカードコード入力</button>`;
+      
+      // 取引履歴の「直前（真上）」に挿入
       historyBtn.parentNode.insertBefore(btnWrapper, historyBtn);
-    } else if (homeView) {
-      // ホーム画面の先頭付近に安全に追加
-      homeView.appendChild(btnWrapper);
     }
   }
 
-  // DOM読み込み完了および定期チェックでボタン消失を防ぐ
   window.addEventListener('DOMContentLoaded', () => {
-    setupGiftButton();
-    setTimeout(setupGiftButton, 500);
+    insertGiftButtonAboveHistory();
+    setTimeout(insertGiftButtonAboveHistory, 500);
 
-    // 下部ナビゲーションからギフトボタンを消去（重複防止）
+    // 下部ナビゲーションのギフトボタンを消去
     const existingNavGift = document.getElementById("nav-gift-btn");
     if (existingNavGift) existingNavGift.remove();
 
-    // GAMEモーダルのメニュー構造化
+    // GAMEモーダル初期構想
     const gameMenuSelect = document.getElementById("game-menu-select");
     if (gameMenuSelect) {
       gameMenuSelect.innerHTML = `
@@ -1509,17 +1502,16 @@
         modalContent.appendChild(miniGameMenuDiv);
       }
 
-      // ★画像の通りのカラーボタンを生成
       miniGameMenuDiv.innerHTML = `
         <h3>🕹️ ミニゲームメニュー</h3>
         <p style="font-size: 12px; color: #666; margin-bottom: 10px;">遊ぶゲームを選んでね！</p>
         <div class="game-grid">
-          <button class="game-item-btn btn-color-1" onclick="startTofuGameSelect()">🧊 豆腐タワー</button>
+          <button class="game-item-btn btn-color-1" onclick="triggerTofuGame()">🧊 豆腐タワー</button>
           <button class="game-item-btn btn-color-2" onclick="playGame('janken')">✊ じゃんけん</button>
           <button class="game-item-btn btn-color-3" onclick="playGame('highlow')">🎴 ハイ＆ロー</button>
           <button class="game-item-btn btn-color-4" onclick="playGame('memory')">🎴 神経衰弱</button>
           <button class="game-item-btn btn-color-5" onclick="playGame('mole')">🔨 モグラ叩き</button>
-          <button class="game-item-btn btn-color-6" onclick="playGame('crane')">🏗️ クレーン</button>
+          <button class="game-item-btn btn-color-6" onclick="triggerCraneGame()">🏗️ クレーン</button>
           <button class="game-item-btn btn-color-7" onclick="playGame('dice')">🎲 サイコロ</button>
           <button class="game-item-btn btn-color-8" onclick="playGame('just555')">⏱️ 5.55秒ストップ</button>
           <button class="game-item-btn btn-color-9" onclick="playGame('nummem')">🧠 数字記憶</button>
@@ -1549,7 +1541,21 @@
     document.getElementById("minigame-play-modal").classList.add("hidden");
   };
 
-  // 各ミニゲームの実行処理
+  // 豆腐タワーの呼び出し（モーダル被り解消）
+  window.triggerTofuGame = function() {
+    playSound('beep');
+    if (typeof closeGameModal === "function") closeGameModal();
+    if (typeof startTofuGameSelect === "function") startTofuGameSelect();
+  };
+
+  // クレーンゲームの呼び出し
+  window.triggerCraneGame = function() {
+    playSound('beep');
+    if (typeof closeGameModal === "function") closeGameModal();
+    if (typeof startCraneGame === "function") startCraneGame();
+  };
+
+  // 各ミニゲームの実行
   window.playGame = function(type) {
     playSound('beep');
     const modal = document.getElementById("minigame-play-modal");
@@ -1585,6 +1591,7 @@
           }
         }
       };
+
     } else if (type === 'highlow') {
       title.innerText = "🎴 ハイ＆ロー";
       const baseNum = Math.floor(Math.random() * 8) + 2;
@@ -1597,6 +1604,7 @@
         } else alert(`次: ${n} で残念！`);
         closeMiniGamePlayModal();
       };
+
     } else if (type === 'janken') {
       title.innerText = "✊ じゃんけん";
       stage.innerHTML = `<div style="display:flex; gap:10px;"><button class="main-btn" onclick="runJK('✊')">✊</button><button class="main-btn" onclick="runJK('✌️')">✌️</button><button class="main-btn" onclick="runJK('✋')">✋</button></div>`;
@@ -1607,6 +1615,7 @@
         } else alert(`相手: ${c}\n${u===c?'あいこ':'負け'}`);
         closeMiniGamePlayModal();
       };
+
     } else if (type === 'mole') {
       title.innerText = "🔨 モグラ叩き";
       let score = 0, interval = null;
@@ -1625,8 +1634,7 @@
       window.hitMole = function(i) {
         if(i === activeHole) { score++; playSound('tick'); document.getElementById("mole-score").innerText = `スコア: ${score}`; activeHole = -1; document.getElementById(`mh-${i}`).innerText = "💥"; }
       };
-    } else if (type === 'crane') {
-      closeMiniGamePlayModal(); if (window.startCraneGame) window.startCraneGame();
+
     } else if (type === 'dice') {
       title.innerText = "🎲 サイコロ";
       stage.innerHTML = `<p>出目は奇数？偶数？</p><div style="display:flex; gap:10px;"><button class="main-btn" onclick="runDiceEx('奇数')">奇数 (1,3,5)</button><button class="main-btn" onclick="runDiceEx('偶数')">偶数 (2,4,6)</button></div>`;
@@ -1636,6 +1644,7 @@
         else alert(`出目: ${v} (${res}) でハズレ！`);
         closeMiniGamePlayModal();
       };
+
     } else if (type === 'just555') {
       title.innerText = "⏱️ 5.55秒ストップ";
       let start = 0;
@@ -1649,19 +1658,21 @@
           closeMiniGamePlayModal();
         }
       };
-    } else if (type === 'nummem') {
+
+    } else if (type === 'nummem') { // ★時間短縮 (1.2秒)
       title.innerText = "🧠 数字記憶";
       const target = Math.floor(1000 + Math.random() * 9000).toString();
-      stage.innerHTML = `<p>数字を覚えてね！</p><h1 id="mem-num">${target}</h1>`;
+      stage.innerHTML = `<p style="color:red; font-weight:bold;">一瞬で覚えてね！(1.2秒)</p><h1 id="mem-num" style="font-size:36px;">${target}</h1>`;
       setTimeout(() => {
-        stage.innerHTML = `<p>覚えた4桁の数字を入力してね！</p><input type="number" id="mem-in" style="font-size:20px; text-align:center; padding:5px;"><br><br><button class="main-btn" onclick="checkMem('${target}')">回答する</button>`;
-      }, 2000);
+        stage.innerHTML = `<p>覚えた4桁の数字を入力してね！</p><input type="number" id="mem-in" style="font-size:22px; text-align:center; padding:8px; width:120px;"><br><br><button class="main-btn" onclick="checkMem('${target}')">回答する</button>`;
+      }, 1200);
       window.checkMem = function(ans) {
         const val = document.getElementById("mem-in").value;
-        if(val === ans) { points += 100; addTransaction('ポイント', 100, '数字記憶クリア'); updateDisplay(); playSound('win'); alert("正解！ 100pt獲得！"); }
+        if(val === ans) { points += 120; addTransaction('ポイント', 120, '数字記憶クリア'); updateDisplay(); playSound('win'); alert("正解！ 120pt獲得！"); }
         else alert(`不正解！正解は ${ans} でした`);
         closeMiniGamePlayModal();
       };
+
     } else if (type === 'chicken') {
       title.innerText = "🐔 チキンレース";
       let num = 0, timer = null;
@@ -1679,40 +1690,73 @@
         }
         closeMiniGamePlayModal();
       };
-    } else if (type === 'diff') {
+
+    } else if (type === 'diff') { // ★難易度アップ (16マス)
       title.innerText = "🔍 間違い探し";
-      stage.innerHTML = `<p>1つだけ違う記号をタップ！</p>
-        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px;">
-          ${[0,1,2,3,4].map(()=>`<button class="main-btn" onclick="runDiff(false)">⭐️</button>`).join('')}
-          <button class="main-btn" onclick="runDiff(true)">🌟</button>
-        </div>`;
+      const setList = [
+        { normal: '😀', diff: '😃' },
+        { normal: '⭐', diff: '🌟' },
+        { normal: '🍎', diff: '🍅' },
+        { normal: '🐱', diff: '😸' }
+      ];
+      const currentSet = setList[Math.floor(Math.random() * setList.length)];
+      const targetIdx = Math.floor(Math.random() * 16);
+      
+      let html = `<p>1つだけ違う顔・マークを探してね！</p><div class="diff-grid">`;
+      for(let i=0; i<16; i++) {
+        const icon = (i === targetIdx) ? currentSet.diff : currentSet.normal;
+        html += `<button class="main-btn" style="font-size:22px; padding:10px 0;" onclick="runDiff(${i === targetIdx})">${icon}</button>`;
+      }
+      html += `</div>`;
+      stage.innerHTML = html;
+
       window.runDiff = function(win) {
-        if(win) { points += 80; addTransaction('ポイント', 80, '間違い探し成功'); updateDisplay(); playSound('win'); alert("正解！ 80pt獲得！"); }
-        else alert("ハズレ！");
+        if(win) { points += 120; addTransaction('ポイント', 120, '間違い探し超難問クリア'); updateDisplay(); playSound('win'); alert("🎉 大正解！ 120pt獲得！"); }
+        else alert("ハズレ！よく見て探してね！");
         closeMiniGamePlayModal();
       };
-    } else if (type === 'bomb') {
+
+    } else if (type === 'bomb') { // ★ルール改定（2本切って成功）
       title.innerText = "💣 爆弾処理";
-      const safe = Math.floor(Math.random() * 3);
-      stage.innerHTML = `<p>解除コード（線）を1本切れ！</p>
-        <div style="display:flex; flex-direction:column; gap:8px; width:100%;">
-          <button class="main-btn" style="background:red;" onclick="runB(${safe},0)">🔴 赤い線</button>
-          <button class="main-btn" style="background:blue;" onclick="runB(${safe},1)">🔵 青い線</button>
-          <button class="main-btn" style="background:green;" onclick="runB(${safe},2)">🟢 緑の線</button>
-        </div>`;
-      window.runB = function(s, u) {
-        if(s === u) { points += 120; addTransaction('ポイント', 120, '爆弾解除成功'); updateDisplay(); playSound('win'); alert("✂️ 解除成功！ 120pt獲得！"); }
-        else { playSound('error'); alert("💣 💥 ボカン！！爆破されました！"); }
-        closeMiniGamePlayModal();
+      // 4本中、1本が爆発(BOOM)、2本が安全(SAFE)、1本がハズレ(NULL)
+      let safeCutCount = 0;
+      const wires = ['🔴 赤', '🔵 青', '🟢 緑', '🟡 黄'];
+      const boomIndex = Math.floor(Math.random() * 4);
+
+      stage.innerHTML = `
+        <p id="bomb-desc">線を<b>【2本】</b>安全に切れば解除成功！<br>(1本だけドカン！)</p>
+        <p id="bomb-status" style="font-weight:bold; color:#007bff;">成功数: 0 / 2</p>
+        <div id="wire-btns" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%;">
+          ${wires.map((w, i) => `<button class="main-btn" id="wb-${i}" onclick="runB(${i}, ${boomIndex})">${w}</button>`).join('')}
+        </div>
+      `;
+
+      window.runB = function(cutIndex, boomIdx) {
+        const btn = document.getElementById(`wb-${cutIndex}`);
+        if (!btn || btn.disabled) return;
+        btn.disabled = true;
+        btn.style.opacity = "0.3";
+
+        if (cutIndex === boomIdx) {
+          playSound('error');
+          alert("💣 💥 ボカン！！爆弾が爆発しました！");
+          closeMiniGamePlayModal();
+        } else {
+          safeCutCount++;
+          playSound('tick');
+          document.getElementById("bomb-status").innerText = `成功数: ${safeCutCount} / 2`;
+          if (safeCutCount >= 2) {
+            points += 150; addTransaction('ポイント', 150, '爆弾処理2本成功'); updateDisplay(); playSound('win');
+            alert("✂️ 見事に2本切断成功！爆弾解除完了！ 150pt獲得！");
+            closeMiniGamePlayModal();
+          }
+        }
       };
     }
   };
 
 })();
-</script>
-
-
-  
+</script>  
    
 </body>
 </html> 
