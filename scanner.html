@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>11Pay - フル機能版</title>
+  <title>ElevenPay</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
     * { box-sizing: border-box; }
@@ -121,11 +121,11 @@
     </div>
 
     <div id="form-register" class="hidden">
-      <div class="login-title">アカウントを作成</div>
-      <input type="text" id="reg-user" placeholder="新しいユーザー名" autocomplete="off">
+      <div class="login-title">アカウント作成</div>
+      <input type="text" id="reg-user" placeholder="ユーザー名" autocomplete="off">
       <input type="password" id="reg-pass" placeholder="パスワード" autocomplete="off">
       <input type="password" id="reg-pass-confirm" placeholder="パスワード (確認)" autocomplete="off">
-      <button class="main-btn" onclick="register()">新規登録してはじめる</button>
+      <button class="main-btn" onclick="register()">新規登録</button>
     </div>
   </div>
 
@@ -147,16 +147,16 @@
 
     <!-- カメラ起動コントロール -->
     <div class="camera-area">
-      <button id="toggle-camera-btn" class="camera-btn" onclick="toggleCamera()">📷 カメラON</button>
+      <button id="toggle-camera-btn" class="camera-btn" onclick="toggleCamera()">カメラON</button>
       <div class="scanner-box">
-        <div id="camera-off-msg" class="camera-off-placeholder">📷 カメラはオフです</div>
+        <div id="camera-off-msg" class="camera-off-placeholder">カメラOFF</div>
         <div id="reader" class="hidden"></div>
       </div>
     </div>
 
     <!-- 取引履歴エリア -->
     <div class="tx-card">
-      <div class="tx-title">📋 取引履歴</div>
+      <div class="tx-title">取引履歴</div>
       <div id="transaction-list"></div>
       <button id="tx-more-btn" class="secondary-btn hidden" style="margin-top: 10px;" onclick="toggleMoreTransactions()">もっと見る</button>
     </div>
@@ -170,13 +170,13 @@
     <svg class="nav-svg" viewBox="0 0 24 24" width="22" height="22">
       <path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/>
     </svg>
-    <span>クーポン</span>
+    <span>COUPON</span>
   </button>
   <button class="nav-item" onclick="openSendQrModal()">
     <svg class="nav-svg" viewBox="0 0 24 24" width="22" height="22">
       <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
     </svg>
-    <span>送る</span>
+    <span>SEND</span>
   </button>
   <button class="nav-item active" onclick="goHome()">
     <svg class="nav-svg" viewBox="0 0 24 24" width="22" height="22">
@@ -188,20 +188,20 @@
     <svg class="nav-svg" viewBox="0 0 24 24" width="22" height="22">
       <path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H9v2H7v-2H5v-2h2V9h2v2h2v2zm4.5 1c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm3-3c-.83 0-1.5-.67-1.5-1.5S17.67 9 18.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
     </svg>
-    <span>ゲーム</span>
+    <span>GAME</span>
   </button>
   <button class="nav-item" onclick="openScratchModal()">
     <svg class="nav-svg" viewBox="0 0 24 24" width="22" height="22">
       <path d="M22 10V6c0-1.11-.9-2-2-2H4c-1.1 0-1.99.89-1.99 2v4c1.1 0 1.99.9 1.99 2s-.89 2-2 2v4c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2v-4c-1.1 0-2-.9-2-2s.9-2 2-2zm-2-1.53c-1.19.69-2 1.97-2 3.53s.81 2.84 2 3.53V18H4v-2.47c1.19-.69 2-1.97 2-3.53s-.81-2.84-2-3.53V6h16v2.47z"/>
     </svg>
-    <span>スクラッチ</span>
+    <span>SCRATCH</span>
   </button>
 </div>
 
 <!-- クーポンモーダル -->
 <div id="coupon-modal" class="modal-overlay hidden">
   <div class="modal-content">
-    <h3>🎟️ お得なクーポン</h3>
+    <h3>COUPON</h3>
     <p style="font-size: 13px; color: #666; margin-bottom: 15px;">使いたいクーポンを選択してください</p>
    
     <div id="coupon-list" style="max-height: 250px; overflow-y: auto; text-align: left;"></div>
@@ -246,8 +246,8 @@
 <!-- スクラッチモーダル -->
 <div id="scratch-modal" class="modal-overlay hidden">
   <div class="modal-content">
-    <h3>🎰 毎日スクラッチ</h3>
-    <p style="font-size: 13px; color: #666; margin-bottom: 10px;">グレーの部分を指やマウスでけずってね！</p>
+    <h3>毎日スクラッチ!!</h3>
+    <p style="font-size: 13px; color: #666; margin-bottom: 10px;">グレーの部分を指でけずってね！</p>
    
     <div class="scratch-container">
       <div id="scratch-result-text" class="scratch-result">?</div>
@@ -274,19 +274,19 @@
 <!-- QRコードで送るモーダル -->
 <div id="send-qr-modal" class="modal-overlay hidden">
   <div class="modal-content">
-    <h3>QRコードで送る</h3>
-    <p style="font-size: 13px; color: #666; margin-bottom: 10px;">送る金額を入力してQRを作成してください</p>
+    <h3>友達に送る</h3>
+    <p style="font-size: 13px; color: #666; margin-bottom: 10px;">送る金額を入力してください</p>
    
     <div id="qr-input-area">
-      <input type="number" id="send-qr-amount" placeholder="送金金額 (例: 500)">
+      <input type="number" id="send-qr-amount" placeholder="">
       <button class="main-btn" onclick="generateSendQr()">QRコード作成</button>
     </div>
 
     <div id="qr-result-area" class="hidden">
-      <p style="font-weight: bold; margin-bottom: 5px;">相手にカメラで読み取ってもらってください</p>
+      <p style="font-weight: bold; margin-bottom: 5px;">相手に読み取ってもらってください</p>
       <div id="qr-output-container"></div>
       <p style="font-size: 14px; color: #333;" id="qr-desc-amount"></p>
-      <button class="secondary-btn" style="color:#ff0033; border-color:#ff0033;" onclick="cancelSendQr()">送金をキャンセルして残高に戻す</button>
+      <button class="secondary-btn" style="color:#ff0033; border-color:#ff0033;" onclick="cancelSendQr()">送金をキャンセルする</button>
     </div>
 
     <button class="secondary-btn" id="close-qr-btn" onclick="closeSendQrModal()">閉じる</button>
@@ -296,7 +296,7 @@
 <!-- 決済・ポイント確認モーダル -->
 <div id="pay-confirm-modal" class="modal-overlay hidden">
   <div class="modal-content">
-    <h3>お支払いの確認</h3>
+    <h3>お支払い確認</h3>
     <p style="font-size: 18px; font-weight: bold; margin: 10px 0;">請求額: <span id="confirm-pay-amount" style="color:#ff0033;">0</span> 円</p>
    
     <div style="background: #f8f9fa; padding: 12px; border-radius: 10px; margin-bottom: 15px; text-align: left;">
@@ -306,11 +306,11 @@
       <div id="pt-input-container" class="hidden">
         <input type="number" id="use-pt-input" placeholder="使用ポイント" style="margin-bottom: 0;">
         <small style="color: #666;">利用可能: <span id="max-pt-display">0</span> pt</small>
-        <p style="color: #ff0033; font-size: 11px; margin: 4px 0 0 0;">※ポイント使用時はジャンボ（ルーレット）対象外となります</p>
+        <p style="color: #ff0033; font-size: 11px; margin: 4px 0 0 0;">※ポイント使用時はルーレット対象外となります</p>
       </div>
     </div>
 
-    <button class="main-btn" onclick="executePayment()">支払いを確定する</button>
+    <button class="main-btn" onclick="executePayment()">お支払いを確定する</button>
     <button class="secondary-btn" onclick="cancelPayment()">キャンセル</button>
   </div>
 </div>
@@ -318,9 +318,9 @@
 <!-- ルーレット結果モーダル -->
 <div id="roulette-modal" class="modal-overlay hidden">
   <div class="modal-content">
-    <h3>🎉 11Payジャンボ！</h3>
-    <p style="color: #666; font-size: 14px;" id="roulette-sub">ポイント還元率を抽選中...</p>
-    <div id="roulette-display" class="roulette-box">🎰 回しています...</div>
+    <h3>11Payルーレット！</h3>
+    <p style="color: #666; font-size: 14px;" id="roulette-sub">抽選中...</p>
+    <div id="roulette-display" class="roulette-box">回しています...</div>
     <button id="roulette-close-btn" class="main-btn hidden" onclick="closeRoulette()">ポイントを受け取る</button>
   </div>
 </div>
@@ -355,7 +355,7 @@
 
   function getUsers() {
     const users = localStorage.getItem("paypay_users");
-    return users ? JSON.parse(users) : { "きらと": "1234" };
+    return users ? JSON.parse(users) : { "きらと": "4869" };
   }
 
   function saveUsers(users) {
@@ -500,7 +500,7 @@
 
     currentUser = userInput;
     localStorage.setItem("paypay_login_user", currentUser);
-    alert("アカウントの作成が完了しました！");
+    alert("アカウントの作成が完了しました");
     showMainScreen();
   }
 
@@ -563,7 +563,7 @@
     }
 
     points -= 200;
-    addTransaction('ポイント', -200, 'ガチャ利用');
+    addTransaction('ポイント', -200, '11payガチャ');
     updateDisplay();
 
     const drawBtn = document.getElementById("gacha-draw-btn");
@@ -576,9 +576,11 @@
     const rand = Math.random() * 100;
     let wonPoint = 10;
 
-    if (rand < 2) wonPoint = 1000;
-    else if (rand < 7) wonPoint = 500;
-    else if (rand < 17) wonPoint = 200;
+    if (rand < 2) wonPoint = 5000;
+    else if (rand < 5) wonPoint = 3000;
+    else if (rand < 17) wonPoint = 1000;
+    else if (rand < 20) wonPoint = 500;
+    else if (rand < 25) wonPoint = 200;
     else if (rand < 35) wonPoint = 100;
     else if (rand < 65) wonPoint = 50;
     else wonPoint = 10;
@@ -594,7 +596,7 @@
         clearInterval(interval);
        
         points += wonPoint;
-        addTransaction('ポイント', wonPoint, 'ガチャ当選');
+        addTransaction('ポイント', wonPoint, '11payガチャ');
         updateDisplay();
 
         box.innerText = wonPoint >= 500 ? "🎊" : "🎁";
@@ -728,7 +730,7 @@
       addTransaction('ポイント', earned, '豆腐タワー報酬');
       updateDisplay();
       playSound('win');
-      alert(`🎉 ゲーム終了！\n記録: ${steps}段 (${multiplier}倍ボーナス)\n👉 ${earned} ポイントを獲得しました！`);
+      alert(`ゲーム終了！\n記録: ${steps}段 (${multiplier}倍ボーナス)\n${earned} ポイントを獲得しました！`);
     } else {
       alert("残念！1段も積めませんでした...");
     }
@@ -830,7 +832,7 @@
     addTransaction('ポイント', scratchPointResult, 'スクラッチ報酬');
     updateDisplay();
 
-    alert(`🎉 ${scratchPointResult} ポイントを獲得しました！`);
+    alert(`${scratchPointResult} ポイントを獲得しました！`);
     closeScratchModal();
   }
 
@@ -940,7 +942,7 @@
 
     if (isNaN(sendAmount) || sendAmount <= 0) {
       playSound('error');
-      return alert("正しい送金金額を入力してください");
+      return alert("送金金額を入力してください");
     }
 
     if (sendAmount > balance) {
@@ -950,7 +952,7 @@
 
     pendingSendAmount = sendAmount;
     balance -= sendAmount;
-    addTransaction('残高', -sendAmount, '送金QR作成');
+    addTransaction('残高', -sendAmount, '送金');
     updateDisplay();
 
     const qrData = `SEND:${currentUser}:${sendAmount}`;
@@ -968,11 +970,11 @@
   function cancelSendQr() {
     if (pendingSendAmount > 0) {
       balance += pendingSendAmount;
-      addTransaction('残高', pendingSendAmount, '送金キャンセル戻し');
+      addTransaction('残高', pendingSendAmount, '送金キャンセル');
       updateDisplay();
       pendingSendAmount = 0;
       playSound('win');
-      alert("送金をキャンセルし、残高を戻しました。");
+      alert("送金をキャンセルしました。");
     }
     closeSendQrModal();
   }
@@ -1002,7 +1004,7 @@
       onScanSuccess
     ).then(() => {
       isCameraOn = true;
-      btn.innerText = "📷 カメラOFF";
+      btn.innerText = "カメラOFF";
       btn.classList.add("active");
     }).catch(err => {
       console.log("カメラ起動エラー: ", err);
@@ -1022,7 +1024,7 @@
         isCameraOn = false;
         readerDiv.classList.add("hidden");
         offMsg.classList.remove("hidden");
-        btn.innerText = "📷 カメラON";
+        btn.innerText = "カメラON";
         btn.classList.remove("active");
         if (callback) callback();
       }).catch(err => {
@@ -1033,7 +1035,7 @@
       isCameraOn = false;
       readerDiv.classList.add("hidden");
       offMsg.classList.remove("hidden");
-      btn.innerText = "📷 カメラON";
+      btn.innerText = "カメラON";
       btn.classList.remove("active");
       if (callback) callback();
     }
@@ -1074,7 +1076,7 @@ function onScanSuccess(decodedText) {
         updateDisplay();
 
         playSound('win');
-        alert(`🎁 ${senderUser} 様より ${sendAmount.toLocaleString()}円 を受取りました！`);
+        alert(`${senderUser} さんより ${sendAmount.toLocaleString()}円 を受取りました！`);
         return;
       }
 
@@ -1089,14 +1091,14 @@ function onScanSuccess(decodedText) {
         addTransaction('残高', amount, '残高チャージ');
         updateDisplay();
         playSound('win');
-        alert(`✅ 残高に ${amount.toLocaleString()}円 チャージされました！`);
+        alert(`残高に ${amount.toLocaleString()}円 チャージされました！`);
       }
       else if (isPoint) {
         points += amount;
         addTransaction('ポイント', amount, 'ポイント獲得');
         updateDisplay();
         playSound('win');
-        alert(`✨ ${amount.toLocaleString()} ポイントを獲得しました！`);
+        alert(`${amount.toLocaleString()} ポイントを獲得しました！`);
       }
       else if (isPay) {
         currentScanAmount = amount;
@@ -1147,7 +1149,7 @@ function onScanSuccess(decodedText) {
 
     if (cashPay > balance) {
       playSound('error');
-      alert(`❌ 残高が不足しています！\nお支払い額: ${cashPay}円 / 残高: ${balance}円`);
+      alert(`残高が不足しています\nお支払い額: ${cashPay}円 / 残高: ${balance}円`);
       return;
     }
 
@@ -1169,7 +1171,7 @@ function onScanSuccess(decodedText) {
     document.getElementById("pay-confirm-modal").classList.add("hidden");
 
     if (usePt > 0) {
-      alert(`✅ お支払い完了！(割引: ${discount}円 / pt利用: ${usePt}pt)`);
+      alert(`お支払い完了！(割引: ${discount}円 / pt利用: ${usePt}pt)`);
     } else {
       startRoulette(finalAmount);
     }
@@ -1382,9 +1384,9 @@ function onScanSuccess(decodedText) {
 <!-- ギフトカード入力モーダル -->
 <div id="gift-modal" class="modal-overlay hidden">
   <div class="modal-content">
-    <h3>🎁 ギフトカード残高チャージ</h3>
+    <h3>ギフトカードでチャージ</h3>
     <p style="font-size: 13px; color: #666;">ギフトコードを入力してください</p>
-    <input type="text" id="gift-code-input" class="gift-input-box" placeholder="GIFT1000">
+    <input type="text" id="gift-code-input" class="gift-input-box" placeholder="">
     <button class="main-btn" onclick="redeemGiftCode()">チャージする</button>
     <button class="secondary-btn" onclick="closeGiftModal()">閉じる</button>
   </div>
@@ -1446,12 +1448,12 @@ function onScanSuccess(decodedText) {
 
   window.redeemGiftCode = function() {
     const input = document.getElementById("gift-code-input").value.trim().toUpperCase();
-    if (!input) return alert("コードを入力してください");
+    if (!input) return alert("ギフトコードを入力してください");
     const user = typeof currentUser !== 'undefined' ? currentUser : 'default';
     const usedGifts = JSON.parse(localStorage.getItem(`used_gifts_${user}`) || "[]");
     if (usedGifts.includes(input)) {
       if (typeof playSound === 'function') playSound('error');
-      return alert("このコードは使用済みです");
+      return alert("このギフトコードは使用済みです");
     }
 
     const giftData = VALID_GIFTS[input];
@@ -1467,7 +1469,7 @@ function onScanSuccess(decodedText) {
       }
       if (typeof updateDisplay === 'function') updateDisplay();
       if (typeof playSound === 'function') playSound('win');
-      alert(`🎉 チャージ成功！\n${giftData.name} を受取りました！`);
+      alert(`チャージ成功！\n${giftData.name} を受取りました！`);
       closeGiftModal();
     } else {
       if (typeof playSound === 'function') playSound('error');
@@ -1481,7 +1483,7 @@ function onScanSuccess(decodedText) {
     const btnWrapper = document.createElement("div");
     btnWrapper.id = "home-gift-btn-wrapper";
     btnWrapper.className = "home-gift-btn-container";
-    btnWrapper.innerHTML = `<button class="home-gift-btn" onclick="openGiftModal()">🎁 ギフトカードコード入力</button>`;
+    btnWrapper.innerHTML = `<button class="home-gift-btn" onclick="openGiftModal()">ギフトカードコード入力</button>`;
 
     const allDivs = Array.from(document.querySelectorAll("div"));
     const cameraDiv = allDivs.find(d => d.textContent.includes("カメラはオフです") || (d.id && d.id.includes("camera")));
@@ -1510,32 +1512,32 @@ function onScanSuccess(decodedText) {
 
     gameMenuSelect.innerHTML = `
       <div id="game-category-content">
-        <h3>🎮 ゲーム＆ガチャ</h3>
+        <h3>GAME</h3>
         <p style="font-size: 13px; color: #666; margin-bottom: 20px;">どちらで遊ぶか選んでね！</p>
-        <button class="main-btn" style="margin-bottom: 12px; background: #007bff;" onclick="openMiniGameMenu()">🕹️ ミニゲームメニュー</button>
-        <button class="main-btn" style="background: #ff9900;" onclick="startGachaSelect()">🎰 ポイントガチャ (1回 200pt)</button>
+        <button class="main-btn" style="margin-bottom: 12px; background: #007bff;" onclick="openMiniGameMenu()">ミニゲーム</button>
+        <button class="main-btn" style="background: #ff9900;" onclick="startGachaSelect()">11payガチャ</button>
         <button class="secondary-btn" style="margin-top: 15px;" onclick="closeGameModal()">閉じる</button>
       </div>
       <div id="minigame-menu-select" class="hidden">
-        <h3>🕹️ ミニゲームメニュー</h3>
-        <p style="font-size: 12px; color: #666; margin-bottom: 10px;">遊ぶゲームを選んでね！</p>
+        <h3>ミニゲーム</h3>
+        <p style="font-size: 12px; color: #666; margin-bottom: 10px;">ゲームを選んでね！</p>
         <div class="game-grid">
-          <button class="game-item-btn btn-color-1" onclick="triggerTofuGame()">🧊 豆腐タワー</button>
-          <button class="game-item-btn btn-color-2" onclick="playGame('janken')">✊ じゃんけん</button>
-          <button class="game-item-btn btn-color-3" onclick="playGame('highlow')">🎴 ハイ＆ロー</button>
-          <button class="game-item-btn btn-color-4" onclick="playGame('memory')">🎴 神経衰弱</button>
-          <button class="game-item-btn btn-color-5" onclick="playGame('mole')">🔨 モグラ叩き</button>
-          <button class="game-item-btn btn-color-6" onclick="startCraneGame()">🏗️ クレーン</button>
-          <button class="game-item-btn btn-color-7" onclick="playGame('dice')">🎲 サイコロ</button>
-          <button class="game-item-btn btn-color-8" onclick="playGame('just555')">⏱️ 5.55秒</button>
-          <button class="game-item-btn btn-color-9" onclick="playGame('nummem')">🧠 数字記憶</button>
-          <button class="game-item-btn btn-color-10" onclick="playGame('chicken')">🐔 チキンレース</button>
-          <button class="game-item-btn btn-color-11" onclick="playGame('diff')">🔍 間違い探し</button>
-          <button class="game-item-btn btn-color-12" onclick="playGame('bomb')">💣 爆弾処理</button>
-          <button class="game-item-btn btn-color-13" onclick="playGame('tap')">⚡ 連打ラッシュ</button>
-          <button class="game-item-btn btn-color-14" onclick="playGame('balloon')">🎈 風船ゲーム</button>
-          <button class="game-item-btn btn-color-15" onclick="playGame('seq')">🔢 順番タップ</button>
-          <button class="game-item-btn btn-color-16" onclick="playGame('anagram')">🔤 アナグラム</button>
+          <button class="game-item-btn btn-color-1" onclick="triggerTofuGame()">豆腐タワー</button>
+          <button class="game-item-btn btn-color-2" onclick="playGame('janken')">じゃんけん</button>
+          <button class="game-item-btn btn-color-3" onclick="playGame('highlow')">ハイ＆ロー</button>
+          <button class="game-item-btn btn-color-4" onclick="playGame('memory')">神経衰弱</button>
+          <button class="game-item-btn btn-color-5" onclick="playGame('mole')">モグラ叩き</button>
+          <button class="game-item-btn btn-color-6" onclick="startCraneGame()">クレーンゲーム</button>
+          <button class="game-item-btn btn-color-7" onclick="playGame('dice')">サイコロ</button>
+          <button class="game-item-btn btn-color-8" onclick="playGame('just555')">5.55秒</button>
+          <button class="game-item-btn btn-color-9" onclick="playGame('nummem')">数字記憶</button>
+          <button class="game-item-btn btn-color-10" onclick="playGame('chicken')">チキンレース</button>
+          <button class="game-item-btn btn-color-11" onclick="playGame('diff')">間違い探し</button>
+          <button class="game-item-btn btn-color-12" onclick="playGame('bomb')">爆弾処理</button>
+          <button class="game-item-btn btn-color-13" onclick="playGame('tap')">連打ラッシュ</button>
+          <button class="game-item-btn btn-color-14" onclick="playGame('balloon')">風船ゲーム</button>
+          <button class="game-item-btn btn-color-15" onclick="playGame('seq')">順番タップ</button>
+          <button class="game-item-btn btn-color-16" onclick="playGame('anagram')">アナグラム</button>
         </div>
         <button class="secondary-btn" style="margin-top: 15px;" onclick="backToGameCategory()">戻る</button>
       </div>
@@ -1603,7 +1605,7 @@ function onScanSuccess(decodedText) {
     const stage = document.getElementById("minigame-stage");
     modal.classList.remove("hidden");
 
-    title.innerText = "🏗️ クレーンゲーム";
+    title.innerText = "クレーンゲーム";
 
     stage.innerHTML = `
       <div class="crane-box" id="crane-box">
@@ -1615,8 +1617,8 @@ function onScanSuccess(decodedText) {
       </div>
       <p style="font-size:12px; color:#666;">ボタンを押してアームを移動・キャッチ！</p>
       <div style="display:flex; gap:10px; width:100%;">
-        <button class="main-btn" id="crane-move-btn" style="flex:1; background:#007bff;">👉 右へ移動</button>
-        <button class="main-btn" id="crane-catch-btn" style="flex:1; background:#28a745;" disabled>👇 キャッチ！</button>
+        <button class="main-btn" id="crane-move-btn" style="flex:1; background:#007bff;">右へ移動</button>
+        <button class="main-btn" id="crane-catch-btn" style="flex:1; background:#28a745;" disabled>キャッチ！</button>
       </div>
     `;
 
@@ -1670,10 +1672,10 @@ function onScanSuccess(decodedText) {
                 if (typeof addTransaction === 'function') addTransaction('ポイント', rewardPt, `クレーンゲーム: ${prizeName}`);
                 if (typeof updateDisplay === 'function') updateDisplay();
                 if (typeof playSound === 'function') playSound('win');
-                alert(`🎉 ゲット！ ${prizeName} (${rewardPt}pt) を獲得しました！`);
+                alert(`ゲット！ ${prizeName} (${rewardPt}pt) を獲得しました！`);
               } else {
                 if (typeof playSound === 'function') playSound('error');
-                alert("😭 残念！何も掴めませんでした...");
+                alert("残念！何も掴めませんでした...");
               }
               closeMiniGamePlayModal();
             }
@@ -1692,7 +1694,7 @@ function onScanSuccess(decodedText) {
     modal.classList.remove("hidden");
 
     if (type === 'memory') {
-      title.innerText = "🃏 神経衰弱 (6ペア)";
+      title.innerText = "神経衰弱";
       const icons = ['🍎','🍎','🐶','🐶','⚽','⚽','🚗','🚗','🎁','🎁','💎','💎'].sort(() => Math.random() - 0.5);
       let openCards = [], matched = 0;
       stage.innerHTML = `<div class="memory-grid">${icons.map((ic, i) => `<div class="memory-card" id="mc-${i}" onclick="flipCard(${i}, '${ic}')">❓</div>`).join('')}</div>`;
@@ -1710,7 +1712,7 @@ function onScanSuccess(decodedText) {
               if (typeof addTransaction === 'function') addTransaction('ポイント', pt, '神経衰弱クリア');
               if (typeof updateDisplay === 'function') updateDisplay();
               if (typeof playSound === 'function') playSound('win');
-              alert(`🎉 全ペア獲得！ ${pt}pt ゲット！`); closeMiniGamePlayModal();
+              alert(`全ペア獲得！ ${pt}pt ゲット！`); closeMiniGamePlayModal();
             }
           } else {
             setTimeout(() => {
@@ -1725,7 +1727,7 @@ function onScanSuccess(decodedText) {
       };
 
     } else if (type === 'highlow') {
-      title.innerText = "🎴 ハイ＆ロー";
+      title.innerText = "ハイ＆ロー";
       const baseNum = Math.floor(Math.random() * 8) + 2;
       stage.innerHTML = `<p>現在の数字: <b style="font-size:24px;">${baseNum}</b></p><p>次の数字はこれより大きい？小さい？</p>
         <div style="display:flex; gap:10px;"><button class="main-btn" onclick="runHL(${baseNum},'H')">HIGH</button><button class="main-btn" onclick="runHL(${baseNum},'L')">LOW</button></div>`;
@@ -1743,7 +1745,7 @@ function onScanSuccess(decodedText) {
       };
 
     } else if (type === 'janken') {
-      title.innerText = "✊ じゃんけん";
+      title.innerText = "じゃんけん";
       stage.innerHTML = `<div style="display:flex; gap:10px;"><button class="main-btn" onclick="runJK('✊')">✊</button><button class="main-btn" onclick="runJK('✌️')">✌️</button><button class="main-btn" onclick="runJK('✋')">✋</button></div>`;
       window.runJK = function(u) {
         const c = ['✊','✌️','✋'][Math.floor(Math.random()*3)];
@@ -1759,7 +1761,7 @@ function onScanSuccess(decodedText) {
       };
 
     } else if (type === 'mole') {
-      title.innerText = "🔨 モグラ叩き";
+      title.innerText = "モグラ叩き";
       let score = 0, interval = null;
       stage.innerHTML = `<h3 id="mole-score">スコア: 0</h3><div class="mole-grid">${[0,1,2,3,4,5].map(i=>`<div class="mole-hole" id="mh-${i}" onclick="hitMole(${i})">🕳️</div>`).join('')}</div>`;
       let activeHole = -1;
@@ -1782,7 +1784,7 @@ function onScanSuccess(decodedText) {
       };
 
     } else if (type === 'dice') {
-      title.innerText = "🎲 サイコロ";
+      title.innerText = "サイコロ";
       stage.innerHTML = `<p>出目は奇数？偶数？</p><div style="display:flex; gap:10px;"><button class="main-btn" onclick="runDiceEx('奇数')">奇数 (1,3,5)</button><button class="main-btn" onclick="runDiceEx('偶数')">偶数 (2,4,6)</button></div>`;
       window.runDiceEx = function(u) {
         const v = Math.floor(Math.random()*6)+1; const res = v % 2 === 0 ? '偶数' : '奇数';
@@ -1798,7 +1800,7 @@ function onScanSuccess(decodedText) {
       };
 
     } else if (type === 'just555') {
-      title.innerText = "⏱️ 5.55秒ストップ";
+      title.innerText = "5.55秒ストップ";
       let start = 0;
       stage.innerHTML = `<p id="p-msg">5.55秒ピッタリで止めよう！</p><button class="main-btn" id="p-btn" onclick="runP()">スタート</button>`;
       window.runP = function() {
@@ -1818,9 +1820,9 @@ function onScanSuccess(decodedText) {
       };
 
     } else if (type === 'nummem') {
-      title.innerText = "🧠 数字記憶";
+      title.innerText = "数字記憶";
       const target = Math.floor(1000 + Math.random() * 9000).toString();
-      stage.innerHTML = `<p style="color:red; font-weight:bold;">一瞬で覚えてね！(1.2秒)</p><h1 id="mem-num" style="font-size:36px;">${target}</h1>`;
+      stage.innerHTML = `<p style="color:red; font-weight:bold;">覚えてね！</p><h1 id="mem-num" style="font-size:36px;">${target}</h1>`;
       setTimeout(() => {
         stage.innerHTML = `<p>覚えた4桁の数字を入力してね！</p><input type="number" id="mem-in" style="font-size:22px; text-align:center; padding:8px; width:120px;"><br><br><button class="main-btn" onclick="checkMem('${target}')">回答する</button>`;
       }, 1200);
@@ -1838,7 +1840,7 @@ function onScanSuccess(decodedText) {
       };
 
     } else if (type === 'chicken') {
-      title.innerText = "🐔 チキンレース";
+      title.innerText = "チキンレース";
       let num = 0, timer = null;
       stage.innerHTML = `<h1 id="chk-num">0</h1><p>100に達する前にストップ！(100超えで爆発)</p><button class="main-btn" id="chk-btn" onclick="stopChk()">ストップ！</button>`;
       timer = setInterval(() => {
@@ -1865,7 +1867,7 @@ function onScanSuccess(decodedText) {
       };
 
     } else if (type === 'diff') {
-      title.innerText = "🔍 間違い探し";
+      title.innerText = "間違い探し";
       const setList = [
         { normal: '😀', diff: '😃' },
         { normal: '⭐', diff: '🌟' },
@@ -1890,13 +1892,13 @@ function onScanSuccess(decodedText) {
           if (typeof addTransaction === 'function') addTransaction('ポイント', pt, '間違い探しクリア');
           if (typeof updateDisplay === 'function') updateDisplay();
           if (typeof playSound === 'function') playSound('win');
-          alert(`🎉 大正解！ ${pt}pt獲得！`);
+          alert(`大正解！ ${pt}pt獲得！`);
         } else alert("ハズレ！よく見て探してね！");
         closeMiniGamePlayModal();
       };
 
     } else if (type === 'bomb') {
-      title.innerText = "💣 爆弾処理";
+      title.innerText = "爆弾処理";
       let safeCutCount = 0;
       const wires = ['🔴 赤', '🔵 青', '🟢 緑', '🟡 黄'];
       const boomIndex = Math.floor(Math.random() * 4);
@@ -1929,7 +1931,7 @@ function onScanSuccess(decodedText) {
             if (typeof addTransaction === 'function') addTransaction('ポイント', pt, '爆弾処理成功');
             if (typeof updateDisplay === 'function') updateDisplay();
             if (typeof playSound === 'function') playSound('win');
-            alert(`✂️ 見事に2本切断成功！爆弾解除完了！ ${pt}pt獲得！`);
+            alert(`見事に2本切断成功！爆弾解除完了！ ${pt}pt獲得！`);
             closeMiniGamePlayModal();
           }
         }
@@ -1939,12 +1941,12 @@ function onScanSuccess(decodedText) {
     // ⚡ 【追加】連打ラッシュ
     // ==========================================
     } else if (type === 'tap') {
-      title.innerText = "⚡ 5秒連打ラッシュ";
+      title.innerText = "5秒連打ラッシュ";
       let count = 0, started = false;
       stage.innerHTML = `
         <h2 id="tap-count" style="font-size:32px;">0 回</h2>
         <p id="tap-timer">ボタンを押してスタート！(5秒間)</p>
-        <button class="main-btn" id="tap-btn" style="height:80px; font-size:20px; background:#e83e8c;">🔥 連打！！</button>
+        <button class="main-btn" id="tap-btn" style="height:80px; font-size:20px; background:#e83e8c;">連打！！</button>
       `;
       const btn = document.getElementById("tap-btn");
       btn.onclick = function() {
@@ -1976,15 +1978,15 @@ function onScanSuccess(decodedText) {
     // 🎈 【追加】風船膨らましゲーム
     // ==========================================
     } else if (type === 'balloon') {
-      title.innerText = "🎈 風船ギリギリ勝負";
+      title.innerText = "風船ギリギリ勝負";
       let size = 30;
       const limit = 90 + Math.floor(Math.random() * 30); // 90~120pxで爆発
       stage.innerHTML = `
         <div id="balloon-obj" style="font-size:${size}px; transition:0.1s;">🎈</div>
         <p>空気を入れまくれ！割れる前にストップ！</p>
         <div style="display:flex; gap:10px; width:100%;">
-          <button class="main-btn" id="pump-btn" style="background:#ff5722;">💨 空気を入れる</button>
-          <button class="main-btn" id="stop-balloon-btn" style="background:#28a745;">✋ ここでストップ</button>
+          <button class="main-btn" id="pump-btn" style="background:#ff5722;">空気を入れる</button>
+          <button class="main-btn" id="stop-balloon-btn" style="background:#28a745;">ここでストップ</button>
         </div>
       `;
       document.getElementById("pump-btn").onclick = function() {
@@ -2004,7 +2006,7 @@ function onScanSuccess(decodedText) {
         if (typeof addTransaction === 'function') addTransaction('ポイント', pt, '風船成功');
         if (typeof updateDisplay === 'function') updateDisplay();
         if (typeof playSound === 'function') playSound('win');
-        alert(`🎈 ナイスチキン回避！ ${pt}pt 獲得！`);
+        alert(`ナイスチキン回避！ ${pt}pt 獲得！`);
         closeMiniGamePlayModal();
       };
 
@@ -2012,7 +2014,7 @@ function onScanSuccess(decodedText) {
     // 🔢 【追加】順番タップ (1〜6)
     // ==========================================
     } else if (type === 'seq') {
-      title.innerText = "🔢 1から順にタップ！";
+      title.innerText = "1から順にタップ！";
       let nextNum = 1;
       const nums = [1,2,3,4,5,6].sort(() => Math.random() - 0.5);
       stage.innerHTML = `
@@ -2033,7 +2035,7 @@ function onScanSuccess(decodedText) {
             if (typeof addTransaction === 'function') addTransaction('ポイント', pt, '順番タップクリア');
             if (typeof updateDisplay === 'function') updateDisplay();
             if (typeof playSound === 'function') playSound('win');
-            alert(`🎉 クリア！ ${pt}pt 獲得！`);
+            alert(`クリア！ ${pt}pt 獲得！`);
             closeMiniGamePlayModal();
           }
         } else {
@@ -2046,11 +2048,14 @@ function onScanSuccess(decodedText) {
     // 🔤 【追加】アナグラム (並び替え)
     // ==========================================
     } else if (type === 'anagram') {
-      title.innerText = "🔤 単語並び替え";
+      title.innerText = "単語並び替え";
       const questions = [
         { quiz: "い・す・か", ans: "すいか" },
         { quiz: "に・う・ち・よ・び", ans: "にちようび" },
         { quiz: "ん・ご・り", ans: "りんご" },
+        { quiz: "り・ん・お・さ", ans: "さんりお" },
+      　{ quiz: "し・そ・み・る", ans: "みそしる" },
+        { quiz: "み・く・ろ", ans: "くろみ" },
         { quiz: "ら・く・ま", ans: "まくら" }
       ];
       const item = questions[Math.floor(Math.random() * questions.length)];
@@ -2068,7 +2073,7 @@ function onScanSuccess(decodedText) {
           if (typeof addTransaction === 'function') addTransaction('ポイント', pt, 'アナグラム正解');
           if (typeof updateDisplay === 'function') updateDisplay();
           if (typeof playSound === 'function') playSound('win');
-          alert(`🎉 正解 (${ans})！ ${pt}pt 獲得！`);
+          alert(`正解 (${ans})！ ${pt}pt 獲得！`);
           closeMiniGamePlayModal();
         } else {
           if (typeof playSound === 'function') playSound('error');
