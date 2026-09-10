@@ -1316,7 +1316,7 @@
 </script>
 
 <!-- ========================================== -->
-<!-- クレーンゲーム実装 ＆ UI重複修正版 -->
+<!-- 16種ミニゲーム＆ポイント設定機能付きコード -->
 <!-- ========================================== -->
 
 <style>
@@ -1324,7 +1324,7 @@
   .game-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    gap: 8px;
     max-height: 360px;
     overflow-y: auto;
     padding: 8px 2px;
@@ -1332,19 +1332,19 @@
 
   /* ミニゲームボタン */
   .game-item-btn {
-    padding: 14px 8px;
-    font-size: 14px;
+    padding: 12px 6px;
+    font-size: 13px;
     font-weight: bold;
     border: none;
-    border-radius: 16px;
+    border-radius: 14px;
     color: #ffffff;
     cursor: pointer;
     transition: transform 0.1s;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    gap: 4px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
   }
   .game-item-btn:active { transform: scale(0.95); }
 
@@ -1361,6 +1361,10 @@
   .btn-color-10 { background-color: #ffc107; color: #212529; }
   .btn-color-11 { background-color: #007bff; }
   .btn-color-12 { background-color: #343a40; }
+  .btn-color-13 { background-color: #e83e8c; }
+  .btn-color-14 { background-color: #ff5722; }
+  .btn-color-15 { background-color: #00bcd4; }
+  .btn-color-16 { background-color: #8bc34a; }
 
   /* クレーンゲーム専用スタイル */
   .crane-box {
@@ -1385,43 +1389,18 @@
     transition: left 0.1s linear, top 0.1s linear;
     z-index: 10;
   }
-  .crane-prize {
-    position: absolute;
-    bottom: 10px;
-    font-size: 28px;
-  }
-  .crane-hole {
-    position: absolute;
-    bottom: 0;
-    left: 10px;
-    width: 45px;
-    height: 15px;
-    background: #000;
-    border-radius: 5px 5px 0 0;
-    border: 1px dashed #fff;
-  }
+  .crane-prize { position: absolute; bottom: 10px; font-size: 28px; }
+  .crane-hole { position: absolute; bottom: 0; left: 10px; width: 45px; height: 15px; background: #000; border-radius: 5px 5px 0 0; border: 1px dashed #fff; }
 
   /* ギフトカードボタン Design */
-  .home-gift-btn-container {
-    width: 100%;
-    margin: 14px 0;
-    box-sizing: border-box;
-  }
+  .home-gift-btn-container { width: 100%; margin: 14px 0; box-sizing: border-box; }
   .home-gift-btn {
-    width: 100%;
-    padding: 14px;
+    width: 100%; padding: 14px;
     background: linear-gradient(135deg, #ff416c, #ff4b2b);
-    color: white;
-    font-weight: bold;
-    font-size: 15px;
-    border: none;
-    border-radius: 14px;
+    color: white; font-weight: bold; font-size: 15px;
+    border: none; border-radius: 14px;
     box-shadow: 0 4px 12px rgba(255, 65, 108, 0.35);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
   }
 
   /* モーダル共通 */
@@ -1433,6 +1412,7 @@
   .mole-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; }
   .mole-hole { height: 60px; background: #8b4513; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; }
   .diff-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; }
+  .num-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; }
 </style>
 
 <!-- ギフトカード入力モーダル -->
@@ -1457,6 +1437,31 @@
 
 <script>
 (function() {
+
+  // =========================================================
+  // ⚙️ ポイント獲得量の設定（ここを変更するとポイントが変わります）
+  // =========================================================
+  const GAME_REWARDS = {
+    janken: 50,       // じゃんけん
+    highlow: 60,      // ハイ＆ロー
+    memory: 150,      // 神経衰弱
+    moleMultiplier: 10,// モグラ叩き（1匹につき）
+    dice: 50,         // サイコロ
+    just555: 300,     // 5.55秒ストップ
+    nummem: 120,      // 数字記憶
+    chickenMultiplier: 2, // チキンレース（数字×）
+    diff: 120,        // 間違い探し
+    bomb: 150,        // 爆弾処理
+    craneGift: 150,   // クレーン（ギフト箱）
+    craneBear: 100,   // クレーン（くま）
+    craneDiamond: 200,// クレーン（ダイヤ）
+   
+    // 【新ゲーム】
+    tapRushMultiplier: 5, // 連打ゲーム（1回タップにつき）
+    balloon: 150,         // 風船あおぎ
+    numSequence: 150,     // 順番タップ
+    anagram: 120           // アナグラム
+  };
 
   const VALID_GIFTS = {
     "GIFT1000": { amount: 1000, type: "残高", name: "1000円ギフト" },
@@ -1558,11 +1563,15 @@
           <button class="game-item-btn btn-color-5" onclick="playGame('mole')">🔨 モグラ叩き</button>
           <button class="game-item-btn btn-color-6" onclick="startCraneGame()">🏗️ クレーン</button>
           <button class="game-item-btn btn-color-7" onclick="playGame('dice')">🎲 サイコロ</button>
-          <button class="game-item-btn btn-color-8" onclick="playGame('just555')">⏱️ 5.55秒ストップ</button>
+          <button class="game-item-btn btn-color-8" onclick="playGame('just555')">⏱️ 5.55秒</button>
           <button class="game-item-btn btn-color-9" onclick="playGame('nummem')">🧠 数字記憶</button>
           <button class="game-item-btn btn-color-10" onclick="playGame('chicken')">🐔 チキンレース</button>
           <button class="game-item-btn btn-color-11" onclick="playGame('diff')">🔍 間違い探し</button>
           <button class="game-item-btn btn-color-12" onclick="playGame('bomb')">💣 爆弾処理</button>
+          <button class="game-item-btn btn-color-13" onclick="playGame('tap')">⚡ 連打ラッシュ</button>
+          <button class="game-item-btn btn-color-14" onclick="playGame('balloon')">🎈 風船ゲーム</button>
+          <button class="game-item-btn btn-color-15" onclick="playGame('seq')">🔢 順番タップ</button>
+          <button class="game-item-btn btn-color-16" onclick="playGame('anagram')">🔤 アナグラム</button>
         </div>
         <button class="secondary-btn" style="margin-top: 15px;" onclick="backToGameCategory()">戻る</button>
       </div>
@@ -1622,9 +1631,7 @@
     }
   };
 
-  // ==========================================
-  // クレーンゲームの実装
-  // ==========================================
+  // クレーンゲーム
   window.startCraneGame = function() {
     if (typeof playSound === 'function') playSound('beep');
     const modal = document.getElementById("minigame-play-modal");
@@ -1655,7 +1662,6 @@
     const moveBtn = document.getElementById("crane-move-btn");
     const catchBtn = document.getElementById("crane-catch-btn");
 
-    // 右移動処理
     moveBtn.onmousedown = moveBtn.ontouchstart = function(e) {
       e.preventDefault();
       catchBtn.disabled = false;
@@ -1668,35 +1674,28 @@
       }, 30);
     };
 
-    const stopMove = function() {
-      clearInterval(moveInterval);
-      moveInterval = null;
-    };
+    const stopMove = function() { clearInterval(moveInterval); moveInterval = null; };
     moveBtn.onmouseup = moveBtn.ontouchend = stopMove;
 
-    // キャッチ（アーム降下）処理
     catchBtn.onclick = function() {
       moveBtn.disabled = true;
       catchBtn.disabled = true;
       let armY = 0;
 
-      // 降下
       const downInterval = setInterval(() => {
         armY += 4;
         arm.style.top = armY + "px";
         if (armY >= 120) {
           clearInterval(downInterval);
 
-          // 景品判定
           let caught = false;
           let prizeName = "ポイント";
-          let rewardPt = 100;
+          let rewardPt = 0;
 
-          if (armX >= 55 && armX <= 95) { caught = true; prizeName = "🎁 ギフト箱 (150pt)"; rewardPt = 150; }
-          else if (armX >= 115 && armX <= 155) { caught = true; prizeName = "🧸 くまのぬいぐるみ (100pt)"; rewardPt = 100; }
-          else if (armX >= 175 && armX <= 205) { caught = true; prizeName = "💎 ダイヤ (200pt)"; rewardPt = 200; }
+          if (armX >= 55 && armX <= 95) { caught = true; prizeName = "🎁 ギフト箱"; rewardPt = GAME_REWARDS.craneGift; }
+          else if (armX >= 115 && armX <= 155) { caught = true; prizeName = "🧸 くまのぬいぐるみ"; rewardPt = GAME_REWARDS.craneBear; }
+          else if (armX >= 175 && armX <= 205) { caught = true; prizeName = "💎 ダイヤ"; rewardPt = GAME_REWARDS.craneDiamond; }
 
-          // 上昇
           const upInterval = setInterval(() => {
             armY -= 4;
             arm.style.top = armY + "px";
@@ -1707,7 +1706,7 @@
                 if (typeof addTransaction === 'function') addTransaction('ポイント', rewardPt, `クレーンゲーム: ${prizeName}`);
                 if (typeof updateDisplay === 'function') updateDisplay();
                 if (typeof playSound === 'function') playSound('win');
-                alert(`🎉 ゲット！ ${prizeName} を獲得しました！`);
+                alert(`🎉 ゲット！ ${prizeName} (${rewardPt}pt) を獲得しました！`);
               } else {
                 if (typeof playSound === 'function') playSound('error');
                 alert("😭 残念！何も掴めませんでした...");
@@ -1720,6 +1719,7 @@
     };
   };
 
+  // その他ゲーム処理
   window.playGame = function(type) {
     if (typeof playSound === 'function') playSound('beep');
     const modal = document.getElementById("minigame-play-modal");
@@ -1741,11 +1741,12 @@
           if (openCards[0].icon === openCards[1].icon) {
             matched++; openCards = [];
             if (matched === 6) {
-              if (typeof points !== 'undefined') points += 150;
-              if (typeof addTransaction === 'function') addTransaction('ポイント', 150, '神経衰弱クリア');
+              const pt = GAME_REWARDS.memory;
+              if (typeof points !== 'undefined') points += pt;
+              if (typeof addTransaction === 'function') addTransaction('ポイント', pt, '神経衰弱クリア');
               if (typeof updateDisplay === 'function') updateDisplay();
               if (typeof playSound === 'function') playSound('win');
-              alert("🎉 全ペア獲得！ 150pt ゲット！"); closeMiniGamePlayModal();
+              alert(`🎉 全ペア獲得！ ${pt}pt ゲット！`); closeMiniGamePlayModal();
             }
           } else {
             setTimeout(() => {
@@ -1767,11 +1768,12 @@
       window.runHL = function(b, c) {
         const n = Math.floor(Math.random() * 9) + 1;
         if ((c === 'H' && n > b) || (c === 'L' && n < b)) {
-          if (typeof points !== 'undefined') points += 60;
-          if (typeof addTransaction === 'function') addTransaction('ポイント', 60, 'ハイ＆ロー勝利');
+          const pt = GAME_REWARDS.highlow;
+          if (typeof points !== 'undefined') points += pt;
+          if (typeof addTransaction === 'function') addTransaction('ポイント', pt, 'ハイ＆ロー勝利');
           if (typeof updateDisplay === 'function') updateDisplay();
           if (typeof playSound === 'function') playSound('win');
-          alert(`次: ${n} で当たり！ 60pt獲得！`);
+          alert(`次: ${n} で当たり！ ${pt}pt獲得！`);
         } else alert(`次: ${n} で残念！`);
         closeMiniGamePlayModal();
       };
@@ -1782,11 +1784,12 @@
       window.runJK = function(u) {
         const c = ['✊','✌️','✋'][Math.floor(Math.random()*3)];
         if ((u==='✊'&&c==='✌️')||(u==='✌️'&&c==='✋')||(u==='✋'&&c==='✊')) {
-          if (typeof points !== 'undefined') points += 50;
-          if (typeof addTransaction === 'function') addTransaction('ポイント', 50, 'じゃんけん勝利');
+          const pt = GAME_REWARDS.janken;
+          if (typeof points !== 'undefined') points += pt;
+          if (typeof addTransaction === 'function') addTransaction('ポイント', pt, 'じゃんけん勝利');
           if (typeof updateDisplay === 'function') updateDisplay();
           if (typeof playSound === 'function') playSound('win');
-          alert(`相手: ${c}\n勝ち！ 50pt獲得！`);
+          alert(`相手: ${c}\n勝ち！ ${pt}pt獲得！`);
         } else alert(`相手: ${c}\n${u===c?'あいこ':'負け'}`);
         closeMiniGamePlayModal();
       };
@@ -1803,11 +1806,12 @@
       }, 700);
       setTimeout(() => {
         clearInterval(interval);
-        if (typeof points !== 'undefined') points += score * 10;
-        if (typeof addTransaction === 'function') addTransaction('ポイント', score * 10, 'モグラ叩き報酬');
+        const pt = score * GAME_REWARDS.moleMultiplier;
+        if (typeof points !== 'undefined') points += pt;
+        if (typeof addTransaction === 'function') addTransaction('ポイント', pt, 'モグラ叩き報酬');
         if (typeof updateDisplay === 'function') updateDisplay();
         if (typeof playSound === 'function') playSound('win');
-        alert(`タイムアップ！${score}匹叩いて ${score * 10}pt 獲得！`); closeMiniGamePlayModal();
+        alert(`タイムアップ！${score}匹叩いて ${pt}pt 獲得！`); closeMiniGamePlayModal();
       }, 10000);
       window.hitMole = function(i) {
         if(i === activeHole) { score++; if (typeof playSound === 'function') playSound('tick'); document.getElementById("mole-score").innerText = `スコア: ${score}`; activeHole = -1; document.getElementById(`mh-${i}`).innerText = "💥"; }
@@ -1819,11 +1823,12 @@
       window.runDiceEx = function(u) {
         const v = Math.floor(Math.random()*6)+1; const res = v % 2 === 0 ? '偶数' : '奇数';
         if (u === res) {
-          if (typeof points !== 'undefined') points += 50;
-          if (typeof addTransaction === 'function') addTransaction('ポイント', 50, 'サイコロ的中');
+          const pt = GAME_REWARDS.dice;
+          if (typeof points !== 'undefined') points += pt;
+          if (typeof addTransaction === 'function') addTransaction('ポイント', pt, 'サイコロ的中');
           if (typeof updateDisplay === 'function') updateDisplay();
           if (typeof playSound === 'function') playSound('win');
-          alert(`出目: ${v} (${res})！ 50pt獲得！`);
+          alert(`出目: ${v} (${res})！ ${pt}pt獲得！`);
         } else alert(`出目: ${v} (${res}) でハズレ！`);
         closeMiniGamePlayModal();
       };
@@ -1837,11 +1842,12 @@
         else {
           const diff = Math.abs((Date.now() - start) / 1000 - 5.55);
           if (diff < 0.2) {
-            if (typeof points !== 'undefined') points += 300;
-            if (typeof addTransaction === 'function') addTransaction('ポイント', 300, 'ピッタリ成功');
+            const pt = GAME_REWARDS.just555;
+            if (typeof points !== 'undefined') points += pt;
+            if (typeof addTransaction === 'function') addTransaction('ポイント', pt, 'ピッタリ成功');
             if (typeof updateDisplay === 'function') updateDisplay();
             if (typeof playSound === 'function') playSound('win');
-            alert(`神業！誤差 ${diff.toFixed(2)}秒！ 300pt獲得！`);
+            alert(`神業！誤差 ${diff.toFixed(2)}秒！ ${pt}pt獲得！`);
           } else alert(`結果: 誤差 ${diff.toFixed(2)}秒でした`);
           closeMiniGamePlayModal();
         }
@@ -1857,11 +1863,12 @@
       window.checkMem = function(ans) {
         const val = document.getElementById("mem-in").value;
         if(val === ans) {
-          if (typeof points !== 'undefined') points += 120;
-          if (typeof addTransaction === 'function') addTransaction('ポイント', 120, '数字記憶クリア');
+          const pt = GAME_REWARDS.nummem;
+          if (typeof points !== 'undefined') points += pt;
+          if (typeof addTransaction === 'function') addTransaction('ポイント', pt, '数字記憶クリア');
           if (typeof updateDisplay === 'function') updateDisplay();
           if (typeof playSound === 'function') playSound('win');
-          alert("正解！ 120pt獲得！");
+          alert(`正解！ ${pt}pt獲得！`);
         } else alert(`不正解！正解は ${ans} でした`);
         closeMiniGamePlayModal();
       };
@@ -1883,7 +1890,7 @@
       window.stopChk = function() {
         clearInterval(timer);
         if(num <= 100) {
-          const pt = num * 2;
+          const pt = num * GAME_REWARDS.chickenMultiplier;
           if (typeof points !== 'undefined') points += pt;
           if (typeof addTransaction === 'function') addTransaction('ポイント', pt, 'チキンレース成功');
           if (typeof updateDisplay === 'function') updateDisplay();
@@ -1914,11 +1921,12 @@
 
       window.runDiff = function(win) {
         if(win) {
-          if (typeof points !== 'undefined') points += 120;
-          if (typeof addTransaction === 'function') addTransaction('ポイント', 120, '間違い探しクリア');
+          const pt = GAME_REWARDS.diff;
+          if (typeof points !== 'undefined') points += pt;
+          if (typeof addTransaction === 'function') addTransaction('ポイント', pt, '間違い探しクリア');
           if (typeof updateDisplay === 'function') updateDisplay();
           if (typeof playSound === 'function') playSound('win');
-          alert("🎉 大正解！ 120pt獲得！");
+          alert(`🎉 大正解！ ${pt}pt獲得！`);
         } else alert("ハズレ！よく見て探してね！");
         closeMiniGamePlayModal();
       };
@@ -1952,13 +1960,155 @@
           if (typeof playSound === 'function') playSound('tick');
           document.getElementById("bomb-status").innerText = `成功数: ${safeCutCount} / 2`;
           if (safeCutCount >= 2) {
-            if (typeof points !== 'undefined') points += 150;
-            if (typeof addTransaction === 'function') addTransaction('ポイント', 150, '爆弾処理成功');
+            const pt = GAME_REWARDS.bomb;
+            if (typeof points !== 'undefined') points += pt;
+            if (typeof addTransaction === 'function') addTransaction('ポイント', pt, '爆弾処理成功');
             if (typeof updateDisplay === 'function') updateDisplay();
             if (typeof playSound === 'function') playSound('win');
-            alert("✂️ 見事に2本切断成功！爆弾解除完了！ 150pt獲得！");
+            alert(`✂️ 見事に2本切断成功！爆弾解除完了！ ${pt}pt獲得！`);
             closeMiniGamePlayModal();
           }
+        }
+      };
+
+    // ==========================================
+    // ⚡ 【追加】連打ラッシュ
+    // ==========================================
+    } else if (type === 'tap') {
+      title.innerText = "⚡ 5秒連打ラッシュ";
+      let count = 0, started = false;
+      stage.innerHTML = `
+        <h2 id="tap-count" style="font-size:32px;">0 回</h2>
+        <p id="tap-timer">ボタンを押してスタート！(5秒間)</p>
+        <button class="main-btn" id="tap-btn" style="height:80px; font-size:20px; background:#e83e8c;">🔥 連打！！</button>
+      `;
+      const btn = document.getElementById("tap-btn");
+      btn.onclick = function() {
+        if (!started) {
+          started = true;
+          let timeLeft = 5;
+          const t = setInterval(() => {
+            timeLeft--;
+            document.getElementById("tap-timer").innerText = `残り時間: ${timeLeft}秒`;
+            if (timeLeft <= 0) {
+              clearInterval(t);
+              btn.disabled = true;
+              const pt = count * GAME_REWARDS.tapRushMultiplier;
+              if (typeof points !== 'undefined') points += pt;
+              if (typeof addTransaction === 'function') addTransaction('ポイント', pt, '連打ラッシュ報酬');
+              if (typeof updateDisplay === 'function') updateDisplay();
+              if (typeof playSound === 'function') playSound('win');
+              alert(`タイムアップ！ ${count}回タップで ${pt}pt 獲得！`);
+              closeMiniGamePlayModal();
+            }
+          }, 1000);
+        }
+        count++;
+        if (typeof playSound === 'function') playSound('tick');
+        document.getElementById("tap-count").innerText = `${count} 回`;
+      };
+
+    // ==========================================
+    // 🎈 【追加】風船膨らましゲーム
+    // ==========================================
+    } else if (type === 'balloon') {
+      title.innerText = "🎈 風船ギリギリ勝負";
+      let size = 30;
+      const limit = 90 + Math.floor(Math.random() * 30); // 90~120pxで爆発
+      stage.innerHTML = `
+        <div id="balloon-obj" style="font-size:${size}px; transition:0.1s;">🎈</div>
+        <p>空気を入れまくれ！割れる前にストップ！</p>
+        <div style="display:flex; gap:10px; width:100%;">
+          <button class="main-btn" id="pump-btn" style="background:#ff5722;">💨 空気を入れる</button>
+          <button class="main-btn" id="stop-balloon-btn" style="background:#28a745;">✋ ここでストップ</button>
+        </div>
+      `;
+      document.getElementById("pump-btn").onclick = function() {
+        size += 8;
+        if (typeof playSound === 'function') playSound('tick');
+        document.getElementById("balloon-obj").style.fontSize = size + "px";
+        if (size >= limit) {
+          document.getElementById("balloon-obj").innerText = "💥";
+          if (typeof playSound === 'function') playSound('error');
+          alert("💥 パンッ！！風船が割れてしまいました！");
+          closeMiniGamePlayModal();
+        }
+      };
+      document.getElementById("stop-balloon-btn").onclick = function() {
+        const pt = GAME_REWARDS.balloon;
+        if (typeof points !== 'undefined') points += pt;
+        if (typeof addTransaction === 'function') addTransaction('ポイント', pt, '風船成功');
+        if (typeof updateDisplay === 'function') updateDisplay();
+        if (typeof playSound === 'function') playSound('win');
+        alert(`🎈 ナイスチキン回避！ ${pt}pt 獲得！`);
+        closeMiniGamePlayModal();
+      };
+
+    // ==========================================
+    // 🔢 【追加】順番タップ (1〜6)
+    // ==========================================
+    } else if (type === 'seq') {
+      title.innerText = "🔢 1から順にタップ！";
+      let nextNum = 1;
+      const nums = [1,2,3,4,5,6].sort(() => Math.random() - 0.5);
+      stage.innerHTML = `
+        <p>1から順番にタップしてね！</p>
+        <div class="num-grid">
+          ${nums.map(n => `<button class="main-btn" id="nb-${n}" onclick="pressSeq(${n})">${n}</button>`).join('')}
+        </div>
+      `;
+      window.pressSeq = function(n) {
+        if (n === nextNum) {
+          if (typeof playSound === 'function') playSound('tick');
+          document.getElementById(`nb-${n}`).disabled = true;
+          document.getElementById(`nb-${n}`).style.opacity = "0.3";
+          nextNum++;
+          if (nextNum > 6) {
+            const pt = GAME_REWARDS.numSequence;
+            if (typeof points !== 'undefined') points += pt;
+            if (typeof addTransaction === 'function') addTransaction('ポイント', pt, '順番タップクリア');
+            if (typeof updateDisplay === 'function') updateDisplay();
+            if (typeof playSound === 'function') playSound('win');
+            alert(`🎉 クリア！ ${pt}pt 獲得！`);
+            closeMiniGamePlayModal();
+          }
+        } else {
+          if (typeof playSound === 'function') playSound('error');
+          alert("順番が違います！");
+        }
+      };
+
+    // ==========================================
+    // 🔤 【追加】アナグラム (並び替え)
+    // ==========================================
+    } else if (type === 'anagram') {
+      title.innerText = "🔤 単語並び替え";
+      const questions = [
+        { quiz: "い・す・か", ans: "すいか" },
+        { quiz: "ん・こ・い・ち", ans: "にちようび" },
+        { quiz: "ん・ご・り", ans: "りんご" },
+        { quiz: "ら・く・ま", ans: "まくら" }
+      ];
+      const item = questions[Math.floor(Math.random() * questions.length)];
+      stage.innerHTML = `
+        <p style="font-size:12px; color:#666;">並び替えて正しい単語にしてね</p>
+        <h2 style="font-size:28px; letter-spacing:4px; color:#6f42c1;">${item.quiz}</h2>
+        <input type="text" id="ana-in" placeholder="ひらがなで入力" style="font-size:18px; text-align:center; padding:8px; width:80%; margin-bottom:10px;">
+        <button class="main-btn" onclick="checkAna('${item.ans}')">回答する</button>
+      `;
+      window.checkAna = function(ans) {
+        const input = document.getElementById("ana-in").value.trim();
+        if (input === ans) {
+          const pt = GAME_REWARDS.anagram;
+          if (typeof points !== 'undefined') points += pt;
+          if (typeof addTransaction === 'function') addTransaction('ポイント', pt, 'アナグラム正解');
+          if (typeof updateDisplay === 'function') updateDisplay();
+          if (typeof playSound === 'function') playSound('win');
+          alert(`🎉 正解 (${ans})！ ${pt}pt 獲得！`);
+          closeMiniGamePlayModal();
+        } else {
+          if (typeof playSound === 'function') playSound('error');
+          alert("残念！違います");
         }
       };
     }
@@ -1966,6 +2116,7 @@
 
 })();
 </script> 
+
 
     
    
