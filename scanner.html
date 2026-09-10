@@ -337,13 +337,7 @@
   let html5QrCode = null;
   let isCameraOn = false;
 
-  // クーポン管理
-  let activeDiscount = 0;
-  let coupons = [
-    { id: 1, title: "コンビニ限定 100円OFF", discount: 100, minPay: 200, used: false },
-    { id: 2, title: "カフェで使える 200円OFF", discount: 200, minPay: 500, used: false },
-    { id: 3, title: "11Pay感謝祭 500円OFF", discount: 500, minPay: 1000, used: false }
-  ];
+  
 
   // スクラッチ用
   let scratchPointResult = 0;
@@ -518,53 +512,7 @@
     closeScratchModal();
   }
 
-  // --- クーポン機能 ---
-  function openCouponModal() {
-    playSound('beep');
-    renderCoupons();
-    document.getElementById("coupon-modal").classList.remove("hidden");
-  }
-
-  function closeCouponModal() {
-    playSound('beep');
-    document.getElementById("coupon-modal").classList.add("hidden");
-  }
-
-  function renderCoupons() {
-    const container = document.getElementById("coupon-list");
-    if (!container) return;
-
-    container.innerHTML = coupons.map(c => {
-      const isSelected = activeDiscount === c.discount && !c.used;
-      return `
-        <div style="border: 2px dashed ${c.used ? '#ccc' : '#ff0033'}; padding: 12px; border-radius: 12px; margin-bottom: 10px; background: ${c.used ? '#f9f9f9' : '#fff5f5'};">
-          <div style="font-weight: bold; font-size: 15px; color: ${c.used ? '#888' : '#333'};">${c.title}</div>
-          <div style="font-size: 12px; color: #666; margin: 4px 0;">${c.minPay}円以上のお支払いで利用可能</div>
-          <button class="main-btn" style="padding: 6px 12px; font-size: 13px; margin-top: 6px; background: ${c.used ? '#ccc' : isSelected ? '#28a745' : '#ff0033'};"
-            onclick="selectCoupon(${c.id})" ${c.used ? 'disabled' : ''}>
-            ${c.used ? '使用済み' : isSelected ? 'セット中 (タップで解除)' : 'セットする'}
-          </button>
-        </div>
-      `;
-    }).join('');
-  }
-
-  function selectCoupon(id) {
-    const coupon = coupons.find(c => c.id === id);
-    if (!coupon || coupon.used) return;
-
-    if (activeDiscount === coupon.discount) {
-      activeDiscount = 0;
-      playSound('beep');
-      alert("クーポンのセットを解除しました");
-    } else {
-      activeDiscount = coupon.discount;
-      playSound('win');
-      alert(`「${coupon.title}」をセットしました！\n次回の決済時に自動で適用されます。`);
-    }
-    renderCoupons();
-  }
-
+ 
   // --- GAMEメニュー機能 ---
   function openGameModal() {
     playSound('beep');
@@ -2117,113 +2065,143 @@
 })();
 
 // ==========================================
-// 🎟️ QR読み取り追加 ＆ パスワード削除機能
+// 🎟️ クーポン機能（QR追加 ＆ パスワード削除対応版）
 // ==========================================
 
 // 削除用パスワード設定
 const COUPON_DELETE_PASS = "1234"; // ← 好きなパスワードに変更可能
 
-// 1. カメラでQRコード（COUPON:名前:割引額:最低金額:期限）を読み取った時に呼ぶ関数
+// クーポン管理データ（LocalStorageがあればそこから読み込む、なければ初期データ）
+let activeDiscount = 0;
+let coupons = JSON.parse(localStorage.getItem('my_coupons')) || [
+  { id: 1, title: "コンビニ限定 100円OFF", discount: 100, minPay: 200, used: false },
+  { id: 2, title: "カフェで使える 200円OFF", discount: 200, minPay: 500, used: false },
+  { id: 3, title: "11Pay感謝祭 500円OFF", discount: 500, minPay: 1000, used: false }
+];
+
+// データを保存する関数
+function saveCouponsToStorage() {
+  localStorage.setItem('my_coupons', JSON.stringify(coupons));
+}
+
+// モーダルを開く
+function openCouponModal() {
+  playSound('beep');
+  renderCoupons();
+  document.getElementById("coupon-modal").classList.remove("hidden");
+}
+
+// モーダルを閉じる
+function closeCouponModal() {
+  playSound('beep');
+  document.getElementById("coupon-modal").classList.add("hidden");
+}
+
+// クーポン一覧の描画（削除ボタン ＆ セットボタン付き）
+function renderCoupons() {
+  const container = document.getElementById("coupon-list");
+  if (!container) return;
+
+  container.innerHTML = coupons.map(c => {
+    const isSelected = activeDiscount === c.discount && !c.used;
+    return `
+      <div style="border: 2px dashed ${c.used ? '#ccc' : '#ff0033'}; padding: 12px; border-radius: 12px; margin-bottom: 10px; background: ${c.used ? '#f9f9f9' : '#fff5f5'};">
+        <div style="font-weight: bold; font-size: 15px; color: ${c.used ? '#888' : '#333'};">${c.title}</div>
+        <div style="font-size: 12px; color: #666; margin: 4px 0;">${c.minPay}円以上のお支払いで利用可能</div>
+       
+        <div style="display: flex; gap: 8px; margin-top: 8px;">
+          <button class="main-btn" style="flex: 1; padding: 6px 12px; font-size: 13px; margin: 0; background: ${c.used ? '#ccc' : isSelected ? '#28a745' : '#ff0033'};"
+            onclick="selectCoupon(${c.id})" ${c.used ? 'disabled' : ''}>
+            ${c.used ? '使用済み' : isSelected ? 'セット中 (解除)' : 'セットする'}
+          </button>
+         
+          <!-- パスワード付き個別削除ボタン -->
+          <button onclick="deleteCouponWithPassword(${c.id})" style="background: #dc3545; color: #fff; border: none; border-radius: 8px; padding: 6px 10px; font-size: 12px; font-weight: bold; cursor: pointer;">
+            🗑️ 削除
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// クーポンのセット・解除
+function selectCoupon(id) {
+  const coupon = coupons.find(c => c.id === id);
+  if (!coupon || coupon.used) return;
+
+  if (activeDiscount === coupon.discount) {
+    activeDiscount = 0;
+    playSound('beep');
+    alert("クーポンのセットを解除しました");
+  } else {
+    activeDiscount = coupon.discount;
+    playSound('win');
+    alert(`「${coupon.title}」をセットしました！\n次回の決済時に自動で適用されます。`);
+  }
+  renderCoupons();
+}
+
+// ==========================================
+// 🔑 パスワード認証付きの個別削除関数
+// ==========================================
+function deleteCouponWithPassword(id) {
+  const inputPass = prompt("このクーポンを削除するにはパスワードを入力してください:");
+  if (inputPass === null) return; // キャンセル
+
+  if (inputPass === COUPON_DELETE_PASS) {
+    coupons = coupons.filter(c => c.id !== id);
+    saveCouponsToStorage();
+    playSound('beep');
+    alert("✅ クーポンを削除しました。");
+    renderCoupons();
+  } else {
+    playSound('error');
+    alert("❌ パスワードが違います。");
+  }
+}
+
+// ==========================================
+// 📷 QRコード読み込みによる追加関数
+// （カメラの成功時にこの関数に文字列を渡してください）
+// ==========================================
 function handleCouponQRScan(qrText) {
-  // 文字列が "COUPON:" で始まっているか確認
   if (!qrText || !qrText.startsWith("COUPON:")) {
     return alert("❌ 無効なクーポンQRコードです");
   }
 
-  // コロンで分割
   const parts = qrText.split(":");
   if (parts.length < 5) {
     return alert("❌ クーポンデータの形式が正しくありません");
   }
 
-  const couponName = parts[1];
-  const discount = Number(parts[2]);
-  const minAmount = Number(parts[3]);
-  const expireDate = parts[4];
-
-  // クーポンオブジェクトの作成
-  const newCoupon = {
-    id: "cpn_" + Date.now(),
-    name: couponName,
-    discount: discount,
-    min: minAmount,
-    expire: expireDate
-  };
-
-  // LocalStorageから既存のクーポンを取得
-  let myCoupons = JSON.parse(localStorage.getItem('my_coupons') || '[]');
+  const titleText = `${parts[1]} (${parts[2]}円OFF)`;
+  const discountVal = Number(parts[2]);
+  const minPayVal = Number(parts[3]);
 
   // 重複チェック
-  const exists = myCoupons.some(c => c.name === couponName && c.discount === discount);
+  const exists = coupons.some(c => c.title.includes(parts[1]) && c.discount === discountVal);
   if (exists) {
-    if (typeof playSound === 'function') playSound('error');
-    return alert(`ℹ️ 【${couponName}】はすでに追加されています。`);
+    playSound('error');
+    return alert(`ℹ️ 【${parts[1]}】はすでに追加されています。`);
   }
 
-  // 追加して保存
-  myCoupons.push(newCoupon);
-  localStorage.setItem('my_coupons', JSON.stringify(myCoupons));
+  // 新規クーポンを追加
+  const newCoupon = {
+    id: Date.now(),
+    title: parts[1],
+    discount: discountVal,
+    minPay: minPayVal,
+    used: false
+  };
 
-  if (typeof playSound === 'function') playSound('win');
-  alert(`🎉 クーポン【${couponName}】（${discount}円OFF）を追加しました！`);
+  coupons.push(newCoupon);
+  saveCouponsToStorage();
 
-  // 表示更新
-  renderMyCoupons();
-}
-
-// 2. クーポン個別削除処理（パスワード認証付き）
-function deleteCouponWithPassword(couponId) {
-  const inputPass = prompt("このクーポンを削除するにはパスワードを入力してください:");
-
-  if (inputPass === null) return; // キャンセル
-
-  if (inputPass === COUPON_DELETE_PASS) {
-    let myCoupons = JSON.parse(localStorage.getItem('my_coupons') || '[]');
-    myCoupons = myCoupons.filter(c => c.id !== couponId);
-    localStorage.setItem('my_coupons', JSON.stringify(myCoupons));
-
-    if (typeof playSound === 'function') playSound('beep');
-    alert("✅ クーポンを削除しました。");
-    renderMyCoupons();
-  } else {
-    if (typeof playSound === 'function') playSound('error');
-    alert("❌ パスワードが違います。");
-  }
-}
-
-// 3. クーポン一覧の描画（画面表示）処理
-function renderMyCoupons() {
-  const container = document.getElementById("my-coupon-list");
-  if (!container) return;
-
-  let myCoupons = JSON.parse(localStorage.getItem('my_coupons') || '[]');
-  container.innerHTML = "";
-
-  if (myCoupons.length === 0) {
-    container.innerHTML = `<p style="text-align:center; color:#888; padding:20px;">所持しているクーポンはありません</p>`;
-    return;
-  }
-
-  myCoupons.forEach(coupon => {
-    const card = document.createElement("div");
-    card.style.cssText = "background:#fff; border-radius:12px; padding:12px; margin-bottom:10px; box-shadow:0 2px 6px rgba(0,0,0,0.1); display:flex; justify-content:space-between; align-items:center;";
-   
-    card.innerHTML = `
-      <div>
-        <h4 style="margin:0; font-size:16px; color:#333;">🎟️ ${coupon.name}</h4>
-        <p style="margin:4px 0 0 0; font-size:13px; color:#e63946; font-weight:bold;">${coupon.discount}円OFF <span style="font-weight:normal; color:#666;">(${coupon.min}円以上で利用可)</span></p>
-        <small style="color:#888;">期限: ${coupon.expire}</small>
-      </div>
-      <button onclick="deleteCouponWithPassword('${coupon.id}')" style="background:#dc3545; color:#fff; border:none; border-radius:8px; padding:8px 12px; font-size:12px; font-weight:bold; cursor:pointer;">🗑️ 削除</button>
-    `;
-   
-    container.appendChild(card);
-  });
-}
-
-// ページ読み込み時に表示
-document.addEventListener('DOMContentLoaded', renderMyCoupons); 
-
+  playSound('win');
+  alert(`🎉 クーポン【${parts[1]}】を追加しました！`);
+  renderCoupons();
+} 
 
 </script> 
  
