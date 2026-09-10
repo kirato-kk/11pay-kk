@@ -1039,6 +1039,20 @@
     }
   }
 
+  // カメラを再起動（またはもう一度スキャン状態に戻す）ための関数例
+function restartScanner() {
+  if (typeof html5QrCode !== 'undefined') {
+    // すでにスキャン中でなければ起動する
+    html5QrCode.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: 250 },
+      onScanSuccess
+    ).catch(err => {
+      console.log("カメラ起動エラー:", err);
+    });
+  }
+} 
+
   function onScanSuccess(decodedText) {
     playSound('beep');
     stopScanner(() => {
