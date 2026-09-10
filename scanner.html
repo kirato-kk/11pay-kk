@@ -2196,11 +2196,7 @@ function handleCouponQRScan(qrText) {
   renderCoupons();
 }
 
-function onScanSuccess(decodedText) {
-  handleCouponQRScan(decodedText);
-  if (typeof html5QrCode !== 'undefined' && html5QrCode.isScanning) {
-    html5QrCode.stop().catch(err => console.log(err));
-  }
+
 } 
 
 
