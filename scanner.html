@@ -250,25 +250,32 @@
 <div class="step-card" style="background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center;">
   <h3 style="font-size: 14px; color: #333; margin: 0 0 10px 0;">歩数でポイントGET！</h3>
   
-  <!-- イラスト・ゲージの表示エリア -->
-  <div style="background: #f8f9fa; padding: 12px; border-radius: 10px; margin-bottom: 10px;">
-    <div id="step-illustration" style="font-size: 24px; margin-bottom: 5px;">🚶‍♂️</div>
-    <div style="font-size: 13px; color: #666; margin-bottom: 8px;">
+  <!-- ゲージ＆動くイラストのエリア -->
+  <div style="background: #f8f9fa; padding: 20px 12px 15px 12px; border-radius: 10px; margin-bottom: 10px; position: relative;">
+    
+    <!-- 移動するイラスト（SVGアイコン） -->
+    <div id="walking-character" style="position: absolute; top: -2px; left: 10px; transition: left 0.3s ease; transform: translateX(-50%);">
+      <svg id="character-svg" width="28" height="28" viewBox="0 0 24 24" fill="#ff4757" xmlns="http://www.w3.org/2000/svg">
+        <path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.2L6 8.5V13h2V9.6l1.8-.7z"/>
+      </svg>
+    </div>
+
+    <div style="font-size: 13px; color: #666; margin: 15px 0 10px 0;">
       現在の歩数: <strong id="current-steps" style="color: #ff4757;">0</strong> 歩 / 500歩
     </div>
     
     <!-- 5つのゲージ表示 (100歩ごと) -->
     <div style="display: flex; justify-content: center; gap: 6px; margin-bottom: 8px;">
-      <div class="step-gauge-box" id="gauge-0" style="width: 25px; height: 8px; background: #e0e0e0; border-radius: 4px;"></div>
-      <div class="step-gauge-box" id="gauge-1" style="width: 25px; height: 8px; background: #e0e0e0; border-radius: 4px;"></div>
-      <div class="step-gauge-box" id="gauge-2" style="width: 25px; height: 8px; background: #e0e0e0; border-radius: 4px;"></div>
-      <div class="step-gauge-box" id="gauge-3" style="width: 25px; height: 8px; background: #e0e0e0; border-radius: 4px;"></div>
-      <div class="step-gauge-box" id="gauge-4" style="width: 25px; height: 8px; background: #e0e0e0; border-radius: 4px;"></div>
+      <div class="step-gauge-box" id="gauge-0" style="flex: 1; height: 10px; background: #e0e0e0; border-radius: 5px; transition: background 0.3s;"></div>
+      <div class="step-gauge-box" id="gauge-1" style="flex: 1; height: 10px; background: #e0e0e0; border-radius: 5px; transition: background 0.3s;"></div>
+      <div class="step-gauge-box" id="gauge-2" style="flex: 1; height: 10px; background: #e0e0e0; border-radius: 5px; transition: background 0.3s;"></div>
+      <div class="step-gauge-box" id="gauge-3" style="flex: 1; height: 10px; background: #e0e0e0; border-radius: 5px; transition: background 0.3s;"></div>
+      <div class="step-gauge-box" id="gauge-4" style="flex: 1; height: 10px; background: #e0e0e0; border-radius: 5px; transition: background 0.3s;"></div>
     </div>
     <div style="font-size: 11px; color: #888;" id="step-status-text">100歩ごとに100pt、5つ貯まると500pt！</div>
   </div>
 
-  <!-- アクションボタン（センサー有効化 ＆ ポイント受取） -->
+  <!-- アクションボタン -->
   <div style="display: flex; flex-direction: column; gap: 8px;">
     <button onclick="requestMotionPermission()" style="background: #27ae60; color: white; border: none; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; width: 100%;">
       📱 歩数センサーを有効にする（最初のみ）
@@ -2412,7 +2419,7 @@ function closepayconfirmmodal() {
   window.history.replaceState({}, document.title, window.location.pathname);
 }
 
-// 歩数データの取得・管理
+  // 歩数データの取得・管理
 function getStepData() {
   const data = JSON.parse(localStorage.getItem('11pay_step_data')) || {
     steps: 0,          // 現在の未取得歩数 (0〜500)
@@ -2432,7 +2439,7 @@ function saveStepData(data) {
   localStorage.setItem('11pay_step_data', JSON.stringify(data));
 }
 
-// 画面の歩数表示やゲージ、イラストの更新
+// 画面の歩数表示やゲージ、イラストの連動更新
 function updateStepUI() {
   const data = getStepData();
   
@@ -2446,7 +2453,7 @@ function updateStepUI() {
     const gauge = document.getElementById(`gauge-${i}`);
     if (gauge) {
       if (data.steps >= (i + 1) * 100) {
-        gauge.style.background = '#27ae60'; // 100歩クリア
+        gauge.style.background = '#27ae60'; // 達成済み
       } else if (data.steps >= i * 100) {
         gauge.style.background = '#ff4757'; // 進行中
       } else {
@@ -2455,15 +2462,20 @@ function updateStepUI() {
     }
   }
 
-  // イラストの切り替え
-  const illu = document.getElementById('step-illustration');
-  if (illu) {
-    if (data.steps >= 500) {
-      illu.innerText = '🎉';
-    } else if (data.steps >= 250) {
-      illu.innerText = '🏃‍♂️';
-    } else {
-      illu.innerText = '🚶‍♂️';
+  // イラスト（SVGアイコン）を歩数に応じてゲージ上に移動させる
+  const character = document.getElementById('walking-character');
+  const svgElem = document.getElementById('character-svg');
+  if (character) {
+    const percentage = Math.min(data.steps / 500, 1);
+    const containerWidth = character.parentElement.clientWidth - 30;
+    const positionX = Math.max(15, percentage * containerWidth);
+    character.style.left = `${positionX}px`;
+
+    // 500歩達成時は色を変更
+    if (data.steps >= 500 && svgElem) {
+      svgElem.setAttribute('fill', '#27ae60');
+    } else if (svgElem) {
+      svgElem.setAttribute('fill', '#ff4757');
     }
   }
 }
@@ -2490,7 +2502,7 @@ function requestMotionPermission() {
 // 実際の揺れを検知して1歩ずつカウントするロジック
 let lastAcceleration = { x: 0, y: 0, z: 0 };
 let lastStepTime = 0;
-const threshold = 12; // 揺れの感度（調整可能）
+const threshold = 12; // 揺れの感度
 
 function handleMotionEvent(event) {
   const acc = event.accelerationIncludingGravity;
@@ -2525,7 +2537,7 @@ function handleMotionEvent(event) {
 // ポイントを受け取る関数（途中でもOK、34歩なら34pt、最大10000pt上限）
 function claimStepPoints() {
   let data = getStepData();
-  const earnedPoints = data.steps; // そのままの歩数がポイントになる
+  const earnedPoints = data.steps;
 
   if (earnedPoints <= 0) {
     alert("受け取れる歩数がありません！");
@@ -2537,12 +2549,12 @@ function claimStepPoints() {
     alert("本日の上限（10,000pt）を超えるため、上限まで獲得します。");
   }
 
-  // 残高への加算
+  // 1. 残高への加算
   let currentBalance = parseInt(localStorage.getItem('11pay_balance'), 10) || 0;
   currentBalance += earnedPoints;
   localStorage.setItem('11pay_balance', currentBalance);
 
-  // 取引履歴（11pay_history）へ追加
+  // 2. 取引履歴（11pay_history）へ確実に保存
   let history = JSON.parse(localStorage.getItem('11pay_history')) || [];
   history.unshift({
     title: `歩数ポイント獲得 (${earnedPoints}pt)`,
@@ -2551,16 +2563,22 @@ function claimStepPoints() {
   });
   localStorage.setItem('11pay_history', JSON.stringify(history));
 
-  // データの更新（歩数をリセットし、本日の獲得数を加算）
+  // 3. データの更新（歩数をリセットし、本日の獲得数を加算）
   data.todayPoints += earnedPoints;
   data.steps = 0;
   saveStepData(data);
 
+  // 4. 画面の更新と履歴の再描画（またはリロードで確実に反映）
   updateStepUI();
 
-  // 既存のメイン画面更新関数があれば呼び出し
-  if (typeof updateBalance === 'function') updateBalance();
-  if (typeof renderRecentHistory === 'function') renderRecentHistory();
+  if (typeof renderHistory === 'function') {
+    renderHistory();
+  } else if (typeof loadHistory === 'function') {
+    loadHistory();
+  } else {
+    location.reload();
+    return;
+  }
 
   alert(`✨ ${earnedPoints.toLocaleString()}ポイントを獲得しました！`);
 }
