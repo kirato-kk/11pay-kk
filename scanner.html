@@ -2534,29 +2534,24 @@ function handleMotionEvent(event) {
   lastAcceleration = { x: currentX, y: currentY, z: currentZ };
 }
 
-// ポイントを受け取る関数（11Payのポイントと取引履歴を正しく更新する修正版）
+// 原因を画面にポップアップ表示するデバッグ用 `claimStepPoints()`
 function claimStepPoints() {
-  let data = getStepData();
-  const earnedPoints = data.steps; // 現在の歩数がそのままポイントに
-
-  if (earnedPoints <= 0) {
-    alert("受け取れる歩数がありません！");
-    return;
-  }
-
-  // 1日の上限チェック (10,000pt)
-  if (data.todayPoints + earnedPoints > 10000) {
-    alert("本日の上限（10,000pt）を超えるため、上限まで獲得します。");
-  }
-
   try {
-    // 1. 【修正】残高ではなく「ポイント（11pay_points）」に加算する
-    let Points = parseInt(localStorage.getItem('points'), 10) || 0;
+    let data = getStepData();
+    const earnedPoints = data.steps;
+
+    if (earnedPoints <= 0) {
+      alert("受け取れる歩数がありません！");
+      return;
+    }
+
+    // 1. ポイントの加算処理
+    let currentPoints = parseInt(localStorage.getItem('11pay_points'), 10) || 0;
     currentPoints += earnedPoints;
     localStorage.setItem('11pay_points', currentPoints);
 
-    // 2. 取引履歴（11pay_history）へ保存
-    let addTransaction = JSON.parse(localStorage.getItem('addTransaction')) || [];
+    // 2. 取引履歴の保存処理
+    let history = JSON.parse(localStorage.getItem('11pay_history')) || [];
     history.unshift({
       title: `歩数ポイント獲得 (${earnedPoints}pt)`,
       amount: earnedPoints,
@@ -2564,24 +2559,24 @@ function claimStepPoints() {
     });
     localStorage.setItem('11pay_history', JSON.stringify(history));
 
-    // 3. データの更新（歩数をリセットし、本日の獲得数を加算）
+    // 3. データの更新
     data.todayPoints += earnedPoints;
     data.steps = 0;
     saveStepData(data);
 
-    // 4. 画面の歩数UIを更新
+    // 4. UIの更新
     updateStepUI();
 
     alert(`✨ ${earnedPoints.toLocaleString()}ポイントを獲得しました！`);
-
-    // 5. 確実に画面を反映させるためにリロード
     location.reload();
 
   } catch (error) {
-    console.error("ポイント受取エラー:", error);
-    alert("エラーが発生しました。");
+    // どこでエラーになったのか、具体的な原因をアラートで画面に出す
+    alert("エラー詳細: " + error.message + "\n(行番号や名前が間違っている可能性があります)");
+    console.error("ポイント受取エラー詳細:", error);
   }
 }
+
 
 
 // ページ読み込み時に初期化
