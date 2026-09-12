@@ -2238,53 +2238,6 @@ function onScanSuccess(decodedText) {
   ];
 
 
-  // ==========================================
-// 🌐 URL（外部サイト）からの決済リクエスト処理
-// ==========================================
-window.addEventListener('DOMContentLoaded', () => {
-  // URLのパラメータ（?以降の文字）を解析する
-  const urlParams = new URLSearchParams(window.location.search);
-  const payTo = urlParams.get('pay_to');   // 支払い先のお店や商品名
-  const amount = urlParams.get('amount'); // 金額
-
-  // もしURLに支払い情報が含まれていた場合
-  if (payTo && amount) {
-    // 少しだけ遅延させて、ページが完全に読み込まれてから決済確認画面を出す
-    setTimeout(() => {
-      openExternalPaymentModal(payTo, Number(amount));
-    }, 500);
-  }
-});
-
-// 外部からの決済確認モーダルを表示する関数
-function openExternalPaymentModal(storeName, payAmount) {
-  // すでに決済用のモーダル画面がHTMLにある前提、あるいはここで動的にポップアップを出す例
-  if (confirm(`【11Pay 決済確認】\n\n${storeName} から ${payAmount}円 の支払いリクエストが届いています。\n支払いますか？`)) {
-    
-    // 残高が足りているかチェックする処理（例としての簡易コード）
-    // ※ 実際の残高変数名に合わせて調整してください
-    let currentBalance = 1000; // 仮の残高（本来はlocalStorage等から取得）
-    
-    // もし残高管理の変数があればここでチェック
-    if (typeof balance !== 'undefined' && balance < payAmount) {
-      alert("❌ 残高が不足しています。チャージしてください。");
-      return;
-    }
-
-    // 決済成功時の処理
-    playSound('win');
-    alert(`🎉 ${storeName}への ${payAmount}円 の支払いが完了しました！`);
-    
-    // （もし残高から引く処理があればここに記述）
-    // balance -= payAmount;
-    // updateBalanceDisplay();
-
-    // 決済が終わったら、元のサイト（Amazonなど）に戻る、またはホームに戻る
-    // window.location.href = "https://amazon.co.jp"; （元のサイトに戻す場合）
-  } else {
-    alert("決済がキャンセルされました。");
-  }
-}
 
   // ==========================================
 // 📁 スマホ内の画像（スクショ等）からQRを読み取る処理
@@ -2380,6 +2333,46 @@ function addHistoryRecord(title, amount) {
   localStorage.setItem('11pay_history', JSON.stringify(history));
 }
 
+// 保持用変数
+let currentPaymentAmount = 0;
+
+// ページ読み込み時にURLパラメータをチェック
+window.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const payAmount = params.get('pay_amount'); // 例: index.html?pay_amount=1200
+
+  if (payAmount) {
+    const amount = parseInt(payAmount, 10);
+    if (!isNaN(amount) && amount > 0) {
+      currentPaymentAmount = amount;
+      openCheckoutModal(amount);
+    }
+  }
+});
+
+// お会計モーダルを開く関数
+function openpayconfirmmodal(amount) {
+  // 金額をモーダル内の表示要素にセット
+  const amountElem = document.getElementById('checkout-amount-display');
+  if (amountElem) {
+    amountElem.innerText = amount.toLocaleString() + "円";
+  }
+  // モーダルを表示（flexまたはblock、既存のモーダルのスタイルに合わせて変更してください）
+  const modal = document.getElementById('checkout-modal');
+  if (modal) {
+    modal.style.display = 'flex';
+  }
+}
+
+// お会計モーダルを閉じる関数
+function closepayconfirmmodal() {
+  const modal = document.getElementById('checkout-modal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+  // URLのパラメータをきれいにする（リロード時に何度も開かないようにするため）
+  window.history.replaceState({}, document.title, window.location.pathname);
+}
 
   
 </script> 
