@@ -100,6 +100,39 @@
     #qr-output-container img { width: 200px; height: 200px; border-radius: 10px; }
    
     .hidden { display: none !important; }
+
+    /* カメラの親要素を絶対配置の基準にする */
+#camera-container {
+  position: relative;
+}
+
+/* カメラ右下の丸型アイコンボタン */
+#camera-overlay-btn {
+  position: absolute;
+  right: 15px;
+  bottom: 15px;
+  z-index: 20;
+  
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6); /* カメラ映像で見やすい半透明の黒 */
+  color: white;
+  border: 2px solid white;
+  font-size: 20px;
+  cursor: pointer;
+  
+  /* アイコンを真ん中に配置 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+#camera-overlay-btn:active {
+  transform: scale(0.95); /* 押したときに少し沈む演出 */
+}
+
   </style>
 </head>
 <body>
@@ -153,6 +186,19 @@
         <div id="reader" class="hidden"></div>
       </div>
     </div>
+
+    <!-- カメラとボタンを囲むコンテナ -->
+<div id="camera-container" style="position: relative; display: inline-block; width: 100%;">
+  <div id="reader" style="width: 100%;"></div>
+  
+  <!-- カメラの右下に配置する丸いイラスト（アイコン）ボタン -->
+  <button id="camera-overlay-btn" onclick="document.getElementById('qr-input-file').click()" title="画像から読み込む">
+    🖼️
+  </button>
+  
+  <!-- 端末内の画像を選択するための隠しファイルinput -->
+  <input type="file" id="qr-input-file" accept="image/*" style="display:none;" onchange="handleFileScan(this)">
+</div>
 
     <!-- 取引履歴エリア -->
     <div class="tx-card">
@@ -2191,6 +2237,30 @@ function openExternalPaymentModal(storeName, payAmount) {
     alert("決済がキャンセルされました。");
   }
 }
+
+  // ==========================================
+// 📁 スマホ内の画像（スクショ等）からQRを読み取る処理
+// ==========================================
+function handleFileScan(input) {
+  if (input.files.length === 0) return;
+  const file = input.files[0];
+
+  // html5-qrcodeライブラリを使って画像ファイル内をスキャン
+  const html5QrCodeForFile = new Html5Qrcode("reader");
+  
+  html5QrCodeForFile.scanFile(file, true)
+    .then(decodedText => {
+      console.log("画像からQRコードを検出:", decodedText);
+      // 既存のQR読み取り成功時と同じ関数に渡す
+      onScanSuccess(decodedText);
+    })
+    .catch(err => {
+      console.log("画像スキャンエラー:", err);
+      if (typeof playSound === 'function') playSound('error');
+      alert("❌ 画像からQRコードを検出できませんでした");
+    });
+}
+
 
 </script> 
  
