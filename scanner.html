@@ -133,6 +133,126 @@
   transform: scale(0.95); /* 押したときに少し沈む演出 */
 }
 
+    /* --- 1. 残高カード右下のマイコードボタン（イラスト版） --- */
+.balance-card {
+  position: relative; /* 子要素を絶対配置の基準にする */
+}
+
+#mycode-open-btn {
+  position: absolute;
+  right: 15px;
+  bottom: 15px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  
+  /* ▼ アイコン画像を使う設定 (mycode-icon.png の部分をお好みの画像パスに変更してください) */
+  background-image: url('mycode-icon.png');
+  background-size: 60%;
+  background-position: center;
+  background-repeat: no-repeat;
+  
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1.5px solid white;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+#mycode-open-btn:active {
+  transform: scale(0.95);
+}
+
+/* --- 2. マイコードモーダルのスタイル --- */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 25px;
+  border-radius: 16px;
+  text-align: center;
+  width: 80%;
+  max-width: 320px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+.mycode-barcode-box {
+  background: #f9f9f9;
+  border: 1px dashed #ccc;
+  padding: 15px;
+  margin: 15px 0;
+  border-radius: 8px;
+}
+
+.fake-barcode {
+  font-family: monospace;
+  font-size: 24px;
+  letter-spacing: 2px;
+  color: #333;
+}
+
+.mycode-id-text {
+  font-size: 12px;
+  color: #666;
+  margin-top: 5px;
+}
+
+.modal-close-btn {
+  background: #ff4757;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* --- 3. プッシュ通知（トースト）のスタイル --- */
+#toast-container {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toast-notification {
+  background: rgba(30, 30, 30, 0.95);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 30px;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: toastSlideDown 0.3s ease, toastFadeOut 0.3s ease 2.7s forwards;
+  pointer-events: auto;
+}
+
+@keyframes toastSlideDown {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes toastFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; transform: translateY(-10px); }
+}
+
+
   </style>
 </head>
 <body>
@@ -177,6 +297,32 @@
       <div class="card-amount"><span id="balance-display">0</span> 円</div>
       <div class="point-display">ポイント: <span id="point-display">0</span> pt</div>
     </div>
+
+    <!-- 【残高カードの部分】の中にマイコードボタンを配置 -->
+<div class="balance-card" style="position: relative;">
+  <div class="balance-title">11Pay残高</div>
+  <div class="balance-amount" id="balance-display">1,000 円</div>
+  
+  <!-- 1. 残高カードの右下に配置するイラストアイコンボタン -->
+  <button id="mycode-open-btn" onclick="openMyCodeModal()" title="マイコード"></button>
+</div>
+
+<!-- 2. マイコード表示モーダル（ポップアップ） -->
+<div id="mycode-modal" class="modal-overlay" style="display: none;">
+  <div class="modal-content">
+    <h3>マイコード（会員証）</h3>
+    <p>お店の人に読み取ってもらってね</p>
+    <!-- バーコード風デザイン -->
+    <div class="mycode-barcode-box">
+      <div class="fake-barcode">||| | |||| || | || |||</div>
+      <div class="mycode-id-text">ID: user_11pay_9999</div>
+    </div>
+    <button class="modal-close-btn" onclick="closeMyCodeModal()">閉じる</button>
+  </div>
+</div>
+
+<!-- 3. プッシュ通知（トースト通知）用のコンテナ -->
+<div id="toast-container"></div>
 
     <!-- カメラ起動コントロール -->
     <div class="camera-area">
@@ -2259,6 +2405,87 @@ function handleFileScan(input) {
       if (typeof playSound === 'function') playSound('error');
       alert("❌ 画像からQRコードを検出できませんでした");
     });
+}
+
+  // ==========================================
+// 1. マイコード画面の開閉制御
+// ==========================================
+function openMyCodeModal() {
+  document.getElementById('mycode-modal').style.display = 'flex';
+}
+
+function closeMyCodeModal() {
+  document.getElementById('mycode-modal').style.display = 'none';
+}
+
+// ==========================================
+// 2. プッシュ通知（トースト）を表示する関数
+// ==========================================
+function showToast(message) {
+  const container = document.getElementById('toast-container');
+  
+  const toast = document.createElement('div');
+  toast.className = 'toast-notification';
+  toast.innerHTML = `⚡ <span>${message}</span>`;
+  
+  container.appendChild(toast);
+  
+  // 3秒後に自動で消去
+  setTimeout(() => {
+    toast.remove();
+  }, 3000);
+}
+
+// ==========================================
+// 3. マイコードを読み取ってお支払いする処理（金額入力型）
+// ==========================================
+function processMyCodePayment(targetUserId, storeName = "店舗での決済") {
+  // 1. 支払い金額を入力してもらう
+  const inputAmount = prompt(`${targetUserId} さんへの支払い金額を入力してください（円）:`);
+  if (!inputAmount) return; // キャンセル時は中止
+
+  const amount = parseInt(inputAmount, 10);
+  if (isNaN(amount) || amount <= 0) {
+    alert("正しい金額を入力してください。");
+    return;
+  }
+
+  // 2. 現在の残高を取得（localStorageから読み込み）
+  let currentBalance = parseInt(localStorage.getItem('11pay_balance')) || 1000;
+
+  // 3. 残高不足チェック
+  if (currentBalance < amount) {
+    alert("❌ 残高が不足しています！");
+    return;
+  }
+
+  // 4. 残高を減らして保存
+  currentBalance -= amount;
+  localStorage.setItem('11pay_balance', currentBalance);
+
+  // 5. 画面の残高表示を更新
+  if (typeof updateBalanceUI === 'function') {
+    updateBalanceUI();
+  } else {
+    document.getElementById('balance-display').innerText = currentBalance + " 円";
+  }
+
+  // 6. 取引履歴に追加
+  addHistoryRecord(storeName, -amount);
+
+  // 7. おしゃれなプッシュ通知を表示
+  showToast(`${storeName}で ${amount.toLocaleString()}円 支払いました`);
+}
+
+// 履歴追加用のヘルパー関数
+function addHistoryRecord(title, amount) {
+  let history = JSON.parse(localStorage.getItem('11pay_history')) || [];
+  history.unshift({
+    title: title,
+    amount: amount,
+    date: new Date().toLocaleString()
+  });
+  localStorage.setItem('11pay_history', JSON.stringify(history));
 }
 
 
