@@ -172,53 +172,7 @@
   to { opacity: 0; transform: translateY(-10px); }
 }
 
-    /* パスコード画面のスタイル */
-.modal-overlay {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: #ff4757;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-}
-
-.passcode-box {
-  text-align: center;
-  color: white;
-  width: 85%;
-  max-width: 300px;
-}
-
-.passcode-dots {
-  font-size: 28px;
-  letter-spacing: 12px;
-  margin: 20px 0;
-  min-height: 35px;
-}
-
-.keypad {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 15px;
-  margin-top: 15px;
-}
-
-.key-btn {
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
-  color: white;
-  font-size: 20px;
-  font-weight: bold;
-  padding: 16px 0;
-  border-radius: 50%;
-  cursor: pointer;
-}
-
-.key-btn:active {
-  background: rgba(255, 255, 255, 0.4);
-}
+    
 
 
   </style>
@@ -381,28 +335,7 @@
   </div>
 </div>
 
-  <!-- パスコードロック画面のHTML -->
-<div id="passcode-modal" class="modal-overlay">
-  <div class="passcode-box">
-    <h3>アプリロック解除</h3>
-    <p style="font-size: 12px; opacity: 0.8;">パスコードを入力してください (初期: 1111)</p>
-    <div id="passcode-dots" class="passcode-dots">____</div>
-    <div class="keypad">
-      <button class="key-btn" onclick="pressKey('1')">1</button>
-      <button class="key-btn" onclick="pressKey('2')">2</button>
-      <button class="key-btn" onclick="pressKey('3')">3</button>
-      <button class="key-btn" onclick="pressKey('4')">4</button>
-      <button class="key-btn" onclick="pressKey('5')">5</button>
-      <button class="key-btn" onclick="pressKey('6')">6</button>
-      <button class="key-btn" onclick="pressKey('7')">7</button>
-      <button class="key-btn" onclick="pressKey('8')">8</button>
-      <button class="key-btn" onclick="pressKey('9')">9</button>
-      <button class="key-btn" style="visibility: hidden;"></button>
-      <button class="key-btn" onclick="pressKey('0')">0</button>
-      <button class="key-btn" onclick="pressKey('C')">C</button>
-    </div>
-  </div>
-</div>
+
 
 <!-- スクラッチモーダル -->
 <div id="scratch-modal" class="modal-overlay hidden">
@@ -2447,33 +2380,6 @@ function addHistoryRecord(title, amount) {
   localStorage.setItem('11pay_history', JSON.stringify(history));
 }
 
-// パスコード認証のロジック
-let enteredCode = "";
-const correctPasscode = "1111"; // 正解のパスコード
-
-function pressKey(num) {
-  if (num === 'C') {
-    enteredCode = "";
-  } else if (enteredCode.length < 4) {
-    enteredCode += num;
-  }
-  
-  let displayDots = "";
-  for (let i = 0; i < 4; i++) {
-    displayDots += (i < enteredCode.length) ? "●" : "_";
-  }
-  document.getElementById('passcode-dots').innerText = displayDots;
-
-  if (enteredCode.length === 4) {
-    if (enteredCode === correctPasscode) {
-      document.getElementById('passcode-modal').style.display = 'none';
-    } else {
-      alert("❌ パスコードが違います");
-      enteredCode = "";
-      document.getElementById('passcode-dots').innerText = "____";
-    }
-  }
-}
 
   
 </script> 
