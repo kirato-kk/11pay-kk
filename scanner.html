@@ -2551,12 +2551,12 @@ function claimStepPoints() {
 
   try {
     // 1. 【修正】残高ではなく「ポイント（11pay_points）」に加算する
-    let currentPoints = parseInt(localStorage.getItem('points'), 10) || 0;
+    let Points = parseInt(localStorage.getItem('points'), 10) || 0;
     currentPoints += earnedPoints;
     localStorage.setItem('11pay_points', currentPoints);
 
     // 2. 取引履歴（11pay_history）へ保存
-    let history = JSON.parse(localStorage.getItem('addTransaction')) || [];
+    let addTransaction = JSON.parse(localStorage.getItem('addTransaction')) || [];
     history.unshift({
       title: `歩数ポイント獲得 (${earnedPoints}pt)`,
       amount: earnedPoints,
