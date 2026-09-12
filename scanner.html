@@ -246,6 +246,37 @@
   <input type="file" id="qr-input-file" accept="image/*" style="display:none;" onchange="handleFileScan(this)">
 </div>
 
+<!-- 歩数ポイント獲得セクション（カメラの下・取引履歴の上に配置） -->
+<div class="step-card" style="background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center;">
+  <h3 style="font-size: 14px; color: #333; margin: 0 0 10px 0;">歩数でポイントGET！</h3>
+  
+  <!-- イラスト・ゲージの表示エリア -->
+  <div style="background: #f8f9fa; padding: 12px; border-radius: 10px; margin-bottom: 10px;">
+    <div id="step-illustration" style="font-size: 24px; margin-bottom: 5px;">🚶‍♂️</div>
+    <div style="font-size: 13px; color: #666; margin-bottom: 8px;">
+      現在の歩数: <strong id="current-steps" style="color: #ff4757;">0</strong> 歩 / 500歩
+    </div>
+    
+    <!-- 5つのゲージ表示 -->
+    <div style="display: flex; justify-content: center; gap: 6px; margin-bottom: 8px;">
+      <div class="step-gauge-box" id="gauge-0" style="width: 25px; height: 8px; background: #e0e0e0; border-radius: 4px;"></div>
+      <div class="step-gauge-box" id="gauge-1" style="width: 25px; height: 8px; background: #e0e0e0; border-radius: 4px;"></div>
+      <div class="step-gauge-box" id="gauge-2" style="width: 25px; height: 8px; background: #e0e0e0; border-radius: 4px;"></div>
+      <div class="step-gauge-box" id="gauge-3" style="width: 25px; height: 8px; background: #e0e0e0; border-radius: 4px;"></div>
+      <div class="step-gauge-box" id="gauge-4" style="width: 25px; height: 8px; background: #e0e0e0; border-radius: 4px;"></div>
+    </div>
+    <div style="font-size: 11px; color: #888;" id="step-status-text">100歩ごとに100pt、5つ貯まると500pt！</div>
+  </div>
+
+  <!-- アクションボタン -->
+  <div style="display: flex; gap: 8px;">
+    <button onclick="simulateWalk(34)" style="flex: 1; background: #f0f2f5; color: #333; border: none; padding: 8px; border-radius: 6px; font-size: 12px; cursor: pointer;">＋34歩 (テスト)</button>
+    <button onclick="claimStepPoints()" id="claim-btn" style="flex: 2; background: #ff4757; color: white; border: none; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer;">ポイントを受け取る</button>
+  </div>
+  <div style="font-size: 10px; color: #aaa; margin-top: 6px;">本日の獲得: <span id="today-earned-points">0</span> / 10,000pt</div>
+</div>
+
+    
     <!-- 取引履歴エリア -->
     <div class="tx-card">
       <div class="tx-title">取引履歴</div>
@@ -2375,6 +2406,127 @@ function closepayconfirmmodal() {
   // URLのパラメータをきれいにする（リロード時に何度も開かないようにするため）
   window.history.replaceState({}, document.title, window.location.pathname);
 }
+
+// 歩数データの初期化と読み込み
+function getStepData() {
+  const data = JSON.parse(localStorage.getItem('11pay_step_data')) || {
+    steps: 0,          // 現在の未取得の歩数 (0〜500)
+    todayPoints: 0,    // 本日獲得したポイント
+    lastDate: new Date().toDateString()
+  };
+
+  // 日付が変わっていたら本日の獲得ポイントをリセット
+  if (data.lastDate !== new Date().toDateString()) {
+    data.todayPoints = 0;
+    data.lastDate = new Date().toDateString();
+  }
+  return data;
+}
+
+function saveStepData(data) {
+  localStorage.setItem('11pay_step_data', JSON.stringify(data));
+}
+
+// 画面描画の更新
+function updateStepUI() {
+  const data = getStepData();
+  
+  document.getElementById('current-steps').innerText = data.steps;
+  document.getElementById('today-earned-points').innerText = data.todayPoints.toLocaleString();
+
+  // 5つのゲージ（100歩ごと）の見た目を更新
+  for (let i = 0; i < 5; i++) {
+    const gauge = document.getElementById(`gauge-${i}`);
+    if (data.steps >= (i + 1) * 100) {
+      gauge.style.background = '#27ae60'; // 達成済み
+    } else if (data.steps >= i * 100) {
+      gauge.style.background = '#ff4757'; // 進行中
+    } else {
+      gauge.style.background = '#e0e0e0'; // 未達成
+    }
+  }
+
+  // イラストの変更（進捗に応じて変化）
+  const illu = document.getElementById('step-illustration');
+  if (data.steps >= 500) {
+    illu.innerText = '🎉';
+  } else if (data.steps >= 250) {
+    illu.innerText = '🏃‍♂️';
+  } else {
+    illu.innerText = '🚶‍♂️';
+  }
+}
+
+// 歩数を増やすテスト用関数（実際のスマホセンサーや外部連携時はこの関数に数値を渡します）
+function simulateWalk(addSteps) {
+  let data = getStepData();
+  
+  if (data.todayPoints >= 10000) {
+    alert("本日のポイント獲得上限（10,000pt）に達しました！");
+    return;
+  }
+
+  data.steps += addSteps;
+  
+  // 最大500歩（ゲージ5つ分）で一旦ストップさせる場合
+  if (data.steps > 500) {
+    data.steps = 500;
+  }
+
+  saveStepData(data);
+  updateStepUI();
+}
+
+// ポイントを受け取る関数（途中でもOK、100歩単位で計算）
+function claimStepPoints() {
+  let data = getStepData();
+  
+  // 1歩＝1ポイントとして計算（例: 34歩なら34ポイント、100歩なら100ポイント）
+  // ただし、100歩未満の端数も含めてそのまま獲得できるようにします
+  const earnedPoints = data.steps;
+
+  if (earnedPoints <= 0) {
+    alert("受け取れる歩数がありません！");
+    return;
+  }
+
+  // 1日の上限チェック
+  if (data.todayPoints + earnedPoints > 10000) {
+    alert("本日の上限（10,000pt）を超えるため、上限まで獲得します。");
+  }
+
+  // 残高やポイントへの加算処理（11Payのポイント仕様に合わせてストレージキーを調整してください）
+  let currentBalance = parseInt(localStorage.getItem('11pay_balance'), 10) || 0;
+  currentBalance += earnedPoints;
+  localStorage.setItem('11pay_balance', currentBalance);
+
+  // 取引履歴（11pay_history）へ自動追加
+  let history = JSON.parse(localStorage.getItem('11pay_history')) || [];
+  history.unshift({
+    title: `歩数ポイント獲得 (${earnedPoints}pt)`,
+    amount: earnedPoints, // プラスの数値
+    date: new Date().toLocaleString()
+  });
+  localStorage.setItem('11pay_history', JSON.stringify(history));
+
+  // データの更新（歩数をリセットし、本日の獲得数を加算）
+  data.todayPoints += earnedPoints;
+  data.steps = 0;
+  saveStepData(data);
+
+  updateStepUI();
+  
+  // メイン画面の残高表示や履歴表示を更新する関数があればここで呼び出す
+  if (typeof updateBalance === 'function') updateBalance();
+  if (typeof renderRecentHistory === 'function') renderRecentHistory();
+
+  alert(`✨ ${earnedPoints.toLocaleString()}ポイントを獲得しました！`);
+}
+
+// ページ読み込み時に実行
+window.addEventListener('DOMContentLoaded', () => {
+  updateStepUI();
+});
 
   
 </script> 
