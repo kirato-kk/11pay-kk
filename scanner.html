@@ -246,46 +246,6 @@
   <input type="file" id="qr-input-file" accept="image/*" style="display:none;" onchange="handleFileScan(this)">
 </div>
 
-<!-- 歩数ポイント獲得セクション -->
-<div class="step-card" style="background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center;">
-  <h3 style="font-size: 14px; color: #333; margin: 0 0 10px 0;">歩数でポイントGET！</h3>
-  
-  <!-- ゲージ＆動くイラストのエリア -->
-  <div style="background: #f8f9fa; padding: 20px 12px 15px 12px; border-radius: 10px; margin-bottom: 10px; position: relative;">
-    
-    <!-- 移動するイラスト（SVGアイコン） -->
-    <div id="walking-character" style="position: absolute; top: 10px; left: 20px; transition: left 0.3s ease; transform: translateX(-50%);">
-      <svg id="character-svg" width="28" height="28" viewBox="0 0 24 24" fill="#ff4757" xmlns="http://www.w3.org/2000/svg">
-        <path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.2L6 8.5V13h2V9.6l1.8-.7z"/>
-      </svg>
-    </div>
-
-    <div style="font-size: 13px; color: #666; margin: 15px 0 10px 0;">
-      現在の歩数: <strong id="current-steps" style="color: #ff4757;">0</strong> 歩 / 500歩
-    </div>
-    
-    <!-- 5つのゲージ表示 (100歩ごと) -->
-    <div style="display: flex; justify-content: center; gap: 6px; margin-bottom: 8px;">
-      <div class="step-gauge-box" id="gauge-0" style="flex: 1; height: 10px; background: #e0e0e0; border-radius: 5px; transition: background 0.3s;"></div>
-      <div class="step-gauge-box" id="gauge-1" style="flex: 1; height: 10px; background: #e0e0e0; border-radius: 5px; transition: background 0.3s;"></div>
-      <div class="step-gauge-box" id="gauge-2" style="flex: 1; height: 10px; background: #e0e0e0; border-radius: 5px; transition: background 0.3s;"></div>
-      <div class="step-gauge-box" id="gauge-3" style="flex: 1; height: 10px; background: #e0e0e0; border-radius: 5px; transition: background 0.3s;"></div>
-      <div class="step-gauge-box" id="gauge-4" style="flex: 1; height: 10px; background: #e0e0e0; border-radius: 5px; transition: background 0.3s;"></div>
-    </div>
-    <div style="font-size: 11px; color: #888;" id="step-status-text">100歩ごとに100pt、5つ貯まると500pt！</div>
-  </div>
-
-  <!-- アクションボタン -->
-  <div style="display: flex; flex-direction: column; gap: 8px;">
-    <button onclick="requestMotionPermission()" style="background: #27ae60; color: white; border: none; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; width: 100%;">
-      歩数センサーを有効にする
-    </button>
-    <button onclick="claimStepPoints()" id="claim-btn" style="background: #ff4757; color: white; border: none; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; width: 100%;">
-      ポイントを受け取る
-    </button>
-  </div>
-  <div style="font-size: 10px; color: #aaa; margin-top: 6px;">本日の獲得: <span id="today-earned-points">0</span> / 10,000pt</div>
-</div>
 
 
     
