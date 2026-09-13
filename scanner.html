@@ -1106,41 +1106,87 @@
     }
     closeSendQrModal();
   }
-// 修正版：QR読み取り成功時の処理（クーポン追加対応）
+ // --- スキャナー制御 ---
+  function toggleCamera() {
+    playSound('beep');
+    if (isCameraOn) {
+      stopScanner();
+    } else {
+      startScanner();
+    }
+  }
+
+  function startScanner() {
+    const readerDiv = document.getElementById("reader");
+    const offMsg = document.getElementById("camera-off-msg");
+    const btn = document.getElementById("toggle-camera-btn");
+
+    readerDiv.classList.remove("hidden");
+    offMsg.classList.add("hidden");
+
+    html5QrCode = new Html5Qrcode("reader");
+    html5QrCode.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: 220, height: 220 } },
+      onScanSuccess
+    ).then(() => {
+      isCameraOn = true;
+      btn.innerText = "カメラOFF";
+      btn.classList.add("active");
+    }).catch(err => {
+      console.log("カメラ起動エラー: ", err);
+      alert("カメラの起動に失敗しました");
+      stopScanner();
+    });
+  }
+
+  function stopScanner(callback) {
+    const readerDiv = document.getElementById("reader");
+    const offMsg = document.getElementById("camera-off-msg");
+    const btn = document.getElementById("toggle-camera-btn");
+
+    if (html5QrCode && isCameraOn) {
+      html5QrCode.stop().then(() => {
+        html5QrCode.clear();
+        isCameraOn = false;
+        readerDiv.classList.add("hidden");
+        offMsg.classList.remove("hidden");
+        btn.innerText = "カメラON";
+        btn.classList.remove("active");
+        if (callback) callback();
+      }).catch(err => {
+        console.log("カメラ停止エラー: ", err);
+        if (callback) callback();
+      });
+    } else {
+      isCameraOn = false;
+      readerDiv.classList.add("hidden");
+      offMsg.classList.remove("hidden");
+      btn.innerText = "カメラON";
+      btn.classList.remove("active");
+      if (callback) callback();
+    }
+  }
+
+  // カメラを再起動（またはもう一度スキャン状態に戻す）ための関数例
+function restartScanner() {
+  if (typeof html5QrCode !== 'undefined') {
+    // すでにスキャン中でなければ起動する
+    html5QrCode.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: 250 },
+      onScanSuccess
+    ).catch(err => {
+      console.log("カメラ起動エラー:", err);
+    });
+  }
+} 
+
+// 修正版：QR読み取り成功時の処理
 function onScanSuccess(decodedText) {
+ 
     playSound('beep');
     stopScanner(() => {
-     
-      // 1. クーポンQRの読み取り処理を追加
-      if (decodedText.startsWith("COUPON:")) {
-        const parts = decodedText.split(":");
-        if (parts.length >= 5) {
-          const coupon = {
-            id: parts[1],
-            title: parts[1],
-            discount: parseInt(parts[2], 10) || 0,
-            minPrice: parseInt(parts[3], 10) || 0,
-            expiry: parts[4]
-          };
-
-          let coupons = JSON.parse(localStorage.getItem('11pay_coupons')) || [];
-         
-          if (coupons.some(c => c.id === coupon.id)) {
-            playSound('error');
-            alert("このクーポンはすでに登録されています！");
-            return;
-          }
-
-          coupons.push(coupon);
-          localStorage.setItem('11pay_coupons', JSON.stringify(coupons));
-
-          playSound('win');
-          alert(`🎟️ クーポン「${coupon.title}」を追加しました！`);
-          return;
-        }
-      }
-
-      // 2. 送金用QRの読み取り
       if (decodedText.startsWith("SEND:")) {
         const parts = decodedText.split(":");
         const senderUser = parts[1];
@@ -1164,7 +1210,7 @@ function onScanSuccess(decodedText) {
       const isCharge = decodedText.startsWith("CHARGE_");
       const isPoint  = decodedText.startsWith("POINT_");
       const isPay    = decodedText.startsWith("PAY_");
-    
+     
       const amount = parseInt(decodedText.replace(/(CHARGE_|PAY_|POINT_)/, "")) || 0;
 
       if (isCharge) {
@@ -1186,9 +1232,78 @@ function onScanSuccess(decodedText) {
         openPayConfirmModal();
       }
     });
-  } 
+  }
 
- 
+  function openPayConfirmModal() {
+    document.getElementById("confirm-pay-amount").innerText = currentScanAmount.toLocaleString();
+    document.getElementById("max-pt-display").innerText = points.toLocaleString();
+    document.getElementById("use-pt-check").checked = false;
+    document.getElementById("use-pt-input").value = "";
+    togglePointInput();
+    document.getElementById("pay-confirm-modal").classList.remove("hidden");
+  }
+
+  function togglePointInput() {
+    playSound('beep');
+    const isChecked = document.getElementById("use-pt-check").checked;
+    document.getElementById("pt-input-container").classList.toggle("hidden", !isChecked);
+  }
+
+  function cancelPayment() {
+    playSound('beep');
+    document.getElementById("pay-confirm-modal").classList.add("hidden");
+  }
+
+  function executePayment() {
+    let discount = activeDiscount;
+    let finalAmount = Math.max(0, currentScanAmount - discount);
+
+    const usePtChecked = document.getElementById("use-pt-check").checked;
+    let usePt = parseInt(document.getElementById("use-pt-input").value) || 0;
+
+    if (usePtChecked) {
+      if (usePt <= 0) return alert("利用するポイントを入力してください");
+      if (usePt > points) {
+        playSound('error');
+        return alert("保持ポイントを超えています");
+      }
+      if (usePt > finalAmount) usePt = finalAmount;
+    } else {
+      usePt = 0;
+    }
+
+    const cashPay = finalAmount - usePt;
+
+    if (cashPay > balance) {
+      playSound('error');
+      alert(`残高が不足しています\nお支払い額: ${cashPay}円 / 残高: ${balance}円`);
+      return;
+    }
+
+    playSound('pay');
+
+    balance -= cashPay;
+    points -= usePt;
+
+    if (cashPay > 0) addTransaction('残高', -cashPay, '店舗支払い');
+    if (usePt > 0) addTransaction('ポイント', -usePt, '店舗支払い利用');
+
+    if (discount > 0) {
+      const usedCoupon = coupons.find(c => c.discount === discount && !c.used);
+      if (usedCoupon) usedCoupon.used = true;
+      activeDiscount = 0;
+    }
+
+    updateDisplay();
+    document.getElementById("pay-confirm-modal").classList.add("hidden");
+
+    if (usePt > 0) {
+      alert(`お支払い完了！(割引: ${discount}円 / pt利用: ${usePt}pt)`);
+    } else {
+      startRoulette(finalAmount);
+    }
+  }
+
   function startRoulette(payAmount) {
     document.getElementById("roulette-modal").classList.remove("hidden");
     document.getElementById("roulette-close-btn").classList.add("hidden");
