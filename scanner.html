@@ -2726,6 +2726,31 @@ function openSurveyModal() {
 }
 
 
+  
+// --- 💳 取引履歴追加・管理（「円」を「pt」に修正済み） ---
+function addTransaction(title, amount, description) {
+  let history = JSON.parse(localStorage.getItem('11pay_history')) || [];
+  
+  // 金額の文字列から強制的に「円」を削り、「pt」に統一する処理
+  let amountStr = String(amount);
+  if (!amountStr.includes('pt')) {
+    amountStr = amountStr.replace('円', '') + ' pt';
+  }
+
+  history.unshift({
+    title: title,
+    amount: amountStr,
+    desc: description || '',
+    date: new Date().toLocaleString()
+  });
+  
+  localStorage.setItem('11pay_history', JSON.stringify(history));
+  if (typeof updateHistoryDisplay === 'function') {
+    updateHistoryDisplay();
+  }
+}
+
+
 // --- 🛍️ ポイントショップ（全8種類・着せ替え＆全体連動） ---
 function openPointShop() {
   if (typeof playSound === 'function') playSound('beep');
@@ -2825,18 +2850,7 @@ function buyTheme(themeName, price) {
     localStorage.setItem('11pay_points', currentPoints);
   }
 
-  // ここを "-price + ' pt'" ではなく、アプリの仕様に合わせてそのまま渡す形に修正
-  if (typeof addTransaction === 'function') {
-    addTransaction('ポイント利用', -price, `ポイントショップ購入 (${themeName})`);
-  } else {
-    let history = JSON.parse(localStorage.getItem('11pay_history')) || [];
-    history.unshift({
-      title: `ポイントショップ購入 (${themeName})`,
-      amount: -price,
-      date: new Date().toLocaleString()
-    });
-    localStorage.setItem('11pay_history', JSON.stringify(history));
-  }
+  addTransaction('ポイントショップ購入', -price, `着せ替えテーマ (${themeName})`);
 
   localStorage.setItem('11pay_theme', themeName);
   applyTheme(themeName);
@@ -2885,7 +2899,7 @@ function applyTheme(theme) {
 }
 
 
-// --- 🐾 デジタルペット ---
+// --- 🐾 デジタルペット（エサやり履歴対応） ---
 function openDigitalPet() {
   if (typeof playSound === 'function') playSound('beep');
   
@@ -2931,6 +2945,9 @@ function feedPet() {
     currentPoints -= 50;
     localStorage.setItem('11pay_points', currentPoints);
   }
+
+  // デジタルペットのエサやりを取引履歴に追加
+  addTransaction('デジタルペット', -50, 'ジェミニにごはんをあげた');
 
   let pet = JSON.parse(localStorage.getItem('11pay_pet')) || { name: "ジェミニ", hunger: 50, happiness: 50, level: 1 };
   pet.hunger = Math.min(100, pet.hunger + 30);
@@ -3011,9 +3028,7 @@ function completeQuest() {
     localStorage.setItem('11pay_points', p + reward);
   }
 
-  if (typeof addTransaction === 'function') {
-    addTransaction('クエスト報酬', reward, 'デイリークエスト達成');
-  }
+  addTransaction('クエスト報酬', reward, 'デイリークエスト達成');
 
   if (typeof updateDisplay === 'function') updateDisplay();
   if (typeof playSound === 'function') playSound('win');
@@ -3067,9 +3082,7 @@ function submitSurvey() {
     localStorage.setItem('11pay_points', p + reward);
   }
 
-  if (typeof addTransaction === 'function') {
-    addTransaction('アンケート報酬', reward, 'デイリーアンケート回答');
-  }
+  addTransaction('アンケート報酬', reward, 'デイリーアンケート回答');
 
   if (typeof updateDisplay === 'function') updateDisplay();
   if (typeof playSound === 'function') playSound('win');
@@ -3082,7 +3095,6 @@ window.addEventListener('DOMContentLoaded', () => {
   if (savedTheme) applyTheme(savedTheme);
 });
 
-  
 
   
 </script> 
