@@ -2725,7 +2725,7 @@ function openSurveyModal() {
   alert("📋 アンケートは準備中です！");
 }
 
-// 🛍️ ポイントショップ（季節の着せ替え機能）
+// 🛍️ ポイントショップ（派手な着せ替え機能・全8種類）
 function openPointShop() {
   if (typeof playSound === 'function') playSound('beep');
   
@@ -2735,40 +2735,82 @@ function openPointShop() {
   if (!modal) return;
 
   modal.classList.remove("hidden");
-  title.innerText = "ポイントショップ（季節の着せ替え）";
-
-  // 現在購入済みのテーマを取得
-  const currentTheme = localStorage.getItem('11pay_theme') || 'default';
+  title.innerText = "🛍️ デコレーション・ショップ 🛍️";
 
   stage.innerHTML = `
     <div style="text-align: left; padding: 5px; display: flex; flex-direction: column; gap: 10px; max-height: 70vh; overflow-y: auto;">
-      <p style="font-size: 12px; color: #666;">ポイントを使ってアプリの季節テーマを着せ替えよう！</p>
+      <p style="font-size: 12px; color: #333; font-weight: bold; text-align: center;">✨ ポイントでアプリを派手に着せ替えよう！ ✨</p>
       
-      <!-- テーマ1: 600pt -->
-      <div style="background: #fff3e0; padding: 10px; border-radius: 8px; border: 1px solid #ffe0b2; display: flex; justify-content: space-between; align-items: center;">
+      <!-- 1: ダークモード (300pt) -->
+      <div style="background: #212121; color: #fff; padding: 12px; border-radius: 8px; border: 2px solid #000; display: flex; justify-content: space-between; align-items: center;">
         <div>
-          <p style="font-weight: bold; font-size: 13px; margin: 0;">🌸 春爛漫テーマ</p>
-          <p style="font-size: 11px; color: #666; margin: 2px 0 0 0;">600 pt</p>
+          <p style="font-weight: bold; font-size: 13px; margin: 0;">🌑 ダークモード 🖤</p>
+          <p style="font-size: 11px; color: #aaa; margin: 2px 0 0 0;">300 pt（シックでかっこいい黒背景）</p>
         </div>
-        <button class="main-btn" style="background: #ff9800; font-size: 11px; padding: 6px 12px;" onclick="buyTheme('spring', 600)">購入する</button>
+        <button class="main-btn" style="background: #ff5722; color: #fff; font-weight: bold; font-size: 11px; padding: 6px 12px;" onclick="buyTheme('dark', 300)">購入する</button>
       </div>
 
-      <!-- テーマ2: 1500pt -->
-      <div style="background: #e8f5e9; padding: 10px; border-radius: 8px; border: 1px solid #c8e6c9; display: flex; justify-content: space-between; align-items: center;">
+      <!-- 2: 春爛漫 (600pt) -->
+      <div style="background: #ffcdd2; padding: 12px; border-radius: 8px; border: 2px solid #e57373; display: flex; justify-content: space-between; align-items: center;">
         <div>
-          <p style="font-weight: bold; font-size: 13px; margin: 0;">🍁 秋の紅葉テーマ</p>
-          <p style="font-size: 11px; color: #666; margin: 2px 0 0 0;">1,500 pt</p>
+          <p style="font-weight: bold; font-size: 13px; margin: 0;">🌸 爆咲きチェリーピンク 🍡</p>
+          <p style="font-size: 11px; color: #555; margin: 2px 0 0 0;">600 pt（桜舞い散るピンク空間）</p>
         </div>
-        <button class="main-btn" style="background: #4caf50; font-size: 11px; padding: 6px 12px;" onclick="buyTheme('autumn', 1500)">購入する</button>
+        <button class="main-btn" style="background: #d81b60; color: #fff; font-weight: bold; font-size: 11px; padding: 6px 12px;" onclick="buyTheme('spring', 600)">購入する</button>
       </div>
 
-      <!-- テーマ3: 3000pt (豪華) -->
-      <div style="background: #e3f2fd; padding: 10px; border-radius: 8px; border: 1px solid #bbdefb; display: flex; justify-content: space-between; align-items: center;">
+      <!-- 3: ネオンサイバー (900pt) -->
+      <div style="background: #1a0033; color: #00ffff; padding: 12px; border-radius: 8px; border: 2px solid #ff00ff; display: flex; justify-content: space-between; align-items: center;">
         <div>
-          <p style="font-weight: bold; font-size: 13px; margin: 0;">❄️ イルミネーション冬テーマ</p>
-          <p style="font-size: 11px; color: #666; margin: 2px 0 0 0;">3,000 pt (豪華)</p>
+          <p style="font-weight: bold; font-size: 13px; margin: 0;">⚡ ネオンサイバー 🌆</p>
+          <p style="font-size: 11px; color: #ff80df; margin: 2px 0 0 0;">900 pt（ピカピカ光る近未来）</p>
         </div>
-        <button class="main-btn" style="background: #2196f3; font-size: 11px; padding: 6px 12px;" onclick="buyTheme('winter', 3000)">購入する</button>
+        <button class="main-btn" style="background: #00ffff; color: #000; font-weight: bold; font-size: 11px; padding: 6px 12px;" onclick="buyTheme('cyber', 900)">購入する</button>
+      </div>
+
+      <!-- 4: 黄金の成金 (1200pt) -->
+      <div style="background: #fff8e1; padding: 12px; border-radius: 8px; border: 2px solid #ffb300; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <p style="font-weight: bold; font-size: 13px; margin: 0; color: #b78103;">👑 黄金ゴールドラッシュ 💰</p>
+          <p style="font-size: 11px; color: #8d6e63; margin: 2px 0 0 0;">1,200 pt（リッチでまぶしい金色）</p>
+        </div>
+        <button class="main-btn" style="background: #ff8f00; color: #fff; font-weight: bold; font-size: 11px; padding: 6px 12px;" onclick="buyTheme('gold', 1200)">購入する</button>
+      </div>
+
+      <!-- 5: 秋の紅葉 (1500pt) -->
+      <div style="background: #ffe0b2; padding: 12px; border-radius: 8px; border: 2px solid #fb8c00; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <p style="font-weight: bold; font-size: 13px; margin: 0;">🍁 激燃えレッドオータム 🍂</p>
+          <p style="font-size: 11px; color: #5d4037; margin: 2px 0 0 0;">1,500 pt（鮮やかなオレンジ秋色）</p>
+        </div>
+        <button class="main-btn" style="background: #e65100; color: #fff; font-weight: bold; font-size: 11px; padding: 6px 12px;" onclick="buyTheme('autumn', 1500)">購入する</button>
+      </div>
+
+      <!-- 6: トロピカル夏 (2000pt) -->
+      <div style="background: #e0f7fa; padding: 12px; border-radius: 8px; border: 2px solid #00acc1; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <p style="font-weight: bold; font-size: 13px; margin: 0;">🏝️ トロピカル真夏日 🍍</p>
+          <p style="font-size: 11px; color: #006064; margin: 2px 0 0 0;">2,000 pt（南国の海と太陽）</p>
+        </div>
+        <button class="main-btn" style="background: #00838f; color: #fff; font-weight: bold; font-size: 11px; padding: 6px 12px;" onclick="buyTheme('summer', 2000)">購入する</button>
+      </div>
+
+      <!-- 7: ギャラクシー宇宙 (2500pt) -->
+      <div style="background: #311b92; color: #fff; padding: 12px; border-radius: 8px; border: 2px solid #7c4dff; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <p style="font-weight: bold; font-size: 13px; margin: 0;">🌌 ギャラクシー宇宙空間 🪐</p>
+          <p style="font-size: 11px; color: #b388ff; margin: 2px 0 0 0;">2,500 pt（神秘的な星屑カラー）</p>
+        </div>
+        <button class="main-btn" style="background: #7c4dff; color: #fff; font-weight: bold; font-size: 11px; padding: 6px 12px;" onclick="buyTheme('galaxy', 2500)">購入する</button>
+      </div>
+
+      <!-- 8: イルミネーション冬 (3000pt) -->
+      <div style="background: #e1f5fe; padding: 12px; border-radius: 8px; border: 2px solid #0288d1; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <p style="font-weight: bold; font-size: 13px; margin: 0;">❄️ 激眩ウインターイルミ ⛄</p>
+          <p style="font-size: 11px; color: #01579b; margin: 2px 0 0 0;">3,000 pt（超豪華な雪景色テーマ）</p>
+        </div>
+        <button class="main-btn" style="background: #0277bd; color: #fff; font-weight: bold; font-size: 11px; padding: 6px 12px;" onclick="buyTheme('winter', 3000)">購入する</button>
       </div>
 
     </div>
@@ -2777,7 +2819,6 @@ function openPointShop() {
 
 // テーマ購入・適用処理
 function buyTheme(themeName, price) {
-  // 現在のポイントを取得
   let currentPoints = 0;
   if (typeof points !== 'undefined') {
     currentPoints = points;
@@ -2790,7 +2831,6 @@ function buyTheme(themeName, price) {
     return;
   }
 
-  // ポイントを減らす
   if (typeof points !== 'undefined') {
     points -= price;
   } else {
@@ -2798,7 +2838,6 @@ function buyTheme(themeName, price) {
     localStorage.setItem('11pay_points', currentPoints);
   }
 
-  // 取引履歴に追加
   if (typeof addTransaction === 'function') {
     addTransaction('ポイント利用', -price, `ポイントショップ: 着せ替え購入 (${themeName})`);
   } else {
@@ -2811,7 +2850,6 @@ function buyTheme(themeName, price) {
     localStorage.setItem('11pay_history', JSON.stringify(history));
   }
 
-  // テーマを保存
   localStorage.setItem('11pay_theme', themeName);
   applyTheme(themeName);
 
@@ -2822,21 +2860,41 @@ function buyTheme(themeName, price) {
   closeMiniGamePlayModal();
 }
 
-// テーマごとの見た目を反映する簡易関数
+// 派手なテーマカラーの反映関数
 function applyTheme(theme) {
   const mainView = document.getElementById("main-view");
   if (!mainView) return;
   
-  if (theme === 'spring') {
-    mainView.style.background = "#fff9f9";
+  if (theme === 'dark') {
+    mainView.style.background = "#121212";
+    mainView.style.color = "#ffffff";
+  } else if (theme === 'spring') {
+    mainView.style.background = "#ffb6c1"; // 濃いピンク
+  } else if (theme === 'cyber') {
+    mainView.style.background = "#0d001a"; // 濃い紫・黒
+    mainView.style.color = "#00ffff";
+  } else if (theme === 'gold') {
+    mainView.style.background = "#ffe57f"; // 濃いゴールド
   } else if (theme === 'autumn') {
-    mainView.style.background = "#fffbf0";
+    mainView.style.background = "#ff9800"; // 濃いオレンジ
+  } else if (theme === 'summer') {
+    mainView.style.background = "#00bcd4"; // 濃いシアン・夏色
+  } else if (theme === 'galaxy') {
+    mainView.style.background = "#1a0033"; // 濃い宇宙紫
+    mainView.style.color = "#ffffff";
   } else if (theme === 'winter') {
-    mainView.style.background = "#f0f8ff";
+    mainView.style.background = "#b3e5fc"; // 濃いアイスブルー
   } else {
     mainView.style.background = "";
+    mainView.style.color = "";
   }
 }
+
+// ページ読み込み時などに前回のテーマを復元したい場合はこれを呼び出してください
+window.addEventListener('DOMContentLoaded', () => {
+  const savedTheme = localStorage.getItem('11pay_theme');
+  if (savedTheme) applyTheme(savedTheme);
+});
 
   
 </script> 
