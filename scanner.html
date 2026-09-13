@@ -246,6 +246,46 @@
   <input type="file" id="qr-input-file" accept="image/*" style="display:none;" onchange="handleFileScan(this)">
 </div>
 
+<!-- 歩数ポイント獲得セクション -->
+<div class="step-card" style="background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center;">
+  <h3 style="font-size: 14px; color: #333; margin: 0 0 10px 0;">歩数でポイントGET！</h3>
+  
+  <!-- ゲージ＆動くイラストのエリア -->
+  <div style="background: #f8f9fa; padding: 20px 12px 15px 12px; border-radius: 10px; margin-bottom: 10px; position: relative;">
+    
+    <!-- 移動するイラスト（SVGアイコン） -->
+    <div id="walking-character" style="position: absolute; top: 10px; left: 20px; transition: left 0.3s ease; transform: translateX(-50%);">
+      <svg id="character-svg" width="28" height="28" viewBox="0 0 24 24" fill="#ff4757" xmlns="http://www.w3.org/2000/svg">
+        <path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.2L6 8.5V13h2V9.6l1.8-.7z"/>
+      </svg>
+    </div>
+
+    <div style="font-size: 13px; color: #666; margin: 15px 0 10px 0;">
+      現在の歩数: <strong id="current-steps" style="color: #ff4757;">0</strong> 歩 / 500歩
+    </div>
+    
+    <!-- 5つのゲージ表示 (100歩ごと) -->
+    <div style="display: flex; justify-content: center; gap: 6px; margin-bottom: 8px;">
+      <div class="step-gauge-box" id="gauge-0" style="flex: 1; height: 10px; background: #e0e0e0; border-radius: 5px; transition: background 0.3s;"></div>
+      <div class="step-gauge-box" id="gauge-1" style="flex: 1; height: 10px; background: #e0e0e0; border-radius: 5px; transition: background 0.3s;"></div>
+      <div class="step-gauge-box" id="gauge-2" style="flex: 1; height: 10px; background: #e0e0e0; border-radius: 5px; transition: background 0.3s;"></div>
+      <div class="step-gauge-box" id="gauge-3" style="flex: 1; height: 10px; background: #e0e0e0; border-radius: 5px; transition: background 0.3s;"></div>
+      <div class="step-gauge-box" id="gauge-4" style="flex: 1; height: 10px; background: #e0e0e0; border-radius: 5px; transition: background 0.3s;"></div>
+    </div>
+    <div style="font-size: 11px; color: #888;" id="step-status-text">100歩ごとに100pt、5つ貯まると500pt！</div>
+  </div>
+
+  <!-- アクションボタン -->
+  <div style="display: flex; flex-direction: column; gap: 8px;">
+    <button onclick="requestMotionPermission()" style="background: #27ae60; color: white; border: none; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; width: 100%;">
+      📱 歩数センサーを有効にする（最初のみ）
+    </button>
+    <button onclick="claimStepPoints()" id="claim-btn" style="background: #ff4757; color: white; border: none; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; width: 100%;">
+      ポイントを受け取る
+    </button>
+  </div>
+  <div style="font-size: 10px; color: #aaa; margin-top: 6px;">本日の獲得: <span id="today-earned-points">0</span> / 10,000pt</div>
+</div>
 
 
     
@@ -2428,7 +2468,7 @@ function updateStepUI() {
   if (character) {
     const percentage = Math.min(data.steps / 500, 1);
     const containerWidth = character.parentElement.clientWidth - 30;
-    const positionX = Math.max(30, percentage * containerWidth);
+    const positionX = Math.max(20, percentage * containerWidth);
     character.style.left = `${positionX}px`;
 
     // 500歩達成時は色を変更
@@ -2494,49 +2534,71 @@ function handleMotionEvent(event) {
   lastAcceleration = { x: currentX, y: currentY, z: currentZ };
 }
 
-// 原因を画面にポップアップ表示するデバッグ用 `claimStepPoints()`
+// ポイントを受け取る関数（クレーンゲームの仕組みに合わせた完全連携版）
 function claimStepPoints() {
-  try {
-    let data = getStepData();
-    const earnedPoints = data.steps;
+  let data = getStepData();
+  const earnedPoints = data.steps;
 
-    if (earnedPoints <= 0) {
-      alert("受け取れる歩数がありません！");
-      return;
+  if (earnedPoints <= 0) {
+    alert("受け取れる歩数がありません！");
+    return;
+  }
+
+  // 1日の上限チェック (10,000pt)
+  if (data.todayPoints + earnedPoints > 10000) {
+    alert("本日の上限（10,000pt）を超えるため、上限まで獲得します。");
+  }
+
+  try {
+    // 1. クレーンゲームと同じ方法でポイント変数に加算
+    if (typeof points !== 'undefined') {
+      points += earnedPoints;
+    } else {
+      // 変数が見つからない場合の保険（localStorageへの保存）
+      let currentPoints = parseInt(localStorage.getItem('11pay_points'), 10) || 0;
+      currentPoints += earnedPoints;
+      localStorage.setItem('11pay_points', currentPoints);
     }
 
-    // 1. ポイントの加算処理
-    let currentPoints = parseInt(localStorage.getItem('11pay_points'), 10) || 0;
-    currentPoints += earnedPoints;
-    localStorage.setItem('11pay_points', currentPoints);
+    // 2. クレーンゲームと同じ `addTransaction` 関数を使って履歴に追加
+    if (typeof addTransaction === 'function') {
+      addTransaction('ポイント', earnedPoints, `歩数ポイント獲得 (${earnedPoints}pt)`);
+    } else {
+      // 関数がない場合の保険
+      let history = JSON.parse(localStorage.getItem('11pay_history')) || [];
+      history.unshift({
+        title: `歩数ポイント獲得 (${earnedPoints}pt)`,
+        amount: earnedPoints,
+        date: new Date().toLocaleString()
+      });
+      localStorage.setItem('11pay_history', JSON.stringify(history));
+    }
 
-    // 2. 取引履歴の保存処理
-    let history = JSON.parse(localStorage.getItem('11pay_history')) || [];
-    history.unshift({
-      title: `歩数ポイント獲得 (${earnedPoints}pt)`,
-      amount: earnedPoints,
-      date: new Date().toLocaleString()
-    });
-    localStorage.setItem('11pay_history', JSON.stringify(history));
-
-    // 3. データの更新
+    // 3. 歩数データを更新（歩数をリセットし、本日の獲得数を加算）
     data.todayPoints += earnedPoints;
     data.steps = 0;
     saveStepData(data);
 
-    // 4. UIの更新
+    // 4. 画面の歩数UIを更新
     updateStepUI();
 
+    // 5. クレーンゲームと同じ `updateDisplay()` で全体の画面（残高など）を更新
+    if (typeof updateDisplay === 'function') {
+      updateDisplay();
+    }
+
+    // 効果音があれば鳴らす
+    if (typeof playSound === 'function') {
+      playSound('win');
+    }
+
     alert(`✨ ${earnedPoints.toLocaleString()}ポイントを獲得しました！`);
-    location.reload();
 
   } catch (error) {
-    // どこでエラーになったのか、具体的な原因をアラートで画面に出す
-    alert("エラー詳細: " + error.message + "\n(行番号や名前が間違っている可能性があります)");
-    console.error("ポイント受取エラー詳細:", error);
+    console.error("ポイント受取エラー:", error);
+    alert("エラーが発生しました: " + error.message);
   }
 }
-
 
 
 // ページ読み込み時に初期化
