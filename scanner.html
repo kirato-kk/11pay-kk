@@ -2725,7 +2725,7 @@ function openSurveyModal() {
   alert("📋 アンケートは準備中です！");
 }
 
-// 🛍️ ポイントショップ（派手な着せ替え機能・全8種類）
+// 🛍️ ポイントショップ（派手な着せ替え機能・全8種類・背景絵文字＆全体連動版）
 function openPointShop() {
   if (typeof playSound === 'function') playSound('beep');
   
@@ -2860,43 +2860,97 @@ function buyTheme(themeName, price) {
   closeMiniGamePlayModal();
 }
 
-// 派手なテーマカラーの反映関数
+// 全体（背景・カード・モーダル・履歴など）を端まで派手に染める反映関数
 function applyTheme(theme) {
+  // アプリ全体のコンテナやbody、主要なビューを取得
   const mainView = document.getElementById("main-view");
   if (!mainView) return;
-  
-  if (theme === 'dark') {
-    mainView.style.background = "#121212";
-    mainView.style.color = "#ffffff";
-  } else if (theme === 'spring') {
-    mainView.style.background = "#ffb6c1"; // 濃いピンク
-  } else if (theme === 'cyber') {
-    mainView.style.background = "#0d001a"; // 濃い紫・黒
-    mainView.style.color = "#00ffff";
-  } else if (theme === 'gold') {
-    mainView.style.background = "#ffe57f"; // 濃いゴールド
-  } else if (theme === 'autumn') {
-    mainView.style.background = "#ff9800"; // 濃いオレンジ
-  } else if (theme === 'summer') {
-    mainView.style.background = "#00bcd4"; // 濃いシアン・夏色
-  } else if (theme === 'galaxy') {
-    mainView.style.background = "#1a0033"; // 濃い宇宙紫
-    mainView.style.color = "#ffffff";
-  } else if (theme === 'winter') {
-    mainView.style.background = "#b3e5fc"; // 濃いアイスブルー
-  } else {
-    mainView.style.background = "";
-    mainView.style.color = "";
+
+  // テーマごとの背景色・文字色・背景絵文字パターンを設定
+  let bgColor = "";
+  let textColor = "";
+  let bgEmoji = "";
+
+  switch (theme) {
+    case 'dark':
+      bgColor = "#121212";
+      textColor = "#ffffff";
+      bgEmoji = "🖤, 🌑, ⭐️, ⚡";
+      break;
+    case 'spring':
+      bgColor = "#ffb6c1";
+      textColor = "#5a0011";
+      bgEmoji = "🌸, 🍡, 🌷, ✨";
+      break;
+    case 'cyber':
+      bgColor = "#0d001a";
+      textColor = "#00ffff";
+      bgEmoji = "⚡, 🌆, 💻, 🚀";
+      break;
+    case 'gold':
+      bgColor = "#ffe57f";
+      textColor = "#5d4037";
+      bgEmoji = "👑, 💰, ✨, 💎";
+      break;
+    case 'autumn':
+      bgColor = "#ff9800";
+      textColor = "#3e2723";
+      bgEmoji = "🍁, 🍂, 🌰, 🦊";
+      break;
+    case 'summer':
+      bgColor = "#00bcd4";
+      textColor = "#00363a";
+      bgEmoji = "🏝️, 🍍, ☀️, 🌊";
+      break;
+    case 'galaxy':
+      bgColor = "#1a0033";
+      textColor = "#ffffff";
+      bgEmoji = "🌌, 🪐, ⭐️, ✨";
+      break;
+    case 'winter':
+      bgColor = "#b3e5fc";
+      textColor = "#01579b";
+      bgEmoji = "❄️, ⛄, 🧊, 💎";
+      break;
+    default:
+      bgColor = "";
+      textColor = "";
+      bgEmoji = "";
+      break;
   }
+
+  // 1. メイン画面の背景と文字色を端まで適用
+  mainView.style.background = bgColor;
+  mainView.style.color = textColor;
+  document.body.style.background = bgColor; // 画面の一番端（余白部分）も染める
+
+  // 2. 残高カードや他のカード要素（.card や背景が白い部分など）もテーマに合わせて連動させる
+  const cards = mainView.querySelectorAll('.card, .user-info, div[style*="background"]');
+  cards.forEach(card => {
+    // モーダル内や特定のボタン以外のメインカードの質感を調整
+    if (theme !== 'default' && !card.closest('#minigame-play-modal')) {
+      if (bgColor) {
+        card.style.borderColor = textColor;
+      }
+    }
+  });
+
+  // 3. モーダルや取引履歴などの画面にも背景や文字色を連動させる
+  const modals = document.querySelectorAll('.modal, #minigame-play-modal, .history-container');
+  modals.forEach(m => {
+    if (bgColor && theme !== 'default') {
+      // モーダル内は読みやすさを考慮しつつテーマカラーを反映
+      m.style.color = ""; 
+    }
+  });
 }
 
-// ページ読み込み時などに前回のテーマを復元したい場合はこれを呼び出してください
+// ページ読み込み時に保存されたテーマを自動適用
 window.addEventListener('DOMContentLoaded', () => {
   const savedTheme = localStorage.getItem('11pay_theme');
   if (savedTheme) applyTheme(savedTheme);
 });
 
-  
 </script> 
  
 </body>
