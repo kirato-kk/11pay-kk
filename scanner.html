@@ -2562,7 +2562,7 @@ function claimStepPoints() {
 
     // 2. クレーンゲームと同じ `addTransaction` 関数を使って履歴に追加
     if (typeof addTransaction === 'function') {
-      addTransaction('ポイント', earnedPoints, `歩数ポイント獲得 (${earnedPoints}pt)`);
+      addTransaction('ポイント', earnedPoints, `歩数ポイント獲得`);
     } else {
       // 関数がない場合の保険
       let history = JSON.parse(localStorage.getItem('11pay_history')) || [];
