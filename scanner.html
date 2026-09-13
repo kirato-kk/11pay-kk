@@ -2213,9 +2213,8 @@ function onScanSuccess(decodedText) {
 
 })();
 
- // --- 🎟️ クーポン機能（QR読み取り・パスコード削除対応・完全版） ---
+ // --- 🎟️ クーポンボックス（シンプル版・カメラ読み取り対応） ---
 
-// 1. クーポンボックス（一覧・追加モーダル）を開く
 function openCouponModal() {
   if (typeof playSound === 'function') playSound('beep');
  
@@ -2230,7 +2229,6 @@ function openCouponModal() {
   updateCouponDisplay();
 }
 
-// 2. クーポン一覧の描画と削除ボタン・QR追加欄の配置
 function updateCouponDisplay() {
   const stage = document.getElementById("minigame-stage");
   if (!stage) return;
@@ -2239,7 +2237,7 @@ function updateCouponDisplay() {
 
   let couponsHtml = "";
   if (coupons.length === 0) {
-    couponsHtml = `<p style="font-size: 12px; color: #666; text-align: center; padding: 20px;">利用可能なクーポンはありません。</p>`;
+    couponsHtml = `<p style="font-size: 13px; color: #666; text-align: center; padding: 25px;">利用可能なクーポンはありません。</p>`;
   } else {
     couponsHtml = coupons.map(c => `
       <div style="background: #fff3e0; padding: 10px; border-radius: 8px; border: 1px solid #ffb74d; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
@@ -2255,32 +2253,19 @@ function updateCouponDisplay() {
 
   stage.innerHTML = `
     <div style="text-align: left; padding: 5px; display: flex; flex-direction: column; gap: 10px; max-height: 70vh; overflow-y: auto;">
-      <p style="font-size: 12px; color: #333; font-weight: bold; text-align: center;">所持しているクーポンの一覧</p>
-     
-      <div style="display: flex; gap: 6px; margin-bottom: 5px;">
-        <input type="text" id="qr-input-mock" placeholder="COUPON:タイトル:割引:条件:期限" style="flex: 1; font-size: 11px; padding: 6px; border: 1px solid #ccc; border-radius: 4px;">
-        <button class="main-btn" style="background: #4caf50; font-size: 11px; padding: 6px 10px;" onclick="manualAddCoupon()">QR追加</button>
-      </div>
-
-      <div style="border-top: 1px solid #ddd; padding-top: 10px;">
-        ${couponsHtml}
-      </div>
+      ${couponsHtml}
     </div>
   `;
 }
 
-// 3. QRテキストを解析して追加する処理
+// いつものカメラやQRリーダーで読み取った文字列をここに渡してください
 function scanCouponQR(qrText) {
-  if (!qrText.startsWith("COUPON:")) {
-    alert("無効なクーポンQRコードです。");
-    return;
+  if (!qrText || !qrText.startsWith("COUPON:")) {
+    return false;
   }
 
   const parts = qrText.split(":");
-  if (parts.length < 5) {
-    alert("クーポンのデータが不足しています。");
-    return;
-  }
+  if (parts.length < 5) return false;
 
   const coupon = {
     id: parts[1],
@@ -2294,7 +2279,7 @@ function scanCouponQR(qrText) {
  
   if (coupons.some(c => c.id === coupon.id)) {
     alert("このクーポンはすでに登録されています！");
-    return;
+    return true;
   }
 
   coupons.push(coupon);
@@ -2304,19 +2289,9 @@ function scanCouponQR(qrText) {
   alert(`🎟️ クーポン「${coupon.title}」を追加しました！`);
  
   updateCouponDisplay();
+  return true;
 }
 
-// 入力欄からの追加ボタン用
-function manualAddCoupon() {
-  const input = document.getElementById("qr-input-mock");
-  if (!input || !input.value) {
-    alert("クーポンコードを入力してください。");
-    return;
-  }
-  scanCouponQR(input.value);
-}
-
-// 4. パスコード認証付き削除処理
 function promptDeleteCoupon(couponId) {
   const passcode = prompt("クーポンを削除するためのパスコードを入力してください：");
  
@@ -2336,7 +2311,6 @@ function promptDeleteCoupon(couponId) {
   updateCouponDisplay();
 } 
 
- 
 
 
   // ==========================================
