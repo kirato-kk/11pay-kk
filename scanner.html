@@ -2243,7 +2243,8 @@ function onScanSuccess(decodedText) {
 
 })();
 
- // --- 🎟️ クーポンボックス（シンプル版・カメラ読み取り対応） ---
+
+// --- 🎟️ クーポンボックス（横幅拡大・「使う」＆「削除」ボタン付き完全版） ---
 
 function openCouponModal() {
   if (typeof playSound === 'function') playSound('beep');
@@ -2252,6 +2253,13 @@ function openCouponModal() {
   const title = document.getElementById("minigame-title");
   const stage = document.getElementById("minigame-stage");
   if (!modal) return;
+
+  // モーダル全体の横幅を広げるスタイル調整
+  const modalContent = modal.querySelector(".modal-content") || modal.firstElementChild;
+  if (modalContent) {
+    modalContent.style.width = "90%";
+    modalContent.style.maxWidth = "420px";
+  }
 
   modal.classList.remove("hidden");
   title.innerText = "🎟️ クーポンボックス 🎟️";
@@ -2270,58 +2278,58 @@ function updateCouponDisplay() {
     couponsHtml = `<p style="font-size: 13px; color: #666; text-align: center; padding: 25px;">利用可能なクーポンはありません。</p>`;
   } else {
     couponsHtml = coupons.map(c => `
-      <div style="background: #fff3e0; padding: 10px; border-radius: 8px; border: 1px solid #ffb74d; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-        <div style="text-align: left;">
-          <p style="font-weight: bold; font-size: 13px; margin: 0; color: #e65100;">🎟️ ${c.title}</p>
-          <p style="font-size: 11px; color: #555; margin: 2px 0 0 0;">割引: ${c.discount}pt (条件: ${c.minPrice}pt以上)</p>
+      <div style="background: #fff3e0; padding: 12px; border-radius: 8px; border: 1px solid #ffb74d; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; width: 100%; box-sizing: border-box;">
+        <div style="text-align: left; flex: 1; padding-right: 8px;">
+          <p style="font-weight: bold; font-size: 14px; margin: 0; color: #e65100;">🎟️ ${c.title}</p>
+          <p style="font-size: 11px; color: #555; margin: 3px 0 0 0;">割引: ${c.discount}pt (条件: ${c.minPrice}pt以上)</p>
           <p style="font-size: 10px; color: #888; margin: 2px 0 0 0;">期限: ${c.expiry}</p>
         </div>
-        <button class="main-btn" style="background: #e53935; color: #fff; font-size: 10px; padding: 6px 10px;" onclick="promptDeleteCoupon('${c.id}')">削除</button>
+        <div style="display: flex; gap: 5px; flex-shrink: 0;">
+          <button class="main-btn" style="background: #4caf50; color: #fff; font-size: 11px; padding: 6px 10px;" onclick="useCoupon('${c.id}')">使う</button>
+          <button class="main-btn" style="background: #e53935; color: #fff; font-size: 11px; padding: 6px 10px;" onclick="promptDeleteCoupon('${c.id}')">削除</button>
+        </div>
       </div>
     `).join('');
   }
 
   stage.innerHTML = `
-    <div style="text-align: left; padding: 5px; display: flex; flex-direction: column; gap: 10px; max-height: 70vh; overflow-y: auto;">
+    <div style="text-align: left; padding: 5px; display: flex; flex-direction: column; gap: 10px; max-height: 70vh; overflow-y: auto; width: 100%; box-sizing: border-box;">
       ${couponsHtml}
     </div>
   `;
 }
 
-// いつものカメラやQRリーダーで読み取った文字列をここに渡してください
-function scanCouponQR(qrText) {
-  if (!qrText || !qrText.startsWith("COUPON:")) {
-    return false;
-  }
-
-  const parts = qrText.split(":");
-  if (parts.length < 5) return false;
-
-  const coupon = {
-    id: parts[1],
-    title: parts[1],
-    discount: parseInt(parts[2], 10) || 0,
-    minPrice: parseInt(parts[3], 10) || 0,
-    expiry: parts[4]
-  };
-
+// クーポンを使うボタンを押したときの処理
+function useCoupon(couponId) {
   let coupons = JSON.parse(localStorage.getItem('11pay_coupons')) || [];
+  const coupon = coupons.find(c => c.id === couponId);
  
-  if (coupons.some(c => c.id === coupon.id)) {
-    alert("このクーポンはすでに登録されています！");
-    return true;
+  if (!coupon) {
+    alert("クーポンが見つかりません。");
+    return;
   }
 
-  coupons.push(coupon);
-  localStorage.setItem('11pay_coupons', JSON.stringify(coupons));
+  // 支払い画面や既存の割引変数（activeDiscountなど）に反映させる連携
+  if (typeof activeDiscount !== 'undefined') {
+    activeDiscount = coupon.discount;
+  }
+ 
+  // もしグローバル変数や一時保存にクーポン情報を保持させたい場合
+  localStorage.setItem('11pay_active_coupon', JSON.stringify(coupon));
 
   if (typeof playSound === 'function') playSound('win');
-  alert(`🎟️ クーポン「${coupon.title}」を追加しました！`);
+  alert(`✨ クーポン「${coupon.title}」を適用しました！（${coupon.discount}pt引き）\nお支払い時に自動で割引されます。`);
  
-  updateCouponDisplay();
-  return true;
+  // モーダルを閉じる
+  if (typeof closeMiniGamePlayModal === 'function') {
+    closeMiniGamePlayModal();
+  } else {
+    const modal = document.getElementById("minigame-play-modal");
+    if (modal) modal.classList.add("hidden");
+  }
 }
 
+// パスコード認証付き削除処理
 function promptDeleteCoupon(couponId) {
   const passcode = prompt("クーポンを削除するためのパスコードを入力してください：");
  
@@ -2340,7 +2348,6 @@ function promptDeleteCoupon(couponId) {
 
   updateCouponDisplay();
 } 
-
 
 
   // ==========================================
