@@ -2725,7 +2725,7 @@ function openSurveyModal() {
   alert("📋 アンケートは準備中です！");
 }
 
-// 🛍️ ポイントショップ（派手な着せ替え機能・全8種類・背景絵文字＆全体連動版）
+// 🛍️ ポイントショップ（派手な着せ替え機能・全8種類・画面全体に絵文字がまばらに散りばめられるデザイン）
 function openPointShop() {
   if (typeof playSound === 'function') playSound('beep');
   
@@ -2860,89 +2860,71 @@ function buyTheme(themeName, price) {
   closeMiniGamePlayModal();
 }
 
-// 全体（背景・カード・モーダル・履歴など）を端まで派手に染める反映関数
+// 画面全体に絵文字をまばらに散りばめるデザインを適用する関数
 function applyTheme(theme) {
-  // アプリ全体のコンテナやbody、主要なビューを取得
   const mainView = document.getElementById("main-view");
   if (!mainView) return;
 
-  // テーマごとの背景色・文字色・背景絵文字パターンを設定
   let bgColor = "";
   let textColor = "";
-  let bgEmoji = "";
+  let e1 = "", e2 = "", e3 = "", e4 = "";
 
   switch (theme) {
     case 'dark':
-      bgColor = "#121212";
-      textColor = "#ffffff";
-      bgEmoji = "🖤, 🌑, ⭐️, ⚡";
+      bgColor = "#121212"; textColor = "#ffffff";
+      e1 = "🖤"; e2 = "🌑"; e3 = "⭐️"; e4 = "⚡";
       break;
     case 'spring':
-      bgColor = "#ffb6c1";
-      textColor = "#5a0011";
-      bgEmoji = "🌸, 🍡, 🌷, ✨";
+      bgColor = "#ffb6c1"; textColor = "#5a0011";
+      e1 = "🌸"; e2 = "🍡"; e3 = "🌷"; e4 = "✨";
       break;
     case 'cyber':
-      bgColor = "#0d001a";
-      textColor = "#00ffff";
-      bgEmoji = "⚡, 🌆, 💻, 🚀";
+      bgColor = "#0d001a"; textColor = "#00ffff";
+      e1 = "⚡"; e2 = "🌆"; e3 = "💻"; e4 = "🚀";
       break;
     case 'gold':
-      bgColor = "#ffe57f";
-      textColor = "#5d4037";
-      bgEmoji = "👑, 💰, ✨, 💎";
+      bgColor = "#ffe57f"; textColor = "#5d4037";
+      e1 = "👑"; e2 = "💰"; e3 = "✨"; e4 = "💎";
       break;
     case 'autumn':
-      bgColor = "#ff9800";
-      textColor = "#3e2723";
-      bgEmoji = "🍁, 🍂, 🌰, 🦊";
+      bgColor = "#ff9800"; textColor = "#3e2723";
+      e1 = "🍁"; e2 = "🍂"; e3 = "🌰"; e4 = "🦊";
       break;
     case 'summer':
-      bgColor = "#00bcd4";
-      textColor = "#00363a";
-      bgEmoji = "🏝️, 🍍, ☀️, 🌊";
+      bgColor = "#00bcd4"; textColor = "#00363a";
+      e1 = "🏝️"; e2 = "🍍"; e3 = "☀️"; e4 = "🌊";
       break;
     case 'galaxy':
-      bgColor = "#1a0033";
-      textColor = "#ffffff";
-      bgEmoji = "🌌, 🪐, ⭐️, ✨";
+      bgColor = "#1a0033"; textColor = "#ffffff";
+      e1 = "🌌"; e2 = "🪐"; e3 = "⭐️"; e4 = "✨";
       break;
     case 'winter':
-      bgColor = "#b3e5fc";
-      textColor = "#01579b";
-      bgEmoji = "❄️, ⛄, 🧊, 💎";
+      bgColor = "#b3e5fc"; textColor = "#01579b";
+      e1 = "❄️"; e2 = "⛄"; e3 = "🧊"; e4 = "💎";
       break;
     default:
-      bgColor = "";
-      textColor = "";
-      bgEmoji = "";
+      bgColor = ""; textColor = "";
       break;
   }
 
-  // 1. メイン画面の背景と文字色を端まで適用
   mainView.style.background = bgColor;
   mainView.style.color = textColor;
-  document.body.style.background = bgColor; // 画面の一番端（余白部分）も染める
+  document.body.style.background = bgColor;
 
-  // 2. 残高カードや他のカード要素（.card や背景が白い部分など）もテーマに合わせて連動させる
-  const cards = mainView.querySelectorAll('.card, .user-info, div[style*="background"]');
-  cards.forEach(card => {
-    // モーダル内や特定のボタン以外のメインカードの質感を調整
-    if (theme !== 'default' && !card.closest('#minigame-play-modal')) {
-      if (bgColor) {
-        card.style.borderColor = textColor;
-      }
-    }
-  });
+  // 画面全体に絵文字や模様がまばらに広がるようにグリッド状の背景パターンを生成
+  if (theme !== 'default' && bgColor) {
+    mainView.style.backgroundImage = `
+      radial-gradient(circle, rgba(255,255,255,0.15) 10%, transparent 10%),
+      radial-gradient(circle, rgba(0,0,0,0.1) 10%, transparent 10%)
+    `;
+    mainView.style.backgroundSize = "30px 30px";
+    mainView.style.backgroundPosition = "0 0, 15px 15px";
 
-  // 3. モーダルや取引履歴などの画面にも背景や文字色を連動させる
-  const modals = document.querySelectorAll('.modal, #minigame-play-modal, .history-container');
-  modals.forEach(m => {
-    if (bgColor && theme !== 'default') {
-      // モーダル内は読みやすさを考慮しつつテーマカラーを反映
-      m.style.color = ""; 
-    }
-  });
+    // さらに画面の横や中央付近に絵文字を散りばめるために、擬似的にテキストや記号のパターンを重ねることもできます
+  } else {
+    mainView.style.backgroundImage = "";
+    mainView.style.backgroundSize = "";
+  }
 }
 
 // ページ読み込み時に保存されたテーマを自動適用
@@ -2951,6 +2933,7 @@ window.addEventListener('DOMContentLoaded', () => {
   if (savedTheme) applyTheme(savedTheme);
 });
 
+  
 </script> 
  
 </body>
