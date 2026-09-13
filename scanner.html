@@ -204,15 +204,27 @@
     </div>
   </div>
 
-  <!-- メイン画面 -->
+<!-- メイン画面 -->
   <div id="main-view" class="hidden">
     <div class="header">
-      <div class="user-info">👤 <span id="user-display">きらと</span></div>
+      <!-- ① タップできるように `onclick` を追加し、spanにidを持たせました -->
+      <div class="user-info" onclick="openProfileModal()" style="cursor: pointer;" title="プロフィール編集">
+        👤 <span id="user-display">きらと</span> ⚙️
+      </div>
       <div class="header-btns">
         <button class="small-btn" style="background:#007bff;" onclick="openPassModal()">パスワード変更</button>
         <button class="small-btn" onclick="logout()">ログアウト</button>
       </div>
     </div>
+
+    <!-- ② 下の欄にたくさんボタンが並ぶメニューエリア -->
+    <div class="sub-menu-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 10px 15px;">
+      <button class="main-btn" style="background: #ff9800; font-size: 14px; padding: 10px;" onclick="openPointShop()">🛍️ ポイントショップ</button>
+      <button class="main-btn" style="background: #e91e63; font-size: 14px; padding: 10px;" onclick="openDigitalPet()">🐾 デジタルペット</button>
+      <button class="main-btn" style="background: #4caf50; font-size: 14px; padding: 10px;" onclick="openQuestModal()">📜 クエスト</button>
+      <button class="main-btn" style="background: #9c27b0; font-size: 14px; padding: 10px;" onclick="openSurveyModal()">📋 アンケート</button>
+    </div>
+
 
     <div class="balance-card">
       <div class="card-label">11Pay残高</div>
@@ -2605,6 +2617,110 @@ function claimStepPoints() {
 window.addEventListener('DOMContentLoaded', () => {
   updateStepUI();
 });
+
+  // --- プロフィール（アカウント）管理 ---
+// プロフィール編集モーダルを開く
+function openProfileModal() {
+  if (typeof playSound === 'function') playSound('beep');
+  
+  // 保存されているデータを取得（なければ初期値）
+  const profile = JSON.parse(localStorage.getItem('11pay_profile')) || {
+    name: "きらと",
+    birthday: "2000-01-01",
+    gender: "未設定"
+  };
+
+  // 既存のモーダル（またはミニゲーム用モーダルなど）を流用して表示
+  const modal = document.getElementById("minigame-play-modal");
+  const title = document.getElementById("minigame-title");
+  const stage = document.getElementById("minigame-stage");
+  if (!modal) return;
+
+  modal.classList.remove("hidden");
+  title.innerText = "アカウント設定";
+
+  stage.innerHTML = `
+    <div style="text-align: left; padding: 10px; display: flex; flex-direction: column; gap: 12px;">
+      <div>
+        <label style="font-size: 12px; color: #666; display: block; margin-bottom: 4px;">アカウント名</label>
+        <input type="text" id="edit-name" value="${profile.name}" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
+      </div>
+      <div>
+        <label style="font-size: 12px; color: #666; display: block; margin-bottom: 4px;">誕生日</label>
+        <input type="date" id="edit-birthday" value="${profile.birthday}" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
+      </div>
+      <div>
+        <label style="font-size: 12px; color: #666; display: block; margin-bottom: 4px;">性別</label>
+        <select id="edit-gender" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; background: white;">
+          <option value="男性" ${profile.gender === '男性' ? 'selected' : ''}>男性</option>
+          <option value="女性" ${profile.gender === '女性' ? 'selected' : ''}>女性</option>
+          <option value="その他" ${profile.gender === 'その他' ? 'selected' : ''}>その他</option>
+          <option value="未設定" ${profile.gender === '未設定' ? 'selected' : ''}>未設定</option>
+        </select>
+      </div>
+      <button class="main-btn" onclick="saveProfile()" style="background: #007bff; margin-top: 10px; width: 100%;">保存する</button>
+    </div>
+  `;
+}
+
+// プロフィール保存処理
+function saveProfile() {
+  const name = document.getElementById("edit-name").value.trim();
+  const birthday = document.getElementById("edit-birthday").value;
+  const gender = document.getElementById("edit-gender").value;
+
+  if (!name) {
+    alert("アカウント名を入力してください！");
+    return;
+  }
+
+  const profile = { name, birthday, gender };
+  localStorage.setItem('11pay_profile', JSON.stringify(profile));
+
+  // 画面上の表示を更新
+  const userDisplay = document.getElementById("user-display");
+  if (userDisplay) {
+    userDisplay.innerText = name;
+  }
+
+  if (typeof playSound === 'function') playSound('win');
+  alert("プロフィールを更新しました！");
+  
+  // モーダルを閉じる関数（既存のものがあればそれを使用、なければ非表示に）
+  if (typeof closeMiniGamePlayModal === 'function') {
+    closeMiniGamePlayModal();
+  } else {
+    document.getElementById("minigame-play-modal").classList.add("hidden");
+  }
+}
+
+// 起動時にプロフィール名を復元する処理（必要に応じて呼び出し）
+function loadProfile() {
+  const profile = JSON.parse(localStorage.getItem('11pay_profile'));
+  if (profile && profile.name) {
+    const userDisplay = document.getElementById("user-display");
+    if (userDisplay) userDisplay.innerText = profile.name;
+  }
+}
+// ページ読み込み時などに loadProfile(); を実行しておくと反映されます。
+
+
+// --- 下部4つのボタンの仮関数（中身は今後作れます！） ---
+function openPointShop() {
+  alert("🛍️ ポイントショップ機能は準備中です！");
+}
+
+function openDigitalPet() {
+  alert("🐾 デジタルペット機能は準備中です！");
+}
+
+function openQuestModal() {
+  alert("📜 クエスト機能は準備中です！");
+}
+
+function openSurveyModal() {
+  alert("📋 アンケート機能は準備中です！");
+}
 
   
 </script> 
