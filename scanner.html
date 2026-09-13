@@ -1106,7 +1106,7 @@
     }
     closeSendQrModal();
   }
- // --- スキャナー制御 ---
+// --- スキャナー制御 ---
   function toggleCamera() {
     playSound('beep');
     if (isCameraOn) {
@@ -1180,13 +1180,43 @@ function restartScanner() {
       console.log("カメラ起動エラー:", err);
     });
   }
-} 
+}
 
-// 修正版：QR読み取り成功時の処理
+// 修正版：QR読み取り成功時の処理（クーポン追加対応済み）
 function onScanSuccess(decodedText) {
- 
     playSound('beep');
     stopScanner(() => {
+     
+      // 1. クーポンQRの読み取り処理
+      if (decodedText.startsWith("COUPON:")) {
+        const parts = decodedText.split(":");
+        if (parts.length >= 5) {
+          const coupon = {
+            id: parts[1],
+            title: parts[1],
+            discount: parseInt(parts[2], 10) || 0,
+            minPrice: parseInt(parts[3], 10) || 0,
+            expiry: parts[4]
+          };
+
+          let coupons = JSON.parse(localStorage.getItem('11pay_coupons')) || [];
+         
+          if (coupons.some(c => c.id === coupon.id)) {
+            playSound('error');
+            alert("このクーポンはすでに登録されています！");
+            return;
+          }
+
+          coupons.push(coupon);
+          localStorage.setItem('11pay_coupons', JSON.stringify(coupons));
+
+          playSound('win');
+          alert(`🎟️ クーポン「${coupon.title}」を追加しました！`);
+          return;
+        }
+      }
+
+      // 2. 送金用QRの読み取り
       if (decodedText.startsWith("SEND:")) {
         const parts = decodedText.split(":");
         const senderUser = parts[1];
@@ -1210,7 +1240,7 @@ function onScanSuccess(decodedText) {
       const isCharge = decodedText.startsWith("CHARGE_");
       const isPoint  = decodedText.startsWith("POINT_");
       const isPay    = decodedText.startsWith("PAY_");
-     
+    
       const amount = parseInt(decodedText.replace(/(CHARGE_|PAY_|POINT_)/, "")) || 0;
 
       if (isCharge) {
@@ -1302,7 +1332,8 @@ function onScanSuccess(decodedText) {
     } else {
       startRoulette(finalAmount);
     }
-  }
+  } 
+
 
   function startRoulette(payAmount) {
     document.getElementById("roulette-modal").classList.remove("hidden");
