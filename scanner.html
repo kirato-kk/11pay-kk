@@ -2725,6 +2725,118 @@ function openSurveyModal() {
   alert("📋 アンケートは準備中です！");
 }
 
+// 🛍️ ポイントショップ（季節の着せ替え機能）
+function openPointShop() {
+  if (typeof playSound === 'function') playSound('beep');
+  
+  const modal = document.getElementById("minigame-play-modal");
+  const title = document.getElementById("minigame-title");
+  const stage = document.getElementById("minigame-stage");
+  if (!modal) return;
+
+  modal.classList.remove("hidden");
+  title.innerText = "ポイントショップ（季節の着せ替え）";
+
+  // 現在購入済みのテーマを取得
+  const currentTheme = localStorage.getItem('11pay_theme') || 'default';
+
+  stage.innerHTML = `
+    <div style="text-align: left; padding: 5px; display: flex; flex-direction: column; gap: 10px; max-height: 70vh; overflow-y: auto;">
+      <p style="font-size: 12px; color: #666;">ポイントを使ってアプリの季節テーマを着せ替えよう！</p>
+      
+      <!-- テーマ1: 600pt -->
+      <div style="background: #fff3e0; padding: 10px; border-radius: 8px; border: 1px solid #ffe0b2; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <p style="font-weight: bold; font-size: 13px; margin: 0;">🌸 春爛漫テーマ</p>
+          <p style="font-size: 11px; color: #666; margin: 2px 0 0 0;">600 pt</p>
+        </div>
+        <button class="main-btn" style="background: #ff9800; font-size: 11px; padding: 6px 12px;" onclick="buyTheme('spring', 600)">購入する</button>
+      </div>
+
+      <!-- テーマ2: 1500pt -->
+      <div style="background: #e8f5e9; padding: 10px; border-radius: 8px; border: 1px solid #c8e6c9; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <p style="font-weight: bold; font-size: 13px; margin: 0;">🍁 秋の紅葉テーマ</p>
+          <p style="font-size: 11px; color: #666; margin: 2px 0 0 0;">1,500 pt</p>
+        </div>
+        <button class="main-btn" style="background: #4caf50; font-size: 11px; padding: 6px 12px;" onclick="buyTheme('autumn', 1500)">購入する</button>
+      </div>
+
+      <!-- テーマ3: 3000pt (豪華) -->
+      <div style="background: #e3f2fd; padding: 10px; border-radius: 8px; border: 1px solid #bbdefb; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <p style="font-weight: bold; font-size: 13px; margin: 0;">❄️ イルミネーション冬テーマ</p>
+          <p style="font-size: 11px; color: #666; margin: 2px 0 0 0;">3,000 pt (豪華)</p>
+        </div>
+        <button class="main-btn" style="background: #2196f3; font-size: 11px; padding: 6px 12px;" onclick="buyTheme('winter', 3000)">購入する</button>
+      </div>
+
+    </div>
+  `;
+}
+
+// テーマ購入・適用処理
+function buyTheme(themeName, price) {
+  // 現在のポイントを取得
+  let currentPoints = 0;
+  if (typeof points !== 'undefined') {
+    currentPoints = points;
+  } else {
+    currentPoints = parseInt(localStorage.getItem('11pay_points'), 10) || 0;
+  }
+
+  if (currentPoints < price) {
+    alert(`ポイントが不足しています！（必要: ${price}pt / 所持: ${currentPoints}pt）`);
+    return;
+  }
+
+  // ポイントを減らす
+  if (typeof points !== 'undefined') {
+    points -= price;
+  } else {
+    currentPoints -= price;
+    localStorage.setItem('11pay_points', currentPoints);
+  }
+
+  // 取引履歴に追加
+  if (typeof addTransaction === 'function') {
+    addTransaction('ポイント利用', -price, `ポイントショップ: 着せ替え購入 (${themeName})`);
+  } else {
+    let history = JSON.parse(localStorage.getItem('11pay_history')) || [];
+    history.unshift({
+      title: `ポイントショップ購入 (${themeName})`,
+      amount: -price,
+      date: new Date().toLocaleString()
+    });
+    localStorage.setItem('11pay_history', JSON.stringify(history));
+  }
+
+  // テーマを保存
+  localStorage.setItem('11pay_theme', themeName);
+  applyTheme(themeName);
+
+  if (typeof updateDisplay === 'function') updateDisplay();
+  if (typeof playSound === 'function') playSound('win');
+
+  alert(`✨ ${themeName}テーマを購入し、適用しました！`);
+  closeMiniGamePlayModal();
+}
+
+// テーマごとの見た目を反映する簡易関数
+function applyTheme(theme) {
+  const mainView = document.getElementById("main-view");
+  if (!mainView) return;
+  
+  if (theme === 'spring') {
+    mainView.style.background = "#fff9f9";
+  } else if (theme === 'autumn') {
+    mainView.style.background = "#fffbf0";
+  } else if (theme === 'winter') {
+    mainView.style.background = "#f0f8ff";
+  } else {
+    mainView.style.background = "";
+  }
+}
 
   
 </script> 
