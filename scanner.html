@@ -2933,6 +2933,226 @@ window.addEventListener('DOMContentLoaded', () => {
   if (savedTheme) applyTheme(savedTheme);
 });
 
+  // --- 🐾 デジタルペット（Gemini育成） ---
+function openDigitalPet() {
+  if (typeof playSound === 'function') playSound('beep');
+  
+  const modal = document.getElementById("minigame-play-modal");
+  const title = document.getElementById("minigame-title");
+  const stage = document.getElementById("minigame-stage");
+  if (!modal) return;
+
+  modal.classList.remove("hidden");
+  title.innerText = "🐾 デジタルペット育成 🐾";
+
+  // ペットのデータを取得（なければ初期値）
+  let pet = JSON.parse(localStorage.getItem('11pay_pet')) || {
+    name: "ジェミニ",
+    hunger: 50,
+    happiness: 50,
+    level: 1
+  };
+
+  stage.innerHTML = `
+    <div style="text-align: center; padding: 10px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="font-size: 50px; background: #e0f7fa; border-radius: 50%; width: 90px; height: 90px; line-height: 90px; margin: 0 auto; border: 3px solid #00acc1;">
+        🤖
+      </div>
+      <div>
+        <p style="font-weight: bold; font-size: 15px; margin: 0;">${pet.name} (Lv.${pet.level})</p>
+        <p style="font-size: 11px; color: #666; margin: 2px 0;">AIのたまごから生まれた相棒</p>
+      </div>
+
+      <div style="background: #f5f5f5; padding: 10px; border-radius: 8px; text-align: left; font-size: 12px;">
+        <p style="margin: 4px 0;">🍗 お腹の満たし度: <strong>${pet.hunger} / 100</strong></p>
+        <p style="margin: 4px 0;">💖 ごきげん度: <strong>${pet.happiness} / 100</strong></p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+        <button class="main-btn" style="background: #ff9800; font-size: 12px; padding: 8px;" onclick="feedPet()">🍗 エサをあげる (50pt)</button>
+        <button class="main-btn" style="background: #e91e63; font-size: 12px; padding: 8px;" onclick="playPet()">✨ なでる</button>
+      </div>
+    </div>
+  `;
+}
+
+function feedPet() {
+  let currentPoints = (typeof points !== 'undefined') ? points : (parseInt(localStorage.getItem('11pay_points'), 10) || 0);
+  if (currentPoints < 50) {
+    alert("ポイントが足りません！（必要: 50pt）");
+    return;
+  }
+
+  // ポイント消費
+  if (typeof points !== 'undefined') {
+    points -= 50;
+  } else {
+    currentPoints -= 50;
+    localStorage.setItem('11pay_points', currentPoints);
+  }
+
+  let pet = JSON.parse(localStorage.getItem('11pay_pet')) || { name: "ジェミニ", hunger: 50, happiness: 50, level: 1 };
+  pet.hunger = Math.min(100, pet.hunger + 30);
+  pet.happiness = Math.min(100, pet.happiness + 10);
+  pet.level += 1;
+  localStorage.setItem('11pay_pet', JSON.stringify(pet));
+
+  if (typeof updateDisplay === 'function') updateDisplay();
+  if (typeof playSound === 'function') playSound('win');
+  alert("🍗 ジェミニにごはんをあげました！レベルが上がった！");
+  openDigitalPet();
+}
+
+function playPet() {
+  let pet = JSON.parse(localStorage.getItem('11pay_pet')) || { name: "ジェミニ", hunger: 50, happiness: 50, level: 1 };
+  pet.happiness = Math.min(100, pet.happiness + 20);
+  localStorage.setItem('11pay_pet', JSON.stringify(pet));
+
+  if (typeof playSound === 'function') playSound('win');
+  alert("✨ ジェミニをなでました！とても嬉しそう！");
+  openDigitalPet();
+}
+
+
+// --- 📜 クエスト機能（1日5回まで） ---
+function openQuestModal() {
+  if (typeof playSound === 'function') playSound('beep');
+  
+  const modal = document.getElementById("minigame-play-modal");
+  const title = document.getElementById("minigame-title");
+  const stage = document.getElementById("minigame-stage");
+  if (!modal) return;
+
+  modal.classList.remove("hidden");
+  title.innerText = "📜 デイリークエスト 📜";
+
+  // 回数制限の管理（日付が変わったらリセット）
+  const today = new Date().toDateString();
+  let questData = JSON.parse(localStorage.getItem('11pay_quest')) || { date: today, count: 0 };
+  if (questData.date !== today) {
+    questData = { date: today, count: 0 };
+    localStorage.setItem('11pay_quest', JSON.stringify(questData));
+  }
+
+  const maxCount = 5;
+  const remaining = maxCount - questData.count;
+
+  stage.innerHTML = `
+    <div style="text-align: left; padding: 5px; display: flex; flex-direction: column; gap: 10px;">
+      <p style="font-size: 12px; color: #666;">ミッションをクリアしてボーナスポイントをゲットしよう！</p>
+      <p style="font-size: 12px; font-weight: bold; color: #d32f2f;">本日の残り挑戦回数: ${remaining} / ${maxCount} 回</p>
+
+      <div style="background: #f1f8e9; padding: 10px; border-radius: 8px; border: 1px solid #c5e1a5; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <p style="font-weight: bold; font-size: 13px; margin: 0;">🎯 アプリの機能を1回使おう！</p>
+          <p style="font-size: 11px; color: #555; margin: 2px 0 0 0;">報酬: +100 pt</p>
+        </div>
+        <button class="main-btn" style="background: #4caf50; font-size: 11px; padding: 6px 12px;" ${remaining <= 0 ? 'disabled style="background:#ccc;"' : ''} onclick="completeQuest()">達成する</button>
+      </div>
+    </div>
+  `;
+}
+
+function completeQuest() {
+  const today = new Date().toDateString();
+  let questData = JSON.parse(localStorage.getItem('11pay_quest')) || { date: today, count: 0 };
+  
+  if (questData.count >= 5) {
+    alert("本日のクエスト上限回数に達しました！");
+    return;
+  }
+
+  questData.count += 1;
+  localStorage.setItem('11pay_quest', JSON.stringify(questData));
+
+  // ポイント加算
+  const reward = 100;
+  if (typeof points !== 'undefined') {
+    points += reward;
+  } else {
+    let p = parseInt(localStorage.getItem('11pay_points'), 10) || 0;
+    localStorage.setItem('11pay_points', p + reward);
+  }
+
+  if (typeof addTransaction === 'function') {
+    addTransaction('クエスト報酬', reward, 'デイリークエスト達成');
+  }
+
+  if (typeof updateDisplay === 'function') updateDisplay();
+  if (typeof playSound === 'function') playSound('win');
+  alert("🎉 クエスト達成！ 100ptを獲得しました！");
+  openQuestModal();
+}
+
+
+// --- 📋 アンケート機能（1日1回まで） ---
+function openSurveyModal() {
+  if (typeof playSound === 'function') playSound('beep');
+  
+  const modal = document.getElementById("minigame-play-modal");
+  const title = document.getElementById("minigame-title");
+  const stage = document.getElementById("minigame-stage");
+  if (!modal) return;
+
+  modal.classList.remove("hidden");
+  title.innerText = "📋 本日のアンケート 📋";
+
+  const today = new Date().toDateString();
+  const lastSurveyDate = localStorage.getItem('11pay_survey_date');
+  const alreadyAnswered = (lastSurveyDate === today);
+
+  if (alreadyAnswered) {
+    stage.innerHTML = `
+      <div style="text-align: center; padding: 20px;">
+        <p style="font-size: 14px; font-weight: bold; color: #666;">本日のアンケートは回答済みです✨</p>
+        <p style="font-size: 12px; color: #999; margin-top: 8px;">明日また新しいアンケートが届きます！</p>
+      </div>
+    `;
+    return;
+  }
+
+  stage.innerHTML = `
+    <div style="text-align: left; padding: 5px; display: flex; flex-direction: column; gap: 12px;">
+      <p style="font-size: 13px; font-weight: bold; color: #333;">Q. 11Payで一番お気に入りの機能はどれですか？（報酬: 200pt）</p>
+      
+      <label style="font-size: 12px; display: flex; align-items: center; gap: 6px;"><input type="radio" name="survey" value="1"> 🛍️ ポイントショップ・着せ替え</label>
+      <label style="font-size: 12px; display: flex; align-items: center; gap: 6px;"><input type="radio" name="survey" value="2"> 🐾 デジタルペット</label>
+      <label style="font-size: 12px; display: flex; align-items: center; gap: 6px;"><input type="radio" name="survey" value="3"> 📜 クエスト</label>
+      <label style="font-size: 12px; display: flex; align-items: center; gap: 6px;"><input type="radio" name="survey" value="4"> 🎮 ミニゲーム・スクラッチ</label>
+
+      <button class="main-btn" style="background: #9c27b0; margin-top: 10px; width: 100%; padding: 8px;" onclick="submitSurvey()">回答を送信して200pt貰う</button>
+    </div>
+  `;
+}
+
+function submitSurvey() {
+  const selected = document.querySelector('input[name="survey"]:checked');
+  if (!selected) {
+    alert("選択肢を一つ選んでください！");
+    return;
+  }
+
+  const today = new Date().toDateString();
+  localStorage.setItem('11pay_survey_date', today);
+
+  const reward = 200;
+  if (typeof points !== 'undefined') {
+    points += reward;
+  } else {
+    let p = parseInt(localStorage.getItem('11pay_points'), 10) || 0;
+    localStorage.setItem('11pay_points', p + reward);
+  }
+
+  if (typeof addTransaction === 'function') {
+    addTransaction('アンケート報酬', reward, 'デイリーアンケート回答');
+  }
+
+  if (typeof updateDisplay === 'function') updateDisplay();
+  if (typeof playSound === 'function') playSound('win');
+  alert("🎉 ご協力ありがとうございます！ 200ptを獲得しました！");
+  closeMiniGamePlayModal();
+}
+
   
 </script> 
  
