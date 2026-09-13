@@ -360,7 +360,7 @@
       <div id="gacha-box" style="font-size: 40px; margin: 20px 0;">🎁</div>
       <div id="gacha-result-text" style="font-size: 18px; font-weight: bold; color: #ff0033; min-height: 28px; margin-bottom: 15px;"></div>
 
-      <button id="gacha-draw-btn" class="main-btn" style="background: #ff9900;" onclick="playGacha()">ガチャを回す (200pt)</button>
+      <button id="gacha-draw-btn" class="main-btn" style="background: #ff9900;" onclick="playGacha()">ガチャを回す</button>
       <button class="secondary-btn" style="margin-top: 10px;" onclick="backToGameMenu()">メニューに戻る</button>
     </div>
 
@@ -423,7 +423,7 @@
 <div id="pay-confirm-modal" class="modal-overlay hidden">
   <div class="modal-content">
     <h3>お支払い確認</h3>
-    <p style="font-size: 18px; font-weight: bold; margin: 10px 0;">請求額: <span id="confirm-pay-amount" style="color:#ff0033;">0</span> 円</p>
+    <p style="font-size: 18px; font-weight: bold; margin: 10px 0;">お支払い額: <span id="confirm-pay-amount" style="color:#ff0033;">0</span> 円</p>
    
     <div style="background: #f8f9fa; padding: 12px; border-radius: 10px; margin-bottom: 15px; text-align: left;">
       <label style="font-weight: bold; display: block; margin-bottom: 5px;">
@@ -881,7 +881,7 @@
 
     if (lastScratchDate === today) {
       playSound('error');
-      return alert("今日のスクラッチはすでに引いています！\nまた明日チャレンジしてね！");
+      return alert("毎日スクラッチ!!は一日一回です\nまた明日チャレンジしてね！");
     }
 
     const rand = Math.random() * 100;
@@ -1203,7 +1203,7 @@ function onScanSuccess(decodedText) {
          
           if (coupons.some(c => c.id === coupon.id)) {
             playSound('error');
-            alert("このクーポンはすでに登録されています！");
+            alert("このクーポンはすでに登録されています");
             return;
           }
 
@@ -1211,7 +1211,7 @@ function onScanSuccess(decodedText) {
           localStorage.setItem('11pay_coupons', JSON.stringify(coupons));
 
           playSound('win');
-          alert(`🎟️ クーポン「${coupon.title}」を追加しました！`);
+          alert(`クーポン「${coupon.title}」を追加しました！`);
           return;
         }
       }
@@ -1224,7 +1224,7 @@ function onScanSuccess(decodedText) {
 
         if (senderUser === currentUser) {
           playSound('error');
-          alert("自分の送金用QRコードは読み込めません");
+          alert("自分の送金QRコードは読み込めません");
           return;
         }
 
@@ -1347,8 +1347,8 @@ function executePayment() {
   balance -= cashPay;
   points -= usePt;
 
-  if (cashPay > 0 && typeof addTransaction === 'function') addTransaction('残高', -cashPay, '店舗支払い');
-  if (usePt > 0 && typeof addTransaction === 'function') addTransaction('ポイント', -usePt, '店舗支払い利用');
+  if (cashPay > 0 && typeof addTransaction === 'function') addTransaction('残高', -cashPay, 'お支払い');
+  if (usePt > 0 && typeof addTransaction === 'function') addTransaction('ポイント', -usePt, 'お支払い利用');
 
   // 割引を使った場合、適用中のクーポン情報をクリア
   if (discount > 0) {
@@ -1707,7 +1707,7 @@ function executePayment() {
 
     gameMenuSelect.innerHTML = `
       <div id="game-category-content">
-        <h3>GAME</h3>
+        <h3>GAME MENU</h3>
         <p style="font-size: 13px; color: #666; margin-bottom: 20px;">どちらで遊ぶか選んでね！</p>
         <button class="main-btn" style="margin-bottom: 12px; background: #007bff;" onclick="openMiniGameMenu()">ミニゲーム</button>
         <button class="main-btn" style="background: #ff9900;" onclick="startGachaSelect()">11payガチャ</button>
@@ -2299,7 +2299,7 @@ function openCouponModal() {
   }
 
   modal.classList.remove("hidden");
-  title.innerText = "🎟️ クーポンボックス 🎟️";
+  title.innerText = "COUPON";
 
   updateCouponDisplay();
 }
@@ -2332,10 +2332,10 @@ function updateCouponDisplay() {
         <div style="background: ${bgStyle}; padding: 16px; border-radius: 12px; border: ${borderStyle}; display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; width: 100%; box-sizing: border-box; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
           <div>
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-              <span style="font-weight: bold; font-size: 15px; color: #e65100;">🎟️ ${c.title}</span>
+              <span style="font-weight: bold; font-size: 15px; color: #e65100;">${c.title}</span>
               ${isActive ? '<span style="background: #4caf50; color: #fff; font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: bold;">✨ 適用中</span>' : ''}
             </div>
-            <p style="font-size: 12px; color: #444; margin: 3px 0;">割引: <b>${c.discount}円</b> (条件: ${c.minPrice}円以上)</p>
+            <p style="font-size: 12px; color: #444; margin: 3px 0;">割引: <b>${c.discount}円</b> (${c.minPrice}円以上)</p>
             <p style="font-size: 11px; color: #777; margin: 2px 0;">有効期限: ${c.expiry}</p>
           </div>
          
@@ -2375,7 +2375,7 @@ function useCoupon(couponId) {
   }
 
   if (typeof playSound === 'function') playSound('win');
-  alert(`✨ クーポン「${coupon.title}」を適用しました！（${coupon.discount}円引き）`);
+  alert(`クーポン「${coupon.title}」を適用しました！（${coupon.discount}円引き）`);
 
   updateCouponDisplay();
 }
@@ -2411,7 +2411,7 @@ function consumeActiveCoupon() {
 function promptDeleteCoupon(couponId) {
   const passcode = prompt("クーポンを削除するためのパスコードを入力してください：");
 
-  if (passcode !== "1234") {
+  if (passcode !== "4869") {
     alert("パスコードが間違っています！");
     return;
   }
@@ -2428,7 +2428,7 @@ function promptDeleteCoupon(couponId) {
   }
 
   if (typeof playSound === 'function') playSound('beep');
-  alert("🗑️ クーポンを削除しました。");
+  alert("クーポンを削除しました。");
 
   updateCouponDisplay();
 } 
@@ -2452,7 +2452,7 @@ function handleFileScan(input) {
     .catch(err => {
       console.log("画像スキャンエラー:", err);
       if (typeof playSound === 'function') playSound('error');
-      alert("❌ 画像からQRコードを検出できませんでした");
+      alert("画像からQRコードを検出できませんでした");
     });
 }
 
@@ -2494,7 +2494,7 @@ function processMyCodePayment(targetUserId, storeName = "店舗での決済") {
 
   // 3. 残高不足チェック
   if (currentBalance < amount) {
-    alert("❌ 残高が不足しています！");
+    alert("残高が不足しています！");
     return;
   }
 
@@ -2644,7 +2644,7 @@ function requestMotionPermission() {
       .catch(console.error);
   } else {
     window.addEventListener('devicemotion', handleMotionEvent);
-    alert("✨ 歩数センサーが有効になりました！");
+    alert("歩数センサーが有効になりました！");
   }
 }
 
@@ -2689,7 +2689,7 @@ function claimStepPoints() {
   const earnedPoints = data.steps;
 
   if (earnedPoints <= 0) {
-    alert("受け取れる歩数がありません！");
+    alert("受け取れるポイントがありません");
     return;
   }
 
@@ -2741,7 +2741,7 @@ function claimStepPoints() {
       playSound('win');
     }
 
-    alert(`✨ ${earnedPoints.toLocaleString()}ポイントを獲得しました！`);
+    alert(`${earnedPoints.toLocaleString()}ポイントを獲得しました！`);
 
   } catch (error) {
     console.error("ポイント受取エラー:", error);
