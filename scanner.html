@@ -1264,76 +1264,113 @@ function onScanSuccess(decodedText) {
     });
   }
 
-  function openPayConfirmModal() {
-    document.getElementById("confirm-pay-amount").innerText = currentScanAmount.toLocaleString();
-    document.getElementById("max-pt-display").innerText = points.toLocaleString();
-    document.getElementById("use-pt-check").checked = false;
-    document.getElementById("use-pt-input").value = "";
-    togglePointInput();
-    document.getElementById("pay-confirm-modal").classList.remove("hidden");
+// --- 💳 支払い確認・決済処理（クーポン割引対応・修復版） ---
+
+function openPayConfirmModal() {
+  currentScanAmount = currentScanAmount || 0;
+ 
+  const confirmAmountEl = document.getElementById("confirm-pay-amount");
+  const maxPtEl = document.getElementById("max-pt-display");
+  const usePtCheck = document.getElementById("use-pt-check");
+  const usePtInput = document.getElementById("use-pt-input");
+  const payModal = document.getElementById("pay-confirm-modal");
+
+  if (confirmAmountEl) confirmAmountEl.innerText = currentScanAmount.toLocaleString();
+  if (maxPtEl) maxPtEl.innerText = (typeof points !== 'undefined' ? points : 0).toLocaleString();
+  if (usePtCheck) usePtCheck.checked = false;
+  if (usePtInput) usePtInput.value = "";
+ 
+  if (typeof togglePointInput === 'function') togglePointInput();
+  if (payModal) payModal.classList.remove("hidden");
+}
+
+function togglePointInput() {
+  if (typeof playSound === 'function') playSound('beep');
+  const usePtCheck = document.getElementById("use-pt-check");
+  const ptContainer = document.getElementById("pt-input-container");
+  if (usePtCheck && ptContainer) {
+    ptContainer.classList.toggle("hidden", !usePtCheck.checked);
   }
+}
 
-  function togglePointInput() {
-    playSound('beep');
-    const isChecked = document.getElementById("use-pt-check").checked;
-    document.getElementById("pt-input-container").classList.toggle("hidden", !isChecked);
-  }
+function cancelPayment() {
+  if (typeof playSound === 'function') playSound('beep');
+  const payModal = document.getElementById("pay-confirm-modal");
+  if (payModal) payModal.classList.add("hidden");
+}
 
-  function cancelPayment() {
-    playSound('beep');
-    document.getElementById("pay-confirm-modal").classList.add("hidden");
-  }
-
-  function executePayment() {
-    let discount = activeDiscount;
-    let finalAmount = Math.max(0, currentScanAmount - discount);
-
-    const usePtChecked = document.getElementById("use-pt-check").checked;
-    let usePt = parseInt(document.getElementById("use-pt-input").value) || 0;
-
-    if (usePtChecked) {
-      if (usePt <= 0) return alert("利用するポイントを入力してください");
-      if (usePt > points) {
-        playSound('error');
-        return alert("保持ポイントを超えています");
-      }
-      if (usePt > finalAmount) usePt = finalAmount;
-    } else {
-      usePt = 0;
+function executePayment() {
+  // 1. 割引クーポンの適用チェック（安全に取得）
+  let discount = 0;
+  if (typeof activeDiscount !== 'undefined') {
+    discount = activeDiscount;
+  } else {
+    const savedCoupon = localStorage.getItem('11pay_active_coupon');
+    if (savedCoupon) {
+      try {
+        const c = JSON.parse(savedCoupon);
+        discount = c.discount || 0;
+      } catch (e) {}
     }
+  }
 
-    const cashPay = finalAmount - usePt;
+  let finalAmount = Math.max(0, currentScanAmount - discount);
 
-    if (cashPay > balance) {
-      playSound('error');
-      alert(`残高が不足しています\nお支払い額: ${cashPay}円 / 残高: ${balance}円`);
+  const usePtChecked = document.getElementById("use-pt-check") ? document.getElementById("use-pt-check").checked : false;
+  let usePt = parseInt(document.getElementById("use-pt-input") ? document.getElementById("use-pt-input").value : 0) || 0;
+
+  if (usePtChecked) {
+    if (usePt <= 0) {
+      alert("利用するポイントを入力してください");
       return;
     }
-
-    playSound('pay');
-
-    balance -= cashPay;
-    points -= usePt;
-
-    if (cashPay > 0) addTransaction('残高', -cashPay, '店舗支払い');
-    if (usePt > 0) addTransaction('ポイント', -usePt, '店舗支払い利用');
-
-    if (discount > 0) {
-      const usedCoupon = coupons.find(c => c.discount === discount && !c.used);
-      if (usedCoupon) usedCoupon.used = true;
-      activeDiscount = 0;
+    if (usePt > points) {
+      if (typeof playSound === 'function') playSound('error');
+      alert("保持ポイントを超えています");
+      return;
     }
+    if (usePt > finalAmount) usePt = finalAmount;
+  } else {
+    usePt = 0;
+  }
 
-    updateDisplay();
-    document.getElementById("pay-confirm-modal").classList.add("hidden");
+  const cashPay = finalAmount - usePt;
 
-    if (usePt > 0) {
-      alert(`お支払い完了！(割引: ${discount}円 / pt利用: ${usePt}pt)`);
-    } else {
+  if (cashPay > balance) {
+    if (typeof playSound === 'function') playSound('error');
+    alert(`残高が不足しています\nお支払い額: ${cashPay}円 / 残高: ${balance}円`);
+    return;
+  }
+
+  if (typeof playSound === 'function') playSound('pay');
+
+  balance -= cashPay;
+  points -= usePt;
+
+  if (cashPay > 0 && typeof addTransaction === 'function') addTransaction('残高', -cashPay, '店舗支払い');
+  if (usePt > 0 && typeof addTransaction === 'function') addTransaction('ポイント', -usePt, '店舗支払い利用');
+
+  // 割引を使った場合、適用中のクーポン情報をクリア
+  if (discount > 0) {
+    localStorage.removeItem('11pay_active_coupon');
+    activeDiscount = 0;
+  }
+
+  if (typeof updateDisplay === 'function') updateDisplay();
+ 
+  const payModal = document.getElementById("pay-confirm-modal");
+  if (payModal) payModal.classList.add("hidden");
+
+  if (usePt > 0) {
+    alert(`お支払い完了！(割引: ${discount}円 / pt利用: ${usePt}pt)`);
+  } else {
+    if (typeof startRoulette === 'function') {
       startRoulette(finalAmount);
+    } else {
+      alert(`お支払い完了！ (${finalAmount.toLocaleString()}円)`);
     }
-  } 
-
+  }
+} 
 
   function startRoulette(payAmount) {
     document.getElementById("roulette-modal").classList.remove("hidden");
