@@ -203,20 +203,15 @@
       <button class="main-btn" onclick="register()">新規登録</button>
     </div>
   </div>
-
-<!-- メイン画面 -->
+ <!-- メイン画面 -->
   <div id="main-view" class="hidden">
     <div class="header">
-      <!-- 左上のアカウント部分をタップするとメニュー/プロフィールが開く -->
-      <div class="user-info" onclick="openProfileModal()" style="cursor: pointer;" title="アカウント設定">
-        👤 <span id="user-display">きらと</span> 
-      </div>
+      <div class="user-info">👤 <span id="user-display">きらと</span></div>
       <div class="header-btns">
         <button class="small-btn" style="background:#007bff;" onclick="openPassModal()">パスワード変更</button>
         <button class="small-btn" onclick="logout()">ログアウト</button>
       </div>
     </div>
-
 
 
     <div class="balance-card">
@@ -2611,109 +2606,6 @@ window.addEventListener('DOMContentLoaded', () => {
   updateStepUI();
 });
 
-  // --- アカウント（プロフィール・メニュー）管理 ---
-function openProfileModal() {
-  if (typeof playSound === 'function') playSound('beep');
-  
-  const profile = JSON.parse(localStorage.getItem('11pay_profile')) || {
-    name: "きらと",
-    birthday: "2000-01-01",
-    gender: "未設定"
-  };
-
-  const modal = document.getElementById("minigame-play-modal");
-  const title = document.getElementById("minigame-title");
-  const stage = document.getElementById("minigame-stage");
-  if (!modal) return;
-
-  modal.classList.remove("hidden");
-  title.innerText = "アカウント・メニュー";
-
-  stage.innerHTML = `
-    <div style="text-align: left; padding: 5px; display: flex; flex-direction: column; gap: 10px; max-height: 70vh; overflow-y: auto;">
-      
-      <!-- プロフィール編集エリア -->
-      <div style="background: #f9f9f9; padding: 10px; border-radius: 8px; border: 1px solid #eee;">
-        <p style="font-weight: bold; font-size: 13px; margin-bottom: 8px; color: #333;">👤 プロフィール編集</p>
-        <div style="margin-bottom: 8px;">
-          <label style="font-size: 11px; color: #666; display: block;">アカウント名</label>
-          <input type="text" id="edit-name" value="${profile.name}" style="width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
-        </div>
-        <div style="margin-bottom: 8px;">
-          <label style="font-size: 11px; color: #666; display: block;">誕生日</label>
-          <input type="date" id="edit-birthday" value="${profile.birthday}" style="width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
-        </div>
-        <div style="margin-bottom: 8px;">
-          <label style="font-size: 11px; color: #666; display: block;">性別</label>
-          <select id="edit-gender" style="width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; background: white; box-sizing: border-box;">
-            <option value="男性" ${profile.gender === '男性' ? 'selected' : ''}>男性</option>
-            <option value="女性" ${profile.gender === '女性' ? 'selected' : ''}>女性</option>
-            <option value="その他" ${profile.gender === 'その他' ? 'selected' : ''}>その他</option>
-            <option value="未設定" ${profile.gender === '未設定' ? 'selected' : ''}>未設定</option>
-          </select>
-        </div>
-        <button class="main-btn" onclick="saveProfile()" style="background: #007bff; width: 100%; padding: 8px; font-size: 13px;">変更を保存</button>
-      </div>
-
-
-
-// プロフィール保存処理
-function saveProfile() {
-  const name = document.getElementById("edit-name").value.trim();
-  const birthday = document.getElementById("edit-birthday").value;
-  const gender = document.getElementById("edit-gender").value;
-
-  if (!name) {
-    alert("アカウント名を入力してください！");
-    return;
-  }
-
-  const profile = { name, birthday, gender };
-  localStorage.setItem('11pay_profile', JSON.stringify(profile));
-
-  const userDisplay = document.getElementById("user-display");
-  if (userDisplay) {
-    userDisplay.innerText = name;
-  }
-
-  if (typeof playSound === 'function') playSound('win');
-  alert("プロフィールを更新しました！");
-  
-  if (typeof closeMiniGamePlayModal === 'function') {
-    closeMiniGamePlayModal();
-  } else {
-    document.getElementById("minigame-play-modal").classList.add("hidden");
-  }
-}
-
-// 起動時に名前を反映させる用
-function loadProfile() {
-  const profile = JSON.parse(localStorage.getItem('11pay_profile'));
-  if (profile && profile.name) {
-    const userDisplay = document.getElementById("user-display");
-    if (userDisplay) userDisplay.innerText = profile.name;
-  }
-}
-
-// 各メニューボタンの仮関数
-function openPointShop() {
-  alert("🛍️ ポイントショップは準備中です！");
-}
-
-function openDigitalPet() {
-  alert("🐾 デジタルペットは準備中です！");
-}
-
-function openQuestModal() {
-  alert("📜 クエストは準備中です！");
-}
-
-function openSurveyModal() {
-  alert("📋 アンケートは準備中です！");
-}
-
-
-  
 
    
 </script> 
