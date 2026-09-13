@@ -2725,6 +2725,7 @@ function openSurveyModal() {
   alert("📋 アンケートは準備中です！");
 }
 
+
 // --- 🛍️ ポイントショップ（全8種類・着せ替え＆全体連動） ---
 function openPointShop() {
   if (typeof playSound === 'function') playSound('beep');
@@ -2824,13 +2825,14 @@ function buyTheme(themeName, price) {
     localStorage.setItem('11pay_points', currentPoints);
   }
 
+  // ここを "-price + ' pt'" ではなく、アプリの仕様に合わせてそのまま渡す形に修正
   if (typeof addTransaction === 'function') {
-    addTransaction('ポイント利用', -price + ' pt', `ポイントショップ購入 (${themeName})`);
+    addTransaction('ポイント利用', -price, `ポイントショップ購入 (${themeName})`);
   } else {
     let history = JSON.parse(localStorage.getItem('11pay_history')) || [];
     history.unshift({
       title: `ポイントショップ購入 (${themeName})`,
-      amount: -price + ' pt',
+      amount: -price,
       date: new Date().toLocaleString()
     });
     localStorage.setItem('11pay_history', JSON.stringify(history));
@@ -3010,7 +3012,7 @@ function completeQuest() {
   }
 
   if (typeof addTransaction === 'function') {
-    addTransaction('クエスト報酬', reward + ' pt', 'デイリークエスト達成');
+    addTransaction('クエスト報酬', reward, 'デイリークエスト達成');
   }
 
   if (typeof updateDisplay === 'function') updateDisplay();
@@ -3066,7 +3068,7 @@ function submitSurvey() {
   }
 
   if (typeof addTransaction === 'function') {
-    addTransaction('アンケート報酬', reward + ' pt', 'デイリーアンケート回答');
+    addTransaction('アンケート報酬', reward, 'デイリーアンケート回答');
   }
 
   if (typeof updateDisplay === 'function') updateDisplay();
@@ -3079,6 +3081,8 @@ window.addEventListener('DOMContentLoaded', () => {
   const savedTheme = localStorage.getItem('11pay_theme');
   if (savedTheme) applyTheme(savedTheme);
 });
+
+  
 
   
 </script> 
