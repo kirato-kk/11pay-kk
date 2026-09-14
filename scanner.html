@@ -2851,32 +2851,24 @@ window.addEventListener('DOMContentLoaded', () => {
   updateStepUI();
 });
 
-// --- 📰 NEWS・お知らせ機能（ホーム連動・自動読み込み完全版） ---
+   // --- 📰 NEWS・お知らせ機能（コード管理版） ---
 
-let newsData = [];
+// 💡 ニュースを無くしたいときは `[]` のまにまにしてください
+// 💡 ニュースを追加したいときは、下記のようにデータを書き込んでください
+let newsData = [
+  
+];
 
-// アプリ起動時に GitHub上の news.json から最新データを自動取得し、ホーム画面と連動させる
+// アプリ起動時の処理（ホーム画面のバナー連動）
 window.addEventListener('DOMContentLoaded', () => {
-  fetch('news.json')
-    .then(res => res.json())
-    .then(data => {
-      newsData = data;
-      
-      // ✨ ホーム画面のバナー（見出し）のテキストを自動更新
-      const titleTextEl = document.getElementById('news-title-text');
-      if (titleTextEl) {
-        if (newsData && newsData.length > 0) {
-          titleTextEl.innerText = newsData[0].title;
-        } else {
-          titleTextEl.innerText = "現在NEWSはありません";
-        }
-      }
-    })
-    .catch(err => {
-      console.log("ニュースデータの読み込みに失敗しました", err);
-      const titleTextEl = document.getElementById('news-title-text');
-      if (titleTextEl) titleTextEl.innerText = "現在NEWSはありません";
-    });
+  const titleTextEl = document.getElementById('news-title-text');
+  if (titleTextEl) {
+    if (newsData && newsData.length > 0) {
+      titleTextEl.innerText = newsData[0].title;
+    } else {
+      titleTextEl.innerText = "現在お知らせはありません";
+    }
+  }
 });
 
 // NEWS一覧のモーダルを開く関数
@@ -2898,7 +2890,7 @@ function openNewsList() {
   title.innerText = "NEWS";
 
   // ニュースが0件の場合の表示
-  let listHtml = `<p style="font-size: 13px; color: #666; text-align: center; padding: 30px;">現在NEWSはありません</p>`;
+  let listHtml = `<p style="font-size: 13px; color: #666; text-align: center; padding: 30px;">現在お知らせはありません</p>`;
 
   // ニュースデータがある場合はリストを表示
   if (newsData && newsData.length > 0) {
@@ -2949,7 +2941,7 @@ function openNewsDetail(newsId) {
   if (!modal) return;
 
   modal.classList.remove("hidden");
-  title.innerText = "📢 お知らせ詳細";
+  title.innerText = "お知らせ詳細";
 
   stage.innerHTML = `
     <div style="text-align: left; padding: 12px; display: flex; flex-direction: column; gap: 12px; max-height: 70vh; overflow-y: auto; width: 100%; box-sizing: border-box;">
@@ -2961,7 +2953,6 @@ function openNewsDetail(newsId) {
     </div>
   `;
 }
-
 
 
 </script> 
