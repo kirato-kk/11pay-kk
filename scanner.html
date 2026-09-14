@@ -2837,13 +2837,22 @@ window.addEventListener('DOMContentLoaded', () => {
   updateStepUI();
 });
 
-// --- 📰 NEWS・お知らせ機能のスクリプト ---
+// --- 📰 NEWS・お知らせ機能のスクリプト（更新版） ---
 
 const newsData = [
   { id: 1, title: "キャンペーン実施！", date: "2026-09-14", content: "期間限定でポイント還元率がアップ中！お見逃しなく。" },
   { id: 2, title: "新機能リリースのお知らせ", date: "2026-09-10", content: "クーポンボックスに新しい管理機能とダークモードが追加されました。" },
   { id: 3, title: "メンテナンスのご案内", date: "2026-09-01", content: "システム定期メンテナンスが無事に完了いたしました。" }
 ];
+
+// モーダルを閉じる共通関数（すでに他にある場合はそちらに合わせてください）
+function closeNewsModal() {
+  if (typeof playSound === 'function') playSound('beep');
+  const modal = document.getElementById("minigame-play-modal");
+  if (modal) {
+    modal.classList.add("hidden");
+  }
+}
 
 // 個別ニュースの詳細モーダルを開く
 function openNewsDetail(newsId) {
@@ -2862,7 +2871,7 @@ function openNewsDetail(newsId) {
   }
 
   modal.classList.remove("hidden");
-  title.innerText = "お知らせ詳細";
+  title.innerText = "📢 お知らせ詳細";
 
   stage.innerHTML = `
     <div style="text-align: left; padding: 12px; display: flex; flex-direction: column; gap: 12px; max-height: 70vh; overflow-y: auto; width: 100%; box-sizing: border-box;">
@@ -2870,12 +2879,12 @@ function openNewsDetail(newsId) {
       <h3 style="font-size: 16px; color: #e65100; margin: 0;">${item.title}</h3>
       <p style="font-size: 13px; color: #444; line-height: 1.6; margin: 0; white-space: pre-wrap; background: #fff8e1; padding: 10px; border-radius: 6px; border: 1px solid #ffe082;">${item.content}</p>
       
-      <button class="main-btn" style="width: 100%; background: #f5f5f5; color: #333; font-size: 14px; font-weight: bold; padding: 12px; border-radius: 8px; border: 1px solid #ddd; margin-top: 10px; cursor: pointer;" onclick="openNewsList()">NEWS一覧に戻る</button>
+      <button class="main-btn" style="width: 100%; background: #f5f5f5; color: #333; font-size: 14px; font-weight: bold; padding: 12px; border-radius: 8px; border: 1px solid #ddd; margin-top: 10px; cursor: pointer;" onclick="openNewsList()">← NEWS一覧に戻る</button>
     </div>
   `;
 }
 
-// NEWS一覧のモーダルを開く（色鮮やかに装飾）
+// NEWS一覧のモーダルを開く
 function openNewsList() {
   if (typeof playSound === 'function') playSound('beep');
 
@@ -2891,6 +2900,7 @@ function openNewsList() {
   }
 
   modal.classList.remove("hidden");
+  // タイトルを「NEWS」に変更
   title.innerText = "NEWS";
 
   const listHtml = newsData.map(n => `
@@ -2911,9 +2921,19 @@ function openNewsList() {
       ${listHtml}
     </div>
   `;
+
+  // モーダル下部の「メニューに戻る」ボタンを「閉じる」に書き換える処理
+  setTimeout(() => {
+    const closeButtons = modal.querySelectorAll("button");
+    closeButtons.forEach(btn => {
+      if (btn.innerText.includes("メニューに戻る")) {
+        btn.innerText = "閉じる";
+        btn.onclick = closeNewsModal;
+      }
+    });
+  }, 10);
 }
 
-   
 </script> 
  
 </body>
