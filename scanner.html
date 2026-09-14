@@ -1299,6 +1299,8 @@ function cancelPayment() {
   if (payModal) payModal.classList.add("hidden");
 }
 
+  
+   
 function executePayment() {
   // 1. 割引クーポンの適用チェック（安全に取得）
   let discount = 0;
@@ -1347,17 +1349,22 @@ function executePayment() {
   balance -= cashPay;
   points -= usePt;
 
-  if (cashPay > 0 && typeof addTransaction === 'function') addTransaction('残高', -cashPay, 'お支払い');
-  if (usePt > 0 && typeof addTransaction === 'function') addTransaction('ポイント', -usePt, 'お支払い利用');
-
   // ✨【クーポン連動】お支払い完了時にクーポンを消費し、使ったクーポンのタイトルを取得
   let usedCouponTitle = "";
   if (typeof consumeActiveCouponOnPayment === 'function') {
     usedCouponTitle = consumeActiveCouponOnPayment();
   } else if (discount > 0) {
-    // 万が一関数がない場合のフォールバック
     localStorage.removeItem('11pay_active_coupon');
     activeDiscount = 0;
+  }
+
+  // 取引履歴への記録（クーポン名を含める）
+  if (cashPay > 0 && typeof addTransaction === 'function') {
+    const memo = usedCouponTitle ? `お支払い (クーポン: ${usedCouponTitle})` : 'お支払い';
+    addTransaction('残高', -cashPay, memo);
+  }
+  if (usePt > 0 && typeof addTransaction === 'function') {
+    addTransaction('ポイント', -usePt, 'お支払い利用');
   }
 
   if (typeof updateDisplay === 'function') updateDisplay();
@@ -1365,7 +1372,7 @@ function executePayment() {
   const payModal = document.getElementById("pay-confirm-modal");
   if (payModal) payModal.classList.add("hidden");
 
-  // ✨【通知メッセージの調整】クーポンを使った場合は名前を表示する
+  // 通知メッセージの調整
   if (usePt > 0) {
     let msg = `お支払い完了！(割引: ${discount}円 / pt利用: ${usePt}pt)`;
     if (usedCouponTitle) {
@@ -1385,42 +1392,40 @@ function executePayment() {
 } 
 
 function startRoulette(payAmount) {
-    document.getElementById("roulette-modal").classList.remove("hidden");
-    document.getElementById("roulette-close-btn").classList.add("hidden");
-    document.getElementById("roulette-sub").innerText = "ポイント還元率を抽選中...";
+  document.getElementById("roulette-modal").classList.remove("hidden");
+  document.getElementById("roulette-close-btn").classList.add("hidden");
+  document.getElementById("roulette-sub").innerText = "ポイント還元率を抽選中...";
 
-    let count = 0;
-    const rates = [0.01, 0.05, 0.1, 0.5, 1.0];
+  let count = 0;
+  const rates = [0.01, 0.05, 0.1, 0.5, 1.0];
 
-    const interval = setInterval(() => {
-      playSound('tick');
-      const randomRate = rates[Math.floor(Math.random() * rates.length)];
-      document.getElementById("roulette-display").innerText = `${Math.round(randomRate * 100)}% 還元！`;
-      count++;
+  const interval = setInterval(() => {
+    playSound('tick');
+    const randomRate = rates[Math.floor(Math.random() * rates.length)];
+    document.getElementById("roulette-display").innerText = `${Math.round(randomRate * 100)}% 還元！`;
+    count++;
 
-      if (count > 20) {
-        clearInterval(interval);
-        const finalRate = rates[Math.floor(Math.random() * rates.length)];
-        earnedPoints = Math.floor(payAmount * finalRate);
-        if (earnedPoints < 1) earnedPoints = 1;
+    if (count > 20) {
+      clearInterval(interval);
+      const finalRate = rates[Math.floor(Math.random() * rates.length)];
+      earnedPoints = Math.floor(payAmount * finalRate);
+      if (earnedPoints < 1) earnedPoints = 1;
 
-        playSound('win');
-        document.getElementById("roulette-sub").innerText = "獲得ポイント決定！";
-        document.getElementById("roulette-display").innerText = `🎯 ${Math.round(finalRate * 100)}% 還元!\n(+${earnedPoints}pt)`;
-        document.getElementById("roulette-close-btn").classList.remove("hidden");
-      }
-    }, 100);
-  }
+      playSound('win');
+      document.getElementById("roulette-sub").innerText = "獲得ポイント決定！";
+      document.getElementById("roulette-display").innerText = `🎯 ${Math.round(finalRate * 100)}% 還元!\n(+${earnedPoints}pt)`;
+      document.getElementById("roulette-close-btn").classList.remove("hidden");
+    }
+  }, 100);
+}
 
-  function closeRoulette() {
-    playSound('beep');
-    points += earnedPoints;
-    addTransaction('ポイント', earnedPoints, '11Payジャンボ還元');
-    updateDisplay();
-    document.getElementById("roulette-modal").classList.add("hidden");
-  }
-
-   
+function closeRoulette() {
+  playSound('beep');
+  points += earnedPoints;
+  addTransaction('ポイント', earnedPoints, '11Payジャンボ還元');
+  updateDisplay();
+  document.getElementById("roulette-modal").classList.add("hidden");
+}
 
   
 
