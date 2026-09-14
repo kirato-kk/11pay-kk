@@ -1408,6 +1408,33 @@ function executePayment() {
     document.getElementById("roulette-modal").classList.add("hidden");
   }
 
+// 決済処理の例
+  // ... (今までの金額計算などのコード) ...
+
+  balance -= cashPay;
+  points -= usePt;
+
+  // ここでクーポンを消費してタイトルを受け取る
+  const usedCouponTitle = consumeActiveCouponOnPayment();
+
+  if (cashPay > 0 && typeof addTransaction === 'function') addTransaction('残高', -cashPay, '店舗支払い');
+  if (usePt > 0 && typeof addTransaction === 'function') addTransaction('ポイント', -usePt, '店舗支払い利用');
+
+  if (typeof updateDisplay === 'function') updateDisplay();
+  
+  const payModal = document.getElementById("pay-confirm-modal");
+  if (payModal) payModal.classList.add("hidden");
+
+  // メッセージの組み立て
+  let message = "お支払い完了！";
+  if (usedCouponTitle) {
+    message = `クーポン「${usedCouponTitle}」を使いました！\nお支払い完了！`;
+  }
+
+  alert(message);
+}
+
+  
   // --- 取引履歴機能 ---
   let showAllTransactions = false;
 
@@ -2281,7 +2308,7 @@ function executePayment() {
 })();
 
 
-// --- 🎟️ クーポンボックス（ゆったりデザイン・「円」表記・解除ボタン付き） ---
+// --- 🎟️ クーポンボックス（完全版：適用・解除・パスコード削除・使用時自動消去対応） ---
 
 function openCouponModal() {
   if (typeof playSound === 'function') playSound('beep');
@@ -2391,7 +2418,7 @@ function cancelCoupon(couponId) {
   updateCouponDisplay();
 }
 
-// 決済完了時にクーポンを消去する処理
+// 決済完了時にクーポンを消去する処理（従来の関数）
 function consumeActiveCoupon() {
   const activeCoupon = JSON.parse(localStorage.getItem('11pay_active_coupon'));
   if (!activeCoupon) return;
@@ -2405,6 +2432,26 @@ function consumeActiveCoupon() {
   if (typeof activeDiscount !== 'undefined') {
     activeDiscount = 0;
   }
+}
+
+// ✨【追加】お支払い時に使ったクーポンの名前を取得して自動消去する関数
+function consumeActiveCouponOnPayment() {
+  const activeCoupon = JSON.parse(localStorage.getItem('11pay_active_coupon'));
+  if (!activeCoupon) return "";
+
+  let coupons = JSON.parse(localStorage.getItem('11pay_coupons')) || [];
+  const newCoupons = coupons.filter(c => c.id !== activeCoupon.id);
+
+  localStorage.setItem('11pay_coupons', JSON.stringify(newCoupons));
+  
+  const couponTitle = activeCoupon.title;
+
+  localStorage.removeItem('11pay_active_coupon');
+  if (typeof activeDiscount !== 'undefined') {
+    activeDiscount = 0;
+  }
+
+  return couponTitle;
 }
 
 // パスコード認証付き削除処理
@@ -2431,8 +2478,9 @@ function promptDeleteCoupon(couponId) {
   alert("クーポンを削除しました。");
 
   updateCouponDisplay();
-} 
+}
 
+    
   // ==========================================
 // 📁 スマホ内の画像（スクショ等）からQRを読み取る処理
 // ==========================================
