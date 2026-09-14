@@ -2851,19 +2851,31 @@ window.addEventListener('DOMContentLoaded', () => {
   updateStepUI();
 });
 
-// --- 📰 NEWS・お知らせ機能（最新・自動読み込み対応版） ---
+// --- 📰 NEWS・お知らせ機能（ホーム連動・自動読み込み完全版） ---
 
 let newsData = [];
 
-// アプリ起動時に GitHub上の news.json から最新データを自動取得する
+// アプリ起動時に GitHub上の news.json から最新データを自動取得し、ホーム画面と連動させる
 window.addEventListener('DOMContentLoaded', () => {
   fetch('news.json')
     .then(res => res.json())
     .then(data => {
       newsData = data;
+      
+      // ✨ ホーム画面のバナー（見出し）のテキストを自動更新
+      const titleTextEl = document.getElementById('news-title-text');
+      if (titleTextEl) {
+        if (newsData && newsData.length > 0) {
+          titleTextEl.innerText = newsData[0].title;
+        } else {
+          titleTextEl.innerText = "現在NEWSはありません";
+        }
+      }
     })
     .catch(err => {
       console.log("ニュースデータの読み込みに失敗しました", err);
+      const titleTextEl = document.getElementById('news-title-text');
+      if (titleTextEl) titleTextEl.innerText = "現在NEWSはありません";
     });
 });
 
@@ -2950,7 +2962,8 @@ function openNewsDetail(newsId) {
   `;
 }
 
-  
+
+
 </script> 
  
 </body>
