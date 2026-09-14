@@ -2342,7 +2342,7 @@ function closeRoulette() {
 })();
 
 
-// --- 🎟️ クーポンボックス（完全版：適用・解除・パスコード削除・使用時自動消去対応） ---
+  // --- 🎟️ クーポンボックス（完全版：適用・解除・パスコード削除・使用時自動消去対応） ---
 
 function openCouponModal() {
   if (typeof playSound === 'function') playSound('beep');
@@ -2363,6 +2363,20 @@ function openCouponModal() {
   title.innerText = "COUPON";
 
   updateCouponDisplay();
+
+  // ✨ 下部のボタンのテキストを「閉じる」に変更し、モーダルを閉じる処理を割り当てる
+  setTimeout(() => {
+    const buttons = modal.querySelectorAll("button");
+    buttons.forEach(btn => {
+      if (btn.innerText.includes("メニューに戻る") || btn.innerText.includes("戻る")) {
+        btn.innerText = "閉じる";
+        btn.onclick = function() {
+          if (typeof playSound === 'function') playSound('beep');
+          modal.classList.add("hidden");
+        };
+      }
+    });
+  }, 10);
 }
 
 function updateCouponDisplay() {
@@ -2468,7 +2482,7 @@ function consumeActiveCoupon() {
   }
 }
 
-// ✨【追加】お支払い時に使ったクーポンの名前を取得して自動消去する関数
+// ✨お支払い時に使ったクーポンの名前を取得して自動消去する関数
 function consumeActiveCouponOnPayment() {
   const activeCoupon = JSON.parse(localStorage.getItem('11pay_active_coupon'));
   if (!activeCoupon) return "";
@@ -2484,7 +2498,6 @@ function consumeActiveCouponOnPayment() {
   if (typeof activeDiscount !== 'undefined') {
     activeDiscount = 0;
   }
-
   return couponTitle;
 }
 
@@ -2513,6 +2526,7 @@ function promptDeleteCoupon(couponId) {
 
   updateCouponDisplay();
 }
+
 
     
   // ==========================================
