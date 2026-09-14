@@ -1350,8 +1350,12 @@ function executePayment() {
   if (cashPay > 0 && typeof addTransaction === 'function') addTransaction('残高', -cashPay, 'お支払い');
   if (usePt > 0 && typeof addTransaction === 'function') addTransaction('ポイント', -usePt, 'お支払い利用');
 
-  // 割引を使った場合、適用中のクーポン情報をクリア
-  if (discount > 0) {
+  // ✨【クーポン連動】お支払い完了時にクーポンを消費し、使ったクーポンのタイトルを取得
+  let usedCouponTitle = "";
+  if (typeof consumeActiveCouponOnPayment === 'function') {
+    usedCouponTitle = consumeActiveCouponOnPayment();
+  } else if (discount > 0) {
+    // 万が一関数がない場合のフォールバック
     localStorage.removeItem('11pay_active_coupon');
     activeDiscount = 0;
   }
@@ -1361,9 +1365,17 @@ function executePayment() {
   const payModal = document.getElementById("pay-confirm-modal");
   if (payModal) payModal.classList.add("hidden");
 
+  // ✨【通知メッセージの調整】クーポンを使った場合は名前を表示する
   if (usePt > 0) {
-    alert(`お支払い完了！(割引: ${discount}円 / pt利用: ${usePt}pt)`);
+    let msg = `お支払い完了！(割引: ${discount}円 / pt利用: ${usePt}pt)`;
+    if (usedCouponTitle) {
+      msg = `クーポン「${usedCouponTitle}」を使いました！\nお支払い完了！(割引: ${discount}円 / pt利用: ${usePt}pt)`;
+    }
+    alert(msg);
   } else {
+    if (usedCouponTitle) {
+      alert(`クーポン「${usedCouponTitle}」を使いました！`);
+    }
     if (typeof startRoulette === 'function') {
       startRoulette(finalAmount);
     } else {
@@ -1372,7 +1384,7 @@ function executePayment() {
   }
 } 
 
-  function startRoulette(payAmount) {
+function startRoulette(payAmount) {
     document.getElementById("roulette-modal").classList.remove("hidden");
     document.getElementById("roulette-close-btn").classList.add("hidden");
     document.getElementById("roulette-sub").innerText = "ポイント還元率を抽選中...";
@@ -1408,31 +1420,9 @@ function executePayment() {
     document.getElementById("roulette-modal").classList.add("hidden");
   }
 
-// 決済処理の例
-  // ... (今までの金額計算などのコード) ...
+   
 
-  balance -= cashPay;
-  points -= usePt;
-
-  // ここでクーポンを消費してタイトルを受け取る
-  const usedCouponTitle = consumeActiveCouponOnPayment();
-
-  if (cashPay > 0 && typeof addTransaction === 'function') addTransaction('残高', -cashPay, '店舗支払い');
-  if (usePt > 0 && typeof addTransaction === 'function') addTransaction('ポイント', -usePt, '店舗支払い利用');
-
-  if (typeof updateDisplay === 'function') updateDisplay();
   
-  const payModal = document.getElementById("pay-confirm-modal");
-  if (payModal) payModal.classList.add("hidden");
-
-  // メッセージの組み立て
-  let message = "お支払い完了！";
-  if (usedCouponTitle) {
-    message = `クーポン「${usedCouponTitle}」を使いました！\nお支払い完了！`;
-  }
-
-  alert(message);
-}
 
   
   // --- 取引履歴機能 ---
