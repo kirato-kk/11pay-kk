@@ -1300,8 +1300,7 @@ function cancelPayment() {
 }
 
   
-   
-function executePayment() {
+  function executePayment() {
   // 1. 割引クーポンの適用チェック（安全に取得）
   let discount = 0;
   if (typeof activeDiscount !== 'undefined') {
@@ -1317,6 +1316,31 @@ function executePayment() {
   }
 
   let finalAmount = Math.max(0, currentScanAmount - discount);
+
+  // ✨【パスコード認証チェック】5,000円以上の決済の場合のセキュリティ処理
+  if (finalAmount >= 5000) {
+    let savedPasscode = localStorage.getItem('11pay_security_passcode');
+
+    // 初めて5,000円以上のお会計をする場合、パスコードを新しく設定させる
+    if (!savedPasscode) {
+      let newPass = prompt("【セキュリティ設定】\n5,000円以上のお支払いに必要な4桁のパスコードを設定してください（半角数字）:");
+      if (!newPass || newPass.length < 4) {
+        alert("パスコードの設定がキャンセルされたため、お支払いを中断しました。");
+        return;
+      }
+      localStorage.setItem('11pay_security_passcode', newPass);
+      savedPasscode = newPass;
+      alert("パスコードが設定されました！");
+    }
+
+    // 設定されているパスコードで入力を求める
+    let inputPass = prompt("【高額決済の確認】\n5,000円以上のお支払いです。パスコードを入力してください:");
+    if (inputPass !== savedPasscode) {
+      if (typeof playSound === 'function') playSound('error');
+      alert("パスコードが間違っています。お支払いをキャンセルしました。");
+      return;
+    }
+  }
 
   const usePtChecked = document.getElementById("use-pt-check") ? document.getElementById("use-pt-check").checked : false;
   let usePt = parseInt(document.getElementById("use-pt-input") ? document.getElementById("use-pt-input").value : 0) || 0;
@@ -1426,6 +1450,7 @@ function closeRoulette() {
   updateDisplay();
   document.getElementById("roulette-modal").classList.add("hidden");
 }
+
 
   
 
