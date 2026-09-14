@@ -246,114 +246,16 @@
   <input type="file" id="qr-input-file" accept="image/*" style="display:none;" onchange="handleFileScan(this)">
 </div>
 
-// --- 📰 NEWS・お知らせ機能の実装 ---
 
-// 1. サンプルのお知らせデータ（必要に応じて自由に変更・追加できます）
-const newsData = [
-  { id: 1, title: "キャンペーン実施！", date: "2026-09-14", content: "期間限定でポイント還元率がアップ中！お見逃しなく。" },
-  { id: 2, title: "新機能リリースのお知らせ", date: "2026-09-10", content: "クーポンボックスに新しい管理機能とダークモードが追加されました。" },
-  { id: 3, title: "メンテナンスのご案内", date: "2026-09-01", content: "システム定期メンテナンスが無事に完了いたしました。" }
-];
+  <!-- 📰 HOME用NEWSバナーの箱 -->
+<div id="pay-news-banner" style="display: flex; align-items: center; justify-content: space-between; background: #fff8e1; border: 1px solid #ffe082; padding: 10px 14px; border-radius: 8px; margin: 10px auto; width: 92%; max-width: 440px; box-sizing: border-box; font-size: 13px;">
+  <div style="display: flex; align-items: center; gap: 8px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; cursor: pointer; flex-grow: 1;" onclick="openNewsDetail(1)">
+    <span style="background: #e65100; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold;">NEWS</span>
+    <span id="news-title-text" style="color: #333; font-weight: 500; overflow: hidden; text-overflow: ellipsis;">キャンペーン実施！</span>
+  </div>
+  <button style="background: none; border: none; color: #1976d2; font-size: 12px; cursor: pointer; white-space: nowrap; margin-left: 8px; font-weight: bold;" onclick="openNewsList()">もっと見る</button>
+</div>
 
-// 2. カメラの下などに挿入するNEWS部分を描画・配置する関数
-function initNewsSection() {
-  // すでに存在していれば二重生成を防ぐ
-  if (document.getElementById("pay-news-banner")) return;
-
-  // 「カメラの下」あたりにある要素（スキャンボタンやQRリーダー付近）を探してその下に挿入
-  // ※お使いのHTMLの構造に合わせて、挿入先を適宜調整してください
-  const targetElement = document.querySelector("#camera-container, .scanner-area, video, [id*='camera']") || 
-                        document.querySelector(".card") || document.body;
-
-  const newsDiv = document.createElement("div");
-  newsDiv.id = "pay-news-banner";
-  newsDiv.style.cssText = "display: flex; align-items: center; justify-content: space-between; background: #fff8e1; border: 1px solid #ffe082; padding: 10px 14px; border-radius: 8px; margin: 10px auto; width: 92%; max-width: 440px; box-sizing: border-box; font-size: 13px;";
-
-  // 最新のNEWS（リストの先頭）を取得
-  const latestNews = newsData[0];
-
-  newsDiv.innerHTML = `
-    <div style="display: flex; align-items: center; gap: 8px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; cursor: pointer; flex-grow: 1;" onclick="openNewsDetail(${latestNews.id})">
-      <span style="background: #e65100; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold;">NEWS</span>
-      <span style="color: #333; font-weight: 500; overflow: hidden; text-overflow: ellipsis;">${latestNews.title}</span>
-    </div>
-    <button style="background: none; border: none; color: #1976d2; font-size: 12px; cursor: pointer; white-space: nowrap; margin-left: 8px; font-weight: bold;" onclick="openNewsList()">もっと見る</button>
-  `;
-
-  // ターゲットの直下に挿入
-  if (targetElement && targetElement.parentNode) {
-    targetElement.parentNode.insertBefore(newsDiv, targetElement.nextSibling);
-  }
-}
-
-// 3. 個別ニュースの詳細モーダルを開く
-function openNewsDetail(newsId) {
-  if (typeof playSound === 'function') playSound('beep');
-  const item = newsData.find(n => n.id === newsId) || newsData[0];
-
-  const modal = document.getElementById("minigame-play-modal");
-  const title = document.getElementById("minigame-title");
-  const stage = document.getElementById("minigame-stage");
-  if (!modal) return;
-
-  const modalContent = modal.querySelector(".modal-content") || modal.firstElementChild;
-  if (modalContent) {
-    modalContent.style.width = "92%";
-    modalContent.style.maxWidth = "440px";
-  }
-
-  modal.classList.remove("hidden");
-  title.innerText = "📢 お知らせ詳細";
-
-  stage.innerHTML = `
-    <div style="text-align: left; padding: 12px; display: flex; flex-direction: column; gap: 12px; max-height: 70vh; overflow-y: auto;">
-      <p style="font-size: 11px; color: #777; margin: 0;">${item.date}</p>
-      <h3 style="font-size: 16px; color: #e65100; margin: 0;">${item.title}</h3>
-      <p style="font-size: 13px; color: #444; line-height: 1.6; margin: 0; white-space: pre-wrap;">${item.content}</p>
-      <button class="main-btn" style="background: #666; color: #fff; font-size: 12px; padding: 8px; border-radius: 6px; margin-top: 10px;" onclick="openNewsList()">← NEWS一覧に戻る</button>
-    </div>
-  `;
-}
-
-// 4. NEWS一覧のモーダルを開く
-function openNewsList() {
-  if (typeof playSound === 'function') playSound('beep');
-
-  const modal = document.getElementById("minigame-play-modal");
-  const title = document.getElementById("minigame-title");
-  const stage = document.getElementById("minigame-stage");
-  if (!modal) return;
-
-  const modalContent = modal.querySelector(".modal-content") || modal.firstElementChild;
-  if (modalContent) {
-    modalContent.style.width = "92%";
-    modalContent.style.maxWidth = "440px";
-  }
-
-  modal.classList.remove("hidden");
-  title.innerText = "📰 NEWS一覧";
-
-  const listHtml = newsData.map(n => `
-    <div style="background: #fafafa; padding: 12px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 8px; cursor: pointer; text-align: left;" onclick="openNewsDetail(${n.id})">
-      <div style="font-size: 10px; color: #777; margin-bottom: 2px;">${n.date}</div>
-      <div style="font-size: 14px; font-weight: bold; color: #333;">${n.title} ></div>
-    </div>
-  `).join('');
-
-  stage.innerHTML = `
-    <div style="text-align: left; padding: 4px; max-height: 70vh; overflow-y: auto; width: 100%; box-sizing: border-box;">
-      ${listHtml}
-    </div>
-  `;
-}
-
-// ページ読み込み時にNEWSバナーを自動で配置
-window.addEventListener("DOMContentLoaded", () => {
-  initNewsSection();
-});
-window.addEventListener("load", () => {
-  initNewsSection();
-});
 
     
 <!-- 歩数ポイント獲得セクション -->
@@ -2933,6 +2835,75 @@ window.addEventListener('DOMContentLoaded', () => {
   updateStepUI();
 });
 
+// --- 📰 NEWS・お知らせ機能のスクリプト ---
+
+// お知らせデータ
+const newsData = [
+  { id: 1, title: "キャンペーン実施！", date: "2026-09-14", content: "期間限定でポイント還元率がアップ中！お見逃しなく。" },
+  { id: 2, title: "新機能リリースのお知らせ", date: "2026-09-10", content: "クーポンボックスに新しい管理機能とダークモードが追加されました。" },
+  { id: 3, title: "メンテナンスのご案内", date: "2026-09-01", content: "システム定期メンテナンスが無事に完了いたしました。" }
+];
+
+// 個別ニュースの詳細モーダルを開く
+function openNewsDetail(newsId) {
+  if (typeof playSound === 'function') playSound('beep');
+  const item = newsData.find(n => n.id === newsId) || newsData[0];
+
+  const modal = document.getElementById("minigame-play-modal");
+  const title = document.getElementById("minigame-title");
+  const stage = document.getElementById("minigame-stage");
+  if (!modal) return;
+
+  const modalContent = modal.querySelector(".modal-content") || modal.firstElementChild;
+  if (modalContent) {
+    modalContent.style.width = "92%";
+    modalContent.style.maxWidth = "440px";
+  }
+
+  modal.classList.remove("hidden");
+  title.innerText = "📢 お知らせ詳細";
+
+  stage.innerHTML = `
+    <div style="text-align: left; padding: 12px; display: flex; flex-direction: column; gap: 12px; max-height: 70vh; overflow-y: auto;">
+      <p style="font-size: 11px; color: #777; margin: 0;">${item.date}</p>
+      <h3 style="font-size: 16px; color: #e65100; margin: 0;">${item.title}</h3>
+      <p style="font-size: 13px; color: #444; line-height: 1.6; margin: 0; white-space: pre-wrap;">${item.content}</p>
+      <button class="main-btn" style="background: #666; color: #fff; font-size: 12px; padding: 8px; border-radius: 6px; margin-top: 10px;" onclick="openNewsList()">← NEWS一覧に戻る</button>
+    </div>
+  `;
+}
+
+// NEWS一覧のモーダルを開く
+function openNewsList() {
+  if (typeof playSound === 'function') playSound('beep');
+
+  const modal = document.getElementById("minigame-play-modal");
+  const title = document.getElementById("minigame-title");
+  const stage = document.getElementById("minigame-stage");
+  if (!modal) return;
+
+  const modalContent = modal.querySelector(".modal-content") || modal.firstElementChild;
+  if (modalContent) {
+    modalContent.style.width = "92%";
+    modalContent.style.maxWidth = "440px";
+  }
+
+  modal.classList.remove("hidden");
+  title.innerText = "📰 NEWS一覧";
+
+  const listHtml = newsData.map(n => `
+    <div style="background: #fafafa; padding: 12px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 8px; cursor: pointer; text-align: left;" onclick="openNewsDetail(${n.id})">
+      <div style="font-size: 10px; color: #777; margin-bottom: 2px;">${n.date}</div>
+      <div style="font-size: 14px; font-weight: bold; color: #333;">${n.title} ></div>
+    </div>
+  `).join('');
+
+  stage.innerHTML = `
+    <div style="text-align: left; padding: 4px; max-height: 70vh; overflow-y: auto; width: 100%; box-sizing: border-box;">
+      ${listHtml}
+    </div>
+  `;
+}
 
    
 </script> 
