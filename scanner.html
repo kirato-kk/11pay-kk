@@ -179,11 +179,6 @@
   box-sizing: border-box; 
 }
 
-/* ログイン画面などでは非表示にするためのクラス */
-.home-gift-btn-container.hidden {
-  display: none !important;
-}
-
 .home-gift-btn {
   width: 100%; padding: 14px;
   background: linear-gradient(135deg, #ff416c, #ff4b2b);
@@ -192,7 +187,8 @@
   box-shadow: 0 4px 12px rgba(255, 65, 108, 0.35);
   cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
 }
-
+   
+　
   </style>
 </head>
 <body>
@@ -331,8 +327,18 @@
       <div id="transaction-list"></div>
       <button id="tx-more-btn" class="secondary-btn hidden" style="margin-top: 10px;" onclick="toggleMoreTransactions()">もっと見る</button>
     </div>
+  
   </div>
 
+<!-- 取引履歴の下に配置するギフトカードボタン -->
+<div class="home-gift-btn-container">
+  <button class="home-gift-btn" onclick="openGiftModal()">
+    ギフトカードコード入力
+  </button>
+</div>
+
+ 
+  
 </div>
 
 <!-- ボトムナビゲーション -->
