@@ -321,6 +321,7 @@
 
 
     
+        
     <!-- 取引履歴エリア -->
     <div class="tx-card">
       <div class="tx-title">取引履歴</div>
@@ -328,18 +329,16 @@
       <button id="tx-more-btn" class="secondary-btn hidden" style="margin-top: 10px;" onclick="toggleMoreTransactions()">もっと見る</button>
     </div>
   
-  </div>
+    <!-- ✨ ギフトカードボタンをここ（#main-viewの中の一番下）に移動！ -->
+    <div class="home-gift-btn-container">
+      <button class="home-gift-btn" onclick="openGiftModal()">
+        ギフトカードコード入力
+      </button>
+    </div>
 
-<!-- 取引履歴の下に配置するギフトカードボタン -->
-<div class="home-gift-btn-container">
-  <button class="home-gift-btn" onclick="openGiftModal()">
-    ギフトカードコード入力
-  </button>
-</div>
+  </div> <!-- ← ここが #main-view の閉じタグ -->
 
- 
-  
-</div>
+
 
 <!-- ボトムナビゲーション -->
 <div id="bottom-nav" class="bottom-nav hidden">
