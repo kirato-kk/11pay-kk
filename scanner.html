@@ -278,10 +278,13 @@
 
 <!-- 📰 HOME用NEWSバナーの箱 -->
 <div id="pay-news-banner" style="background: #fff8e1; border: 1px solid #ffe082; padding: 12px 14px; border-radius: 12px; margin: 12px auto; width: 100%; max-width: 100%; box-sizing: border-box; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 8px;">
-  <div style="display: flex; align-items: center; gap: 8px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; cursor: pointer;" onclick="openNewsDetail(1)">
+  
+  <!-- ✨ id="news-banner-click" を追加し、固定の onclick="openNewsDetail(1)" を削除しました -->
+  <div id="news-banner-click" style="display: flex; align-items: center; gap: 8px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; cursor: pointer;">
     <span style="background: #e65100; color: #fff; font-size: 11px; padding: 3px 8px; border-radius: 4px; font-weight: bold;">NEWS</span>
     <span id="news-title-text" style="color: #222; font-weight: bold; font-size: 14px; overflow: hidden; text-overflow: ellipsis;">キャンペーン実施！</span>
   </div>
+  
   <button style="background: #ffb300; color: #fff; border: none; font-size: 12px; font-weight: bold; cursor: pointer; width: 100%; padding: 6px; border-radius: 6px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.1);" onclick="openNewsList()">もっと見る</button>
 </div>
 
@@ -2862,10 +2865,10 @@ window.addEventListener('DOMContentLoaded', () => {
   updateStepUI();
 });
 
-   // --- 📰 NEWS・お知らせ機能（コード管理版） ---
+// --- 📰 NEWS・お知らせ機能（コード管理版 / 最新版） ---
 
-// 💡 ニュースを無くしたいときは `[]` のまにまにしてください
-// 💡 ニュースを追加したいときは、下記のようにデータを書き込んでください
+// 💡 ニュースを無くしたいときは `[]` のまにしてください
+// 💡 ニュースを追加したいときは、下記のようにデータを書き込んでください（上が最新になります）
 let newsData = [
   
   { id: 2, title: "アップデート実施！ ver.26.9.8", 
@@ -2892,11 +2895,22 @@ let newsData = [
 // アプリ起動時の処理（ホーム画面のバナー連動）
 window.addEventListener('DOMContentLoaded', () => {
   const titleTextEl = document.getElementById('news-title-text');
+  const bannerClickEl = document.getElementById('news-banner-click');
+
   if (titleTextEl) {
     if (newsData && newsData.length > 0) {
+      // 最新のニュースタイトルを表示
       titleTextEl.innerText = newsData[0].title;
+      
+      // ✨ 最新のニュースIDを自動でクリックイベントに設定する
+      if (bannerClickEl) {
+        bannerClickEl.onclick = () => openNewsDetail(newsData[0].id);
+      }
     } else {
       titleTextEl.innerText = "現在お知らせはありません";
+      if (bannerClickEl) {
+        bannerClickEl.onclick = null;
+      }
     }
   }
 });
@@ -2983,7 +2997,6 @@ function openNewsDetail(newsId) {
     </div>
   `;
 }
-
 
 
   
