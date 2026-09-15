@@ -481,29 +481,20 @@
     <p style="font-size: 18px; font-weight: bold; margin: 10px 0;">お支払い額: <span id="confirm-pay-amount" style="color:#ff0033;">0</span> 円</p>
    
     <div style="background: #f8f9fa; padding: 12px; border-radius: 10px; margin-bottom: 15px; text-align: left;">
-      <div style="font-weight: bold; display: block; margin-bottom: 8px; font-size: 13px; color: #333;">ポイント利用設定</div>
-      
-      <!-- ラジオボタンによる選択肢 -->
-      <div style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #444;">
-        <label style="cursor: pointer;"><input type="radio" name="point-use-type" value="none" checked onchange="togglePointInput()"> 利用しない</label>
-        <label style="cursor: pointer;"><input type="radio" name="point-use-type" value="all" onchange="togglePointInput()"> 全額ポイントで支払う</label>
-        <label style="cursor: pointer;"><input type="radio" name="point-use-type" value="custom" onchange="togglePointInput()"> 指定したポイント数を利用する</label>
+      <label style="font-weight: bold; display: block; margin-bottom: 5px;">
+        <input type="checkbox" id="use-pt-check" onchange="togglePointInput()"> ポイントを使用する
+      </label>
+      <div id="pt-input-container" class="hidden">
+        <input type="number" id="use-pt-input" placeholder="使用ポイント" style="margin-bottom: 0;">
+        <small style="color: #666;">利用可能: <span id="max-pt-display">0</span> pt</small>
+        <p style="color: #ff0033; font-size: 11px; margin: 4px 0 0 0;">※ポイント使用時はルーレット対象外となります</p>
       </div>
-
-      <!-- 指定ポイント用の入力欄（最初は隠れています） -->
-      <div id="pt-input-container" class="hidden" style="margin-top: 10px;">
-        <input type="number" id="use-pt-input" placeholder="使用ポイント" style="margin-bottom: 0; width: 100%; box-sizing: border-box;">
-        <small style="color: #666; display: block; margin-top: 4px;">利用可能: <span id="max-pt-display">0</span> pt</small>
-      </div>
-
-      <p style="color: #ff0033; font-size: 11px; margin: 8px 0 0 0;">※ポイント使用時はルーレット対象外となります</p>
     </div>
 
     <button class="main-btn" onclick="executePayment()">お支払いを確定する</button>
     <button class="secondary-btn" onclick="cancelPayment()">キャンセル</button>
   </div>
 </div>
-
 <!-- ルーレット結果モーダル -->
 <div id="roulette-modal" class="modal-overlay hidden">
   <div class="modal-content">
@@ -1334,7 +1325,9 @@ function onScanSuccess(decodedText) {
 
 
 
- // --- 💳 支払い確認・決済処理（全額 / 指定ポイント選択対応版） ---
+
+
+// --- 💳 支払い確認・決済処理（クーポン割引対応・修復版） ---
 
 function openPayConfirmModal() {
   currentScanAmount = currentScanAmount || 0;
@@ -1347,7 +1340,6 @@ function openPayConfirmModal() {
 
   if (confirmAmountEl) confirmAmountEl.innerText = currentScanAmount.toLocaleString();
   if (maxPtEl) maxPtEl.innerText = (typeof points !== 'undefined' ? points : 0).toLocaleString();
-  
   if (usePtCheck) usePtCheck.checked = false;
   if (usePtInput) usePtInput.value = "";
  
@@ -1359,9 +1351,7 @@ function togglePointInput() {
   if (typeof playSound === 'function') playSound('beep');
   const usePtCheck = document.getElementById("use-pt-check");
   const ptContainer = document.getElementById("pt-input-container");
-  
   if (usePtCheck && ptContainer) {
-    // チェックが入っている時は、指定ポイント用の入力欄を表示する
     ptContainer.classList.toggle("hidden", !usePtCheck.checked);
   }
 }
@@ -1372,7 +1362,8 @@ function cancelPayment() {
   if (payModal) payModal.classList.add("hidden");
 }
 
-function executePayment() {
+  
+  function executePayment() {
   // 1. 割引クーポンの適用チェック（安全に取得）
   let discount = 0;
   if (typeof activeDiscount !== 'undefined') {
@@ -1388,38 +1379,6 @@ function executePayment() {
   }
 
   let finalAmount = Math.max(0, currentScanAmount - discount);
-
-  // ✨ ポイント利用のチェック状態を取得
-  const usePtChecked = document.getElementById("use-pt-check") ? document.getElementById("use-pt-check").checked : false;
-  const usePtInputEl = document.getElementById("use-pt-input");
-  let usePt = 0;
-
-  if (usePtChecked) {
-    // チェックが入っている状態で、入力欄に数字が入力されているか判定
-    const inputValue = usePtInputEl ? usePtInputEl.value.trim() : "";
-    
-    if (inputValue === "") {
-      // 💡 入力欄が「空欄」のときは【全額ポイント利用】として自動計算する！
-      usePt = Math.min(finalAmount, points);
-    } else {
-      // 💡 数字が入力されているときは【指定ポイント利用】として処理する
-      usePt = parseInt(inputValue, 10) || 0;
-      if (usePt <= 0) {
-        alert("利用するポイントを入力してください");
-        return;
-      }
-      if (usePt > points) {
-        if (typeof playSound === 'function') playSound('error');
-        alert("保持ポイントを超えています");
-        return;
-      }
-      if (usePt > finalAmount) usePt = finalAmount;
-    }
-  } else {
-    usePt = 0;
-  }
-
-  const cashPay = finalAmount - usePt;
 
   // ✨【パスコード認証チェック】5,000円以上の決済の場合のセキュリティ処理
   if (finalAmount >= 5000) {
@@ -1446,6 +1405,26 @@ function executePayment() {
     }
   }
 
+  const usePtChecked = document.getElementById("use-pt-check") ? document.getElementById("use-pt-check").checked : false;
+  let usePt = parseInt(document.getElementById("use-pt-input") ? document.getElementById("use-pt-input").value : 0) || 0;
+
+  if (usePtChecked) {
+    if (usePt <= 0) {
+      alert("利用するポイントを入力してください");
+      return;
+    }
+    if (usePt > points) {
+      if (typeof playSound === 'function') playSound('error');
+      alert("保持ポイントを超えています");
+      return;
+    }
+    if (usePt > finalAmount) usePt = finalAmount;
+  } else {
+usePt = 0;
+  }
+
+  const cashPay = finalAmount - usePt;
+
   if (cashPay > balance) {
     if (typeof playSound === 'function') playSound('error');
     alert(`残高が不足しています\nお支払い額: ${cashPay}円 / 残高: ${balance}円`);
@@ -1465,6 +1444,7 @@ function executePayment() {
     localStorage.removeItem('11pay_active_coupon');
     activeDiscount = 0;
   }
+
 
   // 取引履歴への記録（クーポン名を含める）
   if (cashPay > 0 && typeof addTransaction === 'function') {
@@ -1486,29 +1466,18 @@ function executePayment() {
     if (usedCouponTitle) {
       msg = `クーポン「${usedCouponTitle}」を使いました！\nお支払い完了！(割引: ${discount}円 / pt利用: ${usePt}pt)`;
     }
-    
-    // 全額ポイントで支払って現金が0円になった場合のケア
-    if (cashPay === 0) {
-      alert(msg + "\n(全額ポイントでお支払いしました)");
-    } else {
-      alert(msg);
-    }
+    alert(msg);
   } else {
     if (usedCouponTitle) {
       alert(`クーポン「${usedCouponTitle}」を使いました！`);
     }
-  }
-
-  // 現金が発生している場合（または通常の流れとして）ルーレットへ繋げる
-  if (cashPay > 0) {
     if (typeof startRoulette === 'function') {
       startRoulette(finalAmount);
     } else {
       alert(`お支払い完了！ (${finalAmount.toLocaleString()}円)`);
     }
   }
-}
-
+} 
 function startRoulette(payAmount) {
   document.getElementById("roulette-modal").classList.remove("hidden");
   document.getElementById("roulette-close-btn").classList.add("hidden");
@@ -1540,12 +1509,12 @@ function startRoulette(payAmount) {
 function closeRoulette() {
   playSound('beep');
   points += earnedPoints;
-  addTransaction('ポイント', earnedPoints, '11Payジャンボ還元');
+  addTransaction('ポイント', earnedPoints, '11Payルーレット還元');
   updateDisplay();
   document.getElementById("roulette-modal").classList.add("hidden");
 }
 
-  
+
 
 
 
@@ -2907,8 +2876,7 @@ let newsData = [
  { id: 3, title: "アップデート実施！ ver.26.9.12", 
    date: "2026-09-15-21:00",
   content: `《アップデート内容》 ver.26.9.12
-  ・お支払い時のポイント利用を変更いたしました
-  ・その他不具合を修正いたしました
+  ・いくつかの不具合を修正いたしました
   
   今後とも11Payをよろしくお願いいたします。`},
 
