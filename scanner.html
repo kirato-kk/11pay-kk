@@ -233,7 +233,7 @@
       <div class="user-info">
         👤 <span id="user-display">きらと</span>
         <span style="font-size: 10px; background: #eee; color: #666; padding: 2px 6px; border-radius: 4px; margin-left: 6px; font-weight: bold;">
-          ver.26.9.9</span>
+          ver.26.9.0</span>
       </div>
       <div class="header-btns">
         <button class="small-btn" style="background:#007bff;" onclick="openPassModal()">パスワード変更</button>
@@ -1323,26 +1323,43 @@ function onScanSuccess(decodedText) {
 
 
 
-// --- 🔊 効果音を強制的に鳴らす専用の関数 ---
-function playForcedSound(type) {
-  let soundFile = '';
-  // ※お使いの音声ファイルのパスに合わせて適宜変更してください
-  if (type === 'pay') soundFile = 'sounds/pay.mp3'; 
-  else if (type === 'win') soundFile = 'sounds/win.mp3';
-  else if (type === 'error') soundFile = 'sounds/error.mp3';
-  else if (type === 'beep') soundFile = 'sounds/beep.mp3';
+ // --- 💳 支払い確認・決済処理（クーポン割引対応・修復版） ---
 
-  if (!soundFile) return;
+function openPayConfirmModal() {
+  currentScanAmount = currentScanAmount || 0;
+ 
+  const confirmAmountEl = document.getElementById("confirm-pay-amount");
+  const maxPtEl = document.getElementById("max-pt-display");
+  const usePtCheck = document.getElementById("use-pt-check");
+  const usePtInput = document.getElementById("use-pt-input");
+  const payModal = document.getElementById("pay-confirm-modal");
 
-  const forcedAudio = new Audio(soundFile);
-  forcedAudio.currentTime = 0;
-  forcedAudio.play().catch(error => {
-    console.log("音声の再生がブロックされました:", error);
-  });
+  if (confirmAmountEl) confirmAmountEl.innerText = currentScanAmount.toLocaleString();
+  if (maxPtEl) maxPtEl.innerText = (typeof points !== 'undefined' ? points : 0).toLocaleString();
+  if (usePtCheck) usePtCheck.checked = false;
+  if (usePtInput) usePtInput.value = "";
+ 
+  if (typeof togglePointInput === 'function') togglePointInput();
+  if (payModal) payModal.classList.remove("hidden");
 }
 
-// --- 💳 支払い確認・決済処理（強制音声対応版） ---
-function executePayment() {
+function togglePointInput() {
+  if (typeof playSound === 'function') playSound('beep');
+  const usePtCheck = document.getElementById("use-pt-check");
+  const ptContainer = document.getElementById("pt-input-container");
+  if (usePtCheck && ptContainer) {
+    ptContainer.classList.toggle("hidden", !usePtCheck.checked);
+  }
+}
+
+function cancelPayment() {
+  if (typeof playSound === 'function') playSound('beep');
+  const payModal = document.getElementById("pay-confirm-modal");
+  if (payModal) payModal.classList.add("hidden");
+}
+
+  
+  function executePayment() {
   // 1. 割引クーポンの適用チェック（安全に取得）
   let discount = 0;
   if (typeof activeDiscount !== 'undefined') {
@@ -1363,6 +1380,7 @@ function executePayment() {
   if (finalAmount >= 5000) {
     let savedPasscode = localStorage.getItem('11pay_security_passcode');
 
+    // 初めて5,000円以上のお会計をする場合、パスコードを新しく設定させる
     if (!savedPasscode) {
       let newPass = prompt("【セキュリティ設定】\n5,000円以上のお支払いに必要な4桁のパスコードを設定してください（半角数字）:");
       if (!newPass || newPass.length < 4) {
@@ -1374,9 +1392,10 @@ function executePayment() {
       alert("パスコードが設定されました！");
     }
 
+    // 設定されているパスコードで入力を求める
     let inputPass = prompt("【高額決済】\n5,000円以上のお支払いです。パスコードを入力してください:");
     if (inputPass !== savedPasscode) {
-      playForcedSound('error');
+      if (typeof playSound === 'function') playSound('error');
       alert("パスコードが間違っています。お支払いをキャンセルしました。");
       return;
     }
@@ -1391,25 +1410,24 @@ function executePayment() {
       return;
     }
     if (usePt > points) {
-      playForcedSound('error');
+      if (typeof playSound === 'function') playSound('error');
       alert("保持ポイントを超えています");
       return;
     }
     if (usePt > finalAmount) usePt = finalAmount;
   } else {
-    usePt = 0;
+usePt = 0;
   }
 
   const cashPay = finalAmount - usePt;
 
   if (cashPay > balance) {
-    playForcedSound('error');
+    if (typeof playSound === 'function') playSound('error');
     alert(`残高が不足しています\nお支払い額: ${cashPay}円 / 残高: ${balance}円`);
     return;
   }
 
-  // ✨【ここがポイント】ミュート設定に関わらず、強制的に決済音を鳴らす！
-  playForcedSound('pay');
+  if (typeof playSound === 'function') playSound('pay');
 
   balance -= cashPay;
   points -= usePt;
@@ -1454,6 +1472,41 @@ function executePayment() {
       alert(`お支払い完了！ (${finalAmount.toLocaleString()}円)`);
     }
   }
+} 
+function startRoulette(payAmount) {
+  document.getElementById("roulette-modal").classList.remove("hidden");
+  document.getElementById("roulette-close-btn").classList.add("hidden");
+  document.getElementById("roulette-sub").innerText = "ポイント還元率を抽選中...";
+
+  let count = 0;
+  const rates = [0.01, 0.05, 0.1, 0.5, 1.0];
+
+  const interval = setInterval(() => {
+    playSound('tick');
+    const randomRate = rates[Math.floor(Math.random() * rates.length)];
+    document.getElementById("roulette-display").innerText = `${Math.round(randomRate * 100)}% 還元！`;
+    count++;
+
+    if (count > 20) {
+      clearInterval(interval);
+      const finalRate = rates[Math.floor(Math.random() * rates.length)];
+      earnedPoints = Math.floor(payAmount * finalRate);
+      if (earnedPoints < 1) earnedPoints = 1;
+
+      playSound('win');
+      document.getElementById("roulette-sub").innerText = "獲得ポイント決定！";
+      document.getElementById("roulette-display").innerText = `🎯 ${Math.round(finalRate * 100)}% 還元!\n(+${earnedPoints}pt)`;
+      document.getElementById("roulette-close-btn").classList.remove("hidden");
+    }
+  }, 100);
+}
+
+function closeRoulette() {
+  playSound('beep');
+  points += earnedPoints;
+  addTransaction('ポイント', earnedPoints, '11Payジャンボ還元');
+  updateDisplay();
+  document.getElementById("roulette-modal").classList.add("hidden");
 }
 
   
