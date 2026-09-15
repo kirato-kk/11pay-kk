@@ -1703,7 +1703,8 @@ function closeRoulette() {
     anagram: 60           // アナグラム
   };
 
-  // 有効なギフトコード一覧
+  
+      // 有効なギフトコード一覧
   const VALID_GIFTS = {
     "GIFT1000": { amount: 1000, type: "残高", name: "1000円ギフト" },
     "GIFT5000": { amount: 5000, type: "残高", name: "5000円ギフト" },
@@ -1754,39 +1755,6 @@ function closeRoulette() {
       alert("無効なギフトコードです");
     }
   };
-
-  // ギフトカードボタンを自動生成し、画面切り替えに合わせて表示をコントロールする関数
-  function injectGiftButton() {
-    let btnWrapper = document.getElementById("home-gift-btn-wrapper");
-    if (!btnWrapper) {
-      btnWrapper = document.createElement("div");
-      btnWrapper.id = "home-gift-btn-wrapper";
-      btnWrapper.className = "home-gift-btn-container";
-      btnWrapper.innerHTML = `<button class="home-gift-btn" onclick="openGiftModal()">ギフトカードコード入力</button>`;
-
-      // メイン画面（#main-view）の中、または適切な場所に挿入する
-      const mainView = document.getElementById("main-view");
-      if (mainView) {
-        // メイン画面の先頭や好みの位置に追加
-        mainView.insertBefore(btnWrapper, mainView.firstChild);
-      }
-    }
-
-    // 💡 ログイン画面（#auth-container など）が表示されている時は非表示にする判定
-    const authContainer = document.getElementById("auth-container"); // ログイン画面のIDに合わせて適宜調整
-    const isAuthVisible = authContainer && !authContainer.classList.contains("hidden");
-
-    if (isAuthVisible) {
-      btnWrapper.classList.add("hidden");
-    } else {
-      btnWrapper.classList.remove("hidden");
-    }
-  }
-
-  // 画面の切り替えや読み込みのタイミングでボタンの表示状態をチェックする
-  window.addEventListener('DOMContentLoaded', injectGiftButton);
-  // 画面を切り替える関数などがある場合は、その中で `injectGiftButton()` を呼ぶと確実に連動します
-
 
   function buildGameMenuUI() {
     const gameMenuSelect = document.getElementById("game-menu-select");
