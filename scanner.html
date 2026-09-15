@@ -183,6 +183,10 @@
     cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
   }
 
+/* ギフトカードボタン（初期は非表示） */
+.home-gift-btn-container.hidden {
+  display: none !important;
+}
 
 
   </style>
@@ -2967,7 +2971,11 @@ function openNewsDetail(newsId) {
   `;
 }
 
+document.querySelector('.home-gift-btn-container').classList.add('hidden');
 
+  document.querySelector('.home-gift-btn-container').classList.remove('hidden');
+
+  
 </script> 
  
 </body>
