@@ -389,7 +389,78 @@
 </div>
 
 
-<!-- GAMEモーダル -->
+<!-- GAMEモーダル（修正版） -->
+<div id="game-modal" class="modal-overlay hidden">
+  <div class="modal-content">
+   
+    <!-- ゲーム選択メニュー -->
+    <div id="game-menu-select">
+      <!-- メインカテゴリー選択 -->
+      <div id="game-category-content">
+        <h3>🎮 GAME MENU</h3>
+        <p style="font-size: 13px; color: #666; margin-bottom: 20px;">どちらで遊ぶか選んでね！</p>
+        <button class="main-btn" style="margin-bottom: 12px; background: #007bff;" onclick="openMiniGameMenu()">🎮 ミニゲーム（16種類）</button>
+        <button class="main-btn" style="background: #ff9900;" onclick="startGachaSelect()">🎰 11payガチャ (1回 200pt)</button>
+        <button class="secondary-btn" style="margin-top: 15px;" onclick="closeGameModal()">閉じる</button>
+      </div>
+
+      <!-- 16種ミニゲームグリッドメニュー（最初は非表示） -->
+      <div id="minigame-menu-select" class="hidden">
+        <h3>🎮 ミニゲーム</h3>
+        <p style="font-size: 12px; color: #666; margin-bottom: 10px;">遊ぶゲームを選んでね！</p>
+        <div class="game-grid">
+          <button class="game-item-btn btn-color-1" onclick="triggerTofuGame()">🧊豆腐タワー</button>
+          <button class="game-item-btn btn-color-2" onclick="playGame('janken')">✊じゃんけん</button>
+          <button class="game-item-btn btn-color-3" onclick="playGame('highlow')">🎴ハイ＆ロー</button>
+          <button class="game-item-btn btn-color-4" onclick="playGame('memory')">🃏神経衰弱</button>
+          <button class="game-item-btn btn-color-5" onclick="playGame('mole')">🕳️モグラ叩き</button>
+          <button class="game-item-btn btn-color-6" onclick="startCraneGame()">🏗️クレーンゲーム</button>
+          <button class="game-item-btn btn-color-7" onclick="playGame('dice')">🎲サイコロ</button>
+          <button class="game-item-btn btn-color-8" onclick="playGame('just555')">⏳5.55秒ストップ</button>
+          <button class="game-item-btn btn-color-9" onclick="playGame('nummem')">🧠数字記憶</button>
+          <button class="game-item-btn btn-color-10" onclick="playGame('chicken')">🐔チキンレース</button>
+          <button class="game-item-btn btn-color-11" onclick="playGame('diff')">😃間違い探し</button>
+          <button class="game-item-btn btn-color-12" onclick="playGame('bomb')">💣爆弾処理</button>
+          <button class="game-item-btn btn-color-13" onclick="playGame('tap')">🫵連打ラッシュ</button>
+          <button class="game-item-btn btn-color-14" onclick="playGame('balloon')">🎈風船ゲーム</button>
+          <button class="game-item-btn btn-color-15" onclick="playGame('seq')">🔢順番タップ</button>
+          <button class="game-item-btn btn-color-16" onclick="playGame('anagram')">📝アナグラム</button>
+        </div>
+        <button class="secondary-btn" style="margin-top: 15px;" onclick="backToGameCategory()">戻る</button>
+      </div>
+    </div>
+
+    <!-- 豆腐タワー画面 -->
+    <div id="game-tofu-screen" class="hidden">
+      <h3>豆腐タワーチャレンジ</h3>
+      <p style="font-size: 13px; color: #666; margin-bottom: 5px;">タップしてタイミングよく豆腐を重ねよう！</p>
+      <canvas id="game-canvas" width="300" height="300"></canvas>
+      <button class="secondary-btn" onclick="backToGameMenu()">メニューに戻る</button>
+    </div>
+
+    <!-- ガチャ画面 -->
+    <div id="gacha-screen" class="hidden">
+      <h3>11Payガチャ</h3>
+      <p style="font-size: 13px; color: #666; margin-bottom: 10px;">1回 200pt で運試し！</p>
+     
+      <div id="gacha-box" style="font-size: 40px; margin: 20px 0;">🎁</div>
+      <div id="gacha-result-text" style="font-size: 18px; font-weight: bold; color: #ff0033; min-height: 28px; margin-bottom: 15px;"></div>
+
+      <button id="gacha-draw-btn" class="main-btn" style="background: #ff9900;" onclick="playGacha()">ガチャを回す</button>
+      <button class="secondary-btn" style="margin-top: 10px;" onclick="backToGameMenu()">メニューに戻る</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ミニゲーム実行モーダル -->
+<div id="minigame-play-modal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <h3 id="minigame-title">🎮 ミニゲーム</h3>
+    <div id="minigame-stage" class="game-stage-box"></div>
+    <button class="secondary-btn" onclick="closeMiniGamePlayModal()">メニューに戻る</button>
+  </div>
+</div>
 
 
 
@@ -1797,46 +1868,44 @@ function closeRoulette() {
   }
   window.addEventListener('load', init);
 
-  window.openMiniGameMenu = function() {
-    if (typeof playSound === 'function') playSound('beep');
-    const catContent = document.getElementById("game-category-content");
-    const miniMenu = document.getElementById("minigame-menu-select");
-    if (catContent) catContent.style.display = "none";
-    if (miniMenu) miniMenu.classList.remove("hidden");
-  };
+  // モーダル切り替え用のJavaScript追加関数
+window.openMiniGameMenu = function() {
+  if (typeof playSound === 'function') playSound('beep');
+  const catContent = document.getElementById("game-category-content");
+  const miniMenu = document.getElementById("minigame-menu-select");
+  if (catContent) catContent.style.display = "none";
+  if (miniMenu) miniMenu.classList.remove("hidden");
+};
 
-  window.backToGameCategory = function() {
-    if (typeof playSound === 'function') playSound('beep');
-    const catContent = document.getElementById("game-category-content");
-    const miniMenu = document.getElementById("minigame-menu-select");
-    if (catContent) catContent.style.display = "block";
-    if (miniMenu) miniMenu.classList.add("hidden");
-  };
+window.backToGameCategory = function() {
+  if (typeof playSound === 'function') playSound('beep');
+  const catContent = document.getElementById("game-category-content");
+  const miniMenu = document.getElementById("minigame-menu-select");
+  if (catContent) catContent.style.display = "block";
+  if (miniMenu) miniMenu.classList.add("hidden");
+};
 
-  const originalCloseGameModal = window.closeGameModal;
-  window.closeGameModal = function() {
-    if (typeof playSound === 'function') playSound('beep');
-    backToGameCategory();
-    if (typeof originalCloseGameModal === "function") originalCloseGameModal();
-    else {
-      const modal = document.getElementById("game-modal");
-      if (modal) modal.classList.add("hidden");
-    }
-  };
+window.closeGameModal = function() {
+  if (typeof playSound === 'function') playSound('beep');
+  backToGameCategory();
+  const modal = document.getElementById("game-modal");
+  if (modal) modal.classList.add("hidden");
+};
 
-  window.closeMiniGamePlayModal = function() {
-    if (typeof playSound === 'function') playSound('beep');
-    document.getElementById("minigame-play-modal").classList.add("hidden");
-  };
+window.closeMiniGamePlayModal = function() {
+  if (typeof playSound === 'function') playSound('beep');
+  document.getElementById("minigame-play-modal").classList.add("hidden");
+};
 
-  window.triggerTofuGame = function() {
-    if (typeof playSound === 'function') playSound('beep');
-    if (typeof startTofuGameSelect === "function") {
-      startTofuGameSelect();
-    } else {
-      alert("豆腐タワーの起動関数(startTofuGameSelect)が見つかりません。");
-    }
-  };
+window.triggerTofuGame = function() {
+  if (typeof playSound === 'function') playSound('beep');
+  if (typeof startTofuGameSelect === "function") {
+    startTofuGameSelect();
+  } else {
+    alert("豆腐タワーの起動関数(startTofuGameSelect)が見つかりません。");
+  }
+};
+
 
   // クレーンゲーム
   window.startCraneGame = function() {
