@@ -233,7 +233,7 @@
       <div class="user-info">
         👤 <span id="user-display">きらと</span>
         <span style="font-size: 10px; background: #eee; color: #666; padding: 2px 6px; border-radius: 4px; margin-left: 6px; font-weight: bold;">
-          ver.26.9.15</span>
+          ver.26.9.18</span>
       </div>
       <div class="header-btns">
         <button class="small-btn" style="background:#007bff;" onclick="openPassModal()">パスワード変更</button>
@@ -397,16 +397,16 @@
     <div id="game-menu-select">
       <!-- メインカテゴリー選択 -->
       <div id="game-category-content">
-        <h3>🎮 GAME MENU</h3>
+        <h3>GAME</h3>
         <p style="font-size: 13px; color: #666; margin-bottom: 20px;">どちらで遊ぶか選んでね！</p>
-        <button class="main-btn" style="margin-bottom: 12px; background: #007bff;" onclick="openMiniGameMenu()">🎮 ミニゲーム（16種類）</button>
-        <button class="main-btn" style="background: #ff9900;" onclick="startGachaSelect()">🎰 11payガチャ (1回 200pt)</button>
+        <button class="main-btn" style="margin-bottom: 12px; background: #007bff;" onclick="openMiniGameMenu()">ミニゲーム</button>
+        <button class="main-btn" style="background: #ff9900;" onclick="startGachaSelect()">11payガチャ</button>
         <button class="secondary-btn" style="margin-top: 15px;" onclick="closeGameModal()">閉じる</button>
       </div>
 
       <!-- 16種ミニゲームグリッドメニュー（最初は非表示） -->
       <div id="minigame-menu-select" class="hidden">
-        <h3>🎮 ミニゲーム</h3>
+        <h3>ミニゲーム メニュー</h3>
         <p style="font-size: 12px; color: #666; margin-bottom: 10px;">遊ぶゲームを選んでね！</p>
         <div class="game-grid">
           <button class="game-item-btn btn-color-1" onclick="triggerTofuGame()">🧊豆腐タワー</button>
@@ -2910,9 +2910,18 @@ window.addEventListener('DOMContentLoaded', () => {
 // 💡 ニュースを無くしたいときは `[]` のまにしてください
 // 💡 ニュースを追加したいときは、下記のようにデータを書き込んでください（上が最新になります）
 let newsData = [
+
+ { id: 5, title: "アップデート実施！ ver.26.9.18", 
+   date: "2026-09-16-18:30",
+  content: `《アップデート内容》 ver.26.9.18
+  ・ミニゲームの不具合を修正いたしました
+  ・いくつかの不具合を修正いたしました
+  
+  今後とも11Payをよろしくお願いいたします。`},
+
   
  { id: 4, title: "アップデート実施！ ver.26.9.15", 
-   date: "2026-09-15-21:00",
+   date: "2026-09-16-18:20",
   content: `《アップデート内容》 ver.26.9.15
   ・ミニゲームの不具合を修正いたしました
   ・いくつかの不具合を修正いたしました
