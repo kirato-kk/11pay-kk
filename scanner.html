@@ -233,7 +233,7 @@
       <div class="user-info">
         👤 <span id="user-display">きらと</span>
         <span style="font-size: 10px; background: #eee; color: #666; padding: 2px 6px; border-radius: 4px; margin-left: 6px; font-weight: bold;">
-          ver.26.9.20</span>
+          ver.26.9.22</span>
       </div>
       <div class="header-btns">
         <button class="small-btn" style="background:#007bff;" onclick="openPassModal()">パスワード変更</button>
@@ -1322,7 +1322,7 @@ function restartScanner() {
   }
 }
 
-// 修正版：QR読み取り成功時の処理（クーポン追加対応済み）
+// 修正版：QR読み取り成功時の処理（SHOP・COUPON・PAY店名拡張対応）
 function onScanSuccess(decodedText) {
     playSound('beep');
     stopScanner(() => {
@@ -1377,13 +1377,27 @@ function onScanSuccess(decodedText) {
         return;
       }
 
-            const isCharge = decodedText.startsWith("CHARGE_");
+      // ✨ 3. 店舗用QR（SHOP_店舗名）の読み取り
+      if (decodedText.startsWith("SHOP_")) {
+        const shopName = decodedText.replace("SHOP_", "");
+        if (typeof activeShopNameFromQR !== 'undefined') {
+          activeShopNameFromQR = shopName;
+        }
+        if (typeof openShopCalcModal === 'function') {
+          openShopCalcModal(shopName);
+        } else {
+          alert(`店舗「${shopName}」のQRを読み込みました`);
+        }
+        return;
+      }
+
+      // 4. チャージ / ポイント / お会計 の読み取り
+      const isCharge = decodedText.startsWith("CHARGE_");
       const isPoint  = decodedText.startsWith("POINT_");
       const isPay    = decodedText.startsWith("PAY_");
-    
-      const amount = parseInt(decodedText.replace(/(CHARGE_|PAY_|POINT_)/, "")) || 0;
 
       if (isCharge) {
+        const amount = parseInt(decodedText.replace("CHARGE_", ""), 10) || 0;
         balance += amount;
         addTransaction('残高', amount, '残高チャージ');
         updateDisplay();
@@ -1391,6 +1405,7 @@ function onScanSuccess(decodedText) {
         alert(`残高に ${amount.toLocaleString()}円 チャージされました！`);
       }
       else if (isPoint) {
+        const amount = parseInt(decodedText.replace("POINT_", ""), 10) || 0;
         points += amount;
         addTransaction('ポイント', amount, 'ポイント獲得');
         updateDisplay();
@@ -1398,19 +1413,28 @@ function onScanSuccess(decodedText) {
         alert(`${amount.toLocaleString()} ポイントを獲得しました！`);
       }
       else if (isPay) {
-        currentScanAmount = amount;
+        // PAY_1000 または PAY_1000_11PaySHOP の解析
+        const parts = decodedText.split("_");
+        currentScanAmount = parseInt(parts[1], 10) || 0;
+        
+        // PAY_1000_店舗名 の形式なら店名を保持
+        if (parts[2] && typeof activeShopNameFromQR !== 'undefined') {
+          activeShopNameFromQR = parts[2];
+        }
+
         openPayConfirmModal();
       }
       else {
-        // ✨ 追加：COUPON、SEND、CHARGE、POINT、PAY のどれにも当てはまらなかった場合
-        playForcedSound('error');
+        // COUPON, SEND, SHOP, CHARGE, POINT, PAY のどれにも当てはまらなかった場合
+        if (typeof playForcedSound === 'function') {
+          playForcedSound('error');
+        } else if (typeof playSound === 'function') {
+          playSound('error');
+        }
         alert("画像から有効なQRコードを検出できませんでした。");
       }
     });
-  }
-
-
-
+}
 
 
 // --- 💳 支払い確認・決済処理（クーポン割引対応・修復版） ---
@@ -1532,19 +1556,26 @@ usePt = 0;
   }
 
 
-  // 取引履歴への記録（クーポン名を含める）
+    // 取引履歴への記録（店名連動・クーポン名対応）
   if (cashPay > 0 && typeof addTransaction === 'function') {
-    const memo = usedCouponTitle ? `お支払い (クーポン: ${usedCouponTitle})` : 'お支払い';
-    addTransaction('残高', -cashPay, memo);
-  }
-  if (usePt > 0 && typeof addTransaction === 'function') {
-    addTransaction('ポイント', -usePt, 'お支払い利用');
+    // QRから読み取った店名、または選択中の店名を取得
+    let shopLabel = (typeof activeShopNameFromQR !== 'undefined' && activeShopNameFromQR) 
+                    ? activeShopNameFromQR 
+                    : (typeof currentSelectedShop !== 'undefined' ? currentSelectedShop : "");
+    
+    // 店名があれば「〇〇でお支払い」、無ければ「お支払い」
+    let memoText = shopLabel ? `${shopLabel}でお支払い` : 'お支払い';
+
+    if (usedCouponTitle) {
+      memoText += ` (クーポン: ${usedCouponTitle})`;
+    }
+
+    addTransaction('残高', -cashPay, memoText);
+
+    // 決済完了後に店名保持変数をリセット
+    activeShopNameFromQR = "";
   }
 
-  if (typeof updateDisplay === 'function') updateDisplay();
- 
-  const payModal = document.getElementById("pay-confirm-modal");
-  if (payModal) payModal.classList.add("hidden");
 
   // 通知メッセージの調整
   if (usePt > 0) {
