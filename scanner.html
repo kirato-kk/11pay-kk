@@ -233,7 +233,7 @@
       <div class="user-info">
         👤 <span id="user-display">きらと</span>
         <span style="font-size: 10px; background: #eee; color: #666; padding: 2px 6px; border-radius: 4px; margin-left: 6px; font-weight: bold;">
-          ver.26.9.18</span>
+          ver.26.9.20</span>
       </div>
       <div class="header-btns">
         <button class="small-btn" style="background:#007bff;" onclick="openPassModal()">パスワード変更</button>
@@ -545,6 +545,52 @@
   </div>
 </div>
 
+<!-- 店舗用電卓＆反転金額確認モーダル -->
+<div id="shop-calc-modal" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width: 320px;">
+    <!-- 店員側（上側・180度反転表示） -->
+    <div style="transform: rotate(180deg); background: #e9ecef; padding: 10px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed #666;">
+      <div style="font-size: 11px; color: #555;">【店員確認用】</div>
+      <div style="font-size: 22px; font-weight: bold; color: #000;"><span id="flip-amount-display">0</span> 円</div>
+      <div style="font-size: 12px; color: #333;" id="flip-shop-name"></div>
+    </div>
+
+    <hr style="border: none; border-top: 1px solid #ccc; margin: 10px 0;">
+
+    <!-- お客側（通常表示＆電卓UI） -->
+    <div>
+      <div style="font-size: 12px; color: #666;">支払い金額を入力</div>
+      <div id="calc-display" style="font-size: 28px; font-weight: bold; color: #ff0033; margin: 5px 0;">0 円</div>
+
+      <!-- 簡易電卓キーパッド -->
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 10px 0;">
+        <button class="calc-btn" onclick="pressCalc('1')">1</button>
+        <button class="calc-btn" onclick="pressCalc('2')">2</button>
+        <button class="calc-btn" onclick="pressCalc('3')">3</button>
+        <button class="calc-btn" onclick="pressCalc('4')">4</button>
+        <button class="calc-btn" onclick="pressCalc('5')">5</button>
+        <button class="calc-btn" onclick="pressCalc('6')">6</button>
+        <button class="calc-btn" onclick="pressCalc('7')">7</button>
+        <button class="calc-btn" onclick="pressCalc('8')">8</button>
+        <button class="calc-btn" onclick="pressCalc('9')">9</button>
+        <button class="calc-btn" onclick="pressCalc('C')" style="background: #ff4d4d; color: white;">C</button>
+        <button class="calc-btn" onclick="pressCalc('0')">0</button>
+        <button class="calc-btn" onclick="pressCalc('00')">00</button>
+      </div>
+
+      <button class="main-btn" onclick="submitShopAmount()">金額を確定して決済へ</button>
+      <button class="secondary-btn" onclick="closeShopCalcModal()" style="margin-top: 6px;">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .calc-btn { padding: 12px; font-size: 18px; font-weight: bold; border: 1px solid #ccc; border-radius: 6px; background: #fff; cursor: pointer; }
+  .calc-btn:active { background: #eee; }
+</style>
+
+
+  
 <script>
   let currentUser = localStorage.getItem("paypay_login_user") || "";
   let balance = 0;
@@ -3063,6 +3109,140 @@ function openNewsDetail(newsId) {
   `;
 }
 
+// --- 状態管理変数 ---
+let currentSelectedShop = ""; // 選択中の店舗名（空なら選択なし）
+let calcInputStr = "0";
+let activeShopNameFromQR = "";
+
+// --- 1. 店舗選択ロジック ---
+function initShopSelection() {
+  const savedShops = JSON.parse(localStorage.getItem('11pay_shops') || '["セブンイレブン", "ローソン", "ファミリーマート"]');
+  const dropdown = document.getElementById("shop-dropdown");
+  dropdown.innerHTML = '<option value="">選択なし (個人利用)</option>';
+  
+  savedShops.forEach(shop => {
+    const opt = document.createElement("option");
+    opt.value = shop;
+    opt.innerText = shop;
+    dropdown.appendChild(opt);
+  });
+
+  document.getElementById("shop-select-modal").classList.remove("hidden");
+}
+
+function registerNewShop() {
+  const newShop = document.getElementById("new-shop-input").value.trim();
+  if (!newShop) return;
+
+  let savedShops = JSON.parse(localStorage.getItem('11pay_shops') || '["セブンイレブン", "ローソン", "ファミリーマート"]');
+  if (!savedShops.includes(newShop)) {
+    savedShops.push(newShop);
+    localStorage.setItem('11pay_shops', JSON.stringify(savedShops));
+  }
+  
+  document.getElementById("new-shop-input").value = "";
+  initShopSelection();
+  document.getElementById("shop-dropdown").value = newShop;
+}
+
+function confirmShopSelection() {
+  currentSelectedShop = document.getElementById("shop-dropdown").value;
+  document.getElementById("shop-select-modal").classList.add("hidden");
+  if (currentSelectedShop) {
+    alert(`店舗「${currentSelectedShop}」を選択しました`);
+  }
+}
+
+// ページ読み込み時に店舗選択を開く
+window.addEventListener("load", () => {
+  initShopSelection();
+});
+
+
+// --- 2. QRスキャン読み取り分岐処理 ---
+// (※QR読み取り成功時の処理に組み込んでください)
+function handleScannedQRCode(qrString) {
+  if (qrString.startsWith("SHOP_")) {
+    // 店用QR（SHOP_店舗名）の場合
+    activeShopNameFromQR = qrString.replace("SHOP_", "");
+    openShopCalcModal(activeShopNameFromQR);
+  } else if (qrString.startsWith("PAY_")) {
+    // 通常PAY用QR（PAY_金額 や PAY_金額_店名）の場合
+    const parts = qrString.split("_");
+    currentScanAmount = parseInt(parts[1], 10) || 0;
+    
+    // QRコード側に店名があればそれを優先、なければ選択中の店名を利用
+    if (parts[2]) {
+      activeShopNameFromQR = parts[2];
+    } else {
+      activeShopNameFromQR = currentSelectedShop;
+    }
+    
+    openPayConfirmModal();
+  }
+}
+
+
+// --- 3. 電卓風入力モーダル処理 ---
+function openShopCalcModal(shopName) {
+  calcInputStr = "0";
+  document.getElementById("flip-shop-name").innerText = shopName;
+  updateCalcDisplay();
+  document.getElementById("shop-calc-modal").classList.remove("hidden");
+}
+
+function closeShopCalcModal() {
+  document.getElementById("shop-calc-modal").classList.add("hidden");
+}
+
+function pressCalc(num) {
+  if (typeof playSound === 'function') playSound('beep');
+  
+  if (num === 'C') {
+    calcInputStr = "0";
+  } else {
+    if (calcInputStr === "0") {
+      if (num !== '0' && num !== '00') calcInputStr = num;
+    } else {
+      calcInputStr += num;
+    }
+  }
+  updateCalcDisplay();
+}
+
+function updateCalcDisplay() {
+  const val = parseInt(calcInputStr, 10) || 0;
+  document.getElementById("calc-display").innerText = val.toLocaleString() + " 円";
+  document.getElementById("flip-amount-display").innerText = val.toLocaleString();
+}
+
+function submitShopAmount() {
+  const amount = parseInt(calcInputStr, 10) || 0;
+  if (amount <= 0) {
+    alert("金額を入力してください");
+    return;
+  }
+  
+  currentScanAmount = amount;
+  closeShopCalcModal();
+  openPayConfirmModal(); // いつもの決済確認モーダル（ルーレット等へ続く）を開く
+}
+
+
+// --- 4. 決済確定時の取引履歴連動（executePayment関数内を修正） ---
+// executePayment 内の addTransaction 部分を以下のように適用します。
+/*
+  // メモ欄の店名判定
+  let shopLabel = activeShopNameFromQR || currentSelectedShop;
+  let memoText = shopLabel ? `${shopLabel}でお支払い` : 'お支払い';
+
+  if (cashPay > 0 && typeof addTransaction === 'function') {
+    if (usedCouponTitle) {
+      memoText += ` (クーポン: ${usedCouponTitle})`;
+    }
+    addTransaction('残高', -cashPay, memoText);
+  }
+*/
 
   
 </script> 
