@@ -1473,7 +1473,7 @@ function cancelPayment() {
 }
 
   
-function executePayment() {
+    function executePayment() {
   // 1. 割引クーポンの適用チェック（安全に取得）
   let discount = 0;
   if (typeof activeDiscount !== 'undefined') {
@@ -1518,7 +1518,7 @@ function executePayment() {
   const usePtChecked = document.getElementById("use-pt-check") ? document.getElementById("use-pt-check").checked : false;
   let usePt = parseInt(document.getElementById("use-pt-input") ? document.getElementById("use-pt-input").value : 0) || 0;
 
-    if (usePtChecked) {
+  if (usePtChecked) {
     if (usePt <= 0) {
       alert("利用するポイントを入力してください");
       return;
@@ -1546,31 +1546,6 @@ function executePayment() {
   balance -= cashPay;
   points -= usePt;
 
-  // ✨【追加】店名の判定・保持
-  let shopLabel = (typeof activeShopNameFromQR !== 'undefined' && activeShopNameFromQR) 
-                  ? activeShopNameFromQR 
-                  : (typeof currentSelectedShop !== 'undefined' ? currentSelectedShop : "");
-
-  // ✨【追加】1. 残高でお支払いの履歴（店名対応）
-  if (cashPay > 0 && typeof addTransaction === 'function') {
-    let memoText = shopLabel ? `${shopLabel}でお支払い` : 'お支払い';
-
-    if (usedCouponTitle) {
-      memoText += ` (クーポン: ${usedCouponTitle})`;
-    }
-
-    addTransaction('残高', -cashPay, memoText);
-  }
-
-  // ✨【追加】2. ポイントでお支払い利用の履歴（店名対応）
-  if (usePt > 0 && typeof addTransaction === 'function') {
-    const ptMemo = shopLabel ? `${shopLabel}でお支払い利用` : 'お支払い利用';
-    addTransaction('ポイント', -usePt, ptMemo);
-  }
-
-  // ✨【追加】決済完了後に店名保持変数をリセット
-  activeShopNameFromQR = "";
-
   // ✨【クーポン連動】お支払い完了時にクーポンを消費し、使ったクーポンのタイトルを取得
   let usedCouponTitle = "";
   if (typeof consumeActiveCouponOnPayment === 'function') {
@@ -1580,14 +1555,13 @@ function executePayment() {
     activeDiscount = 0;
   }
 
-  // 取引履歴への記録（店名連動・クーポン名対応）
+  // ✨ 店名の判定・保持
+  let shopLabel = (typeof activeShopNameFromQR !== 'undefined' && activeShopNameFromQR) 
+                  ? activeShopNameFromQR 
+                  : (typeof currentSelectedShop !== 'undefined' ? currentSelectedShop : "");
+
+  // ✨ 1. 残高でお支払いの履歴（店名・クーポン対応）
   if (cashPay > 0 && typeof addTransaction === 'function') {
-    // QRから読み取った店名、または選択中の店名を取得
-    let shopLabel = (typeof activeShopNameFromQR !== 'undefined' && activeShopNameFromQR) 
-                    ? activeShopNameFromQR 
-                    : (typeof currentSelectedShop !== 'undefined' ? currentSelectedShop : "");
-    
-    // 店名があれば「〇〇でお支払い」、無ければ「お支払い」
     let memoText = shopLabel ? `${shopLabel}でお支払い` : 'お支払い';
 
     if (usedCouponTitle) {
@@ -1595,14 +1569,16 @@ function executePayment() {
     }
 
     addTransaction('残高', -cashPay, memoText);
-
-    // 決済完了後に店名保持変数をリセット
-    activeShopNameFromQR = "";
   }
 
+  // ✨ 2. ポイントでお支払い利用の履歴（店名対応）
   if (usePt > 0 && typeof addTransaction === 'function') {
-    addTransaction('ポイント', -usePt, 'お支払い利用');
+    const ptMemo = shopLabel ? `${shopLabel}でお支払い利用` : 'お支払い利用';
+    addTransaction('ポイント', -usePt, ptMemo);
   }
+
+  // ✨ 決済完了後に店名保持変数をリセット
+  activeShopNameFromQR = "";
 
   if (typeof updateDisplay === 'function') updateDisplay();
 
@@ -1629,8 +1605,7 @@ function executePayment() {
       alert(`お支払い完了！ (${finalAmount.toLocaleString()}円)`);
     }
   }
-} 
-
+}
 function startRoulette(payAmount) {
   document.getElementById("roulette-modal").classList.remove("hidden");
   document.getElementById("roulette-close-btn").classList.add("hidden");
@@ -1646,7 +1621,7 @@ function startRoulette(payAmount) {
     count++;
 
     if (count > 20) {
-      clearInterval(interval);
+clearInterval(interval);
       const finalRate = rates[Math.floor(Math.random() * rates.length)];
       earnedPoints = Math.floor(payAmount * finalRate);
       if (earnedPoints < 1) earnedPoints = 1;
@@ -1673,8 +1648,6 @@ function closeRoulette() {
     payModal.classList.add("hidden");
   }
 }
-
-
 
   
   // --- 取引履歴機能 ---
