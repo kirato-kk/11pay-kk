@@ -1473,7 +1473,7 @@ function cancelPayment() {
 }
 
   
-  function executePayment() {
+function executePayment() {
   // 1. 割引クーポンの適用チェック（安全に取得）
   let discount = 0;
   if (typeof activeDiscount !== 'undefined') {
@@ -1530,7 +1530,7 @@ function cancelPayment() {
     }
     if (usePt > finalAmount) usePt = finalAmount;
   } else {
-usePt = 0;
+    usePt = 0;
   }
 
   const cashPay = finalAmount - usePt;
@@ -1555,8 +1555,7 @@ usePt = 0;
     activeDiscount = 0;
   }
 
-
-    // 取引履歴への記録（店名連動・クーポン名対応）
+  // 取引履歴への記録（店名連動・クーポン名対応）
   if (cashPay > 0 && typeof addTransaction === 'function') {
     // QRから読み取った店名、または選択中の店名を取得
     let shopLabel = (typeof activeShopNameFromQR !== 'undefined' && activeShopNameFromQR) 
@@ -1576,6 +1575,17 @@ usePt = 0;
     activeShopNameFromQR = "";
   }
 
+  if (usePt > 0 && typeof addTransaction === 'function') {
+    addTransaction('ポイント', -usePt, 'お支払い利用');
+  }
+
+  if (typeof updateDisplay === 'function') updateDisplay();
+
+  // ★ 1. 決済処理完了時にお支払い確認モーダルを閉じる
+  const payModal = document.getElementById("pay-confirm-modal") || document.getElementById("pay-modal");
+  if (payModal) {
+    payModal.classList.add("hidden");
+  }
 
   // 通知メッセージの調整
   if (usePt > 0) {
@@ -1595,6 +1605,7 @@ usePt = 0;
     }
   }
 } 
+
 function startRoulette(payAmount) {
   document.getElementById("roulette-modal").classList.remove("hidden");
   document.getElementById("roulette-close-btn").classList.add("hidden");
@@ -1628,10 +1639,15 @@ function closeRoulette() {
   points += earnedPoints;
   addTransaction('ポイント', earnedPoints, '11Payルーレット還元');
   updateDisplay();
-  document.getElementById("roulette-modal").classList.add("hidden");
+
+  // ★ 2. ルーレットモーダルとお支払い確認モーダルの両方を確実に閉じる
+  document.getElementById("roulette-modal")?.classList.add("hidden");
+
+  const payModal = document.getElementById("pay-confirm-modal") || document.getElementById("pay-modal");
+  if (payModal) {
+    payModal.classList.add("hidden");
+  }
 }
-
-
 
 
 
