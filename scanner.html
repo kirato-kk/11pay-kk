@@ -233,7 +233,7 @@
       <div class="user-info">
         👤 <span id="user-display">きらと</span>
         <span style="font-size: 10px; background: #eee; color: #666; padding: 2px 6px; border-radius: 4px; margin-left: 6px; font-weight: bold;">
-          ver.26.9.25</span>
+          ver.26.9.27</span>
       </div>
       <div class="header-btns">
         <button class="small-btn" style="background:#007bff;" onclick="openPassModal()">パスワード変更</button>
@@ -3056,6 +3056,7 @@ let newsData = [
 
 ];
 
+
 // アプリ起動時の処理（ホーム画面のバナー連動）
 window.addEventListener('DOMContentLoaded', () => {
   const titleTextEl = document.getElementById('news-title-text');
@@ -3095,12 +3096,12 @@ function openNewsList() {
   }
 
   modal.classList.remove("hidden");
-  title.innerText = "NEWS";
+  if (title) title.innerText = "NEWS";
 
   // ニュースが0件の場合の表示
   let listHtml = `<p style="font-size: 13px; color: #666; text-align: center; padding: 30px;">現在お知らせはありません</p>`;
 
-  // ニュースデータがある場合はリストを表示（★ 3件分の高さ制限と縦スクロールを追加）
+// ニュースデータがある場合はリストを表示
   if (newsData && newsData.length > 0) {
     const items = newsData.map(n => `
       <div style="background: #fff8e1; padding: 14px; border-radius: 10px; border: 1px solid #ffe082; margin-bottom: 10px; cursor: pointer; text-align: left; box-shadow: 0 1px 3px rgba(0,0,0,0.04);" onclick="openNewsDetail(${n.id})">
@@ -3115,12 +3116,15 @@ function openNewsList() {
       </div>
     `).join('');
 
-    // スクロール用コンテナで包む
+    // ✨ 3件分の高さ（約260px）に制限し、4件目以降はスクロールで表示
     listHtml = `<div style="max-height: 260px; overflow-y: auto; padding-right: 4px;">${items}</div>`;
   }
 
-  if (stage) stage.innerHTML = listHtml;
+  if (stage) {
+    stage.innerHTML = listHtml;
+  }
 }
+
 
 
   stage.innerHTML = `
