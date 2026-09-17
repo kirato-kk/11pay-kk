@@ -233,7 +233,7 @@
       <div class="user-info">
         👤 <span id="user-display">きらと</span>
         <span style="font-size: 10px; background: #eee; color: #666; padding: 2px 6px; border-radius: 4px; margin-left: 6px; font-weight: bold;">
-          ver.26.9.22</span>
+          ver.26.9.23</span>
       </div>
       <div class="header-btns">
         <button class="small-btn" style="background:#007bff;" onclick="openPassModal()">パスワード変更</button>
@@ -1518,7 +1518,7 @@ function executePayment() {
   const usePtChecked = document.getElementById("use-pt-check") ? document.getElementById("use-pt-check").checked : false;
   let usePt = parseInt(document.getElementById("use-pt-input") ? document.getElementById("use-pt-input").value : 0) || 0;
 
-  if (usePtChecked) {
+    if (usePtChecked) {
     if (usePt <= 0) {
       alert("利用するポイントを入力してください");
       return;
@@ -1545,6 +1545,31 @@ function executePayment() {
 
   balance -= cashPay;
   points -= usePt;
+
+  // ✨【追加】店名の判定・保持
+  let shopLabel = (typeof activeShopNameFromQR !== 'undefined' && activeShopNameFromQR) 
+                  ? activeShopNameFromQR 
+                  : (typeof currentSelectedShop !== 'undefined' ? currentSelectedShop : "");
+
+  // ✨【追加】1. 残高でお支払いの履歴（店名対応）
+  if (cashPay > 0 && typeof addTransaction === 'function') {
+    let memoText = shopLabel ? `${shopLabel}でお支払い` : 'お支払い';
+
+    if (usedCouponTitle) {
+      memoText += ` (クーポン: ${usedCouponTitle})`;
+    }
+
+    addTransaction('残高', -cashPay, memoText);
+  }
+
+  // ✨【追加】2. ポイントでお支払い利用の履歴（店名対応）
+  if (usePt > 0 && typeof addTransaction === 'function') {
+    const ptMemo = shopLabel ? `${shopLabel}でお支払い利用` : 'お支払い利用';
+    addTransaction('ポイント', -usePt, ptMemo);
+  }
+
+  // ✨【追加】決済完了後に店名保持変数をリセット
+  activeShopNameFromQR = "";
 
   // ✨【クーポン連動】お支払い完了時にクーポンを消費し、使ったクーポンのタイトルを取得
   let usedCouponTitle = "";
@@ -3004,6 +3029,14 @@ window.addEventListener('DOMContentLoaded', () => {
 // 💡 ニュースを追加したいときは、下記のようにデータを書き込んでください（上が最新になります）
 let newsData = [
 
+ { id: 6, title: "アップデート実施！ ver.26.9.23", 
+   date: "2026-09-17-17:00",
+  content: `《アップデート内容》 ver.26.9.23
+  ・お店用QRを追加、読み込み設定を追加いたしました
+  ・その他いくつかの不具合を修正いたしました
+  
+  今後とも11Payをよろしくお願いいたします。`},
+  
  { id: 5, title: "アップデート実施！ ver.26.9.18", 
    date: "2026-09-16-18:30",
   content: `《アップデート内容》 ver.26.9.18
