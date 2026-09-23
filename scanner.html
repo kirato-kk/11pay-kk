@@ -1472,8 +1472,8 @@ function cancelPayment() {
   if (payModal) payModal.classList.add("hidden");
 }
 
-  
-    function executePayment() {
+
+function executePayment() {
   // 1. 割引クーポンの適用チェック（安全に取得）
   let discount = 0;
   if (typeof activeDiscount !== 'undefined') {
@@ -1606,6 +1606,7 @@ function cancelPayment() {
     }
   }
 }
+
 function startRoulette(payAmount) {
   document.getElementById("roulette-modal").classList.remove("hidden");
   document.getElementById("roulette-close-btn").classList.add("hidden");
@@ -1621,7 +1622,7 @@ function startRoulette(payAmount) {
     count++;
 
     if (count > 20) {
-clearInterval(interval);
+      clearInterval(interval);
       const finalRate = rates[Math.floor(Math.random() * rates.length)];
       earnedPoints = Math.floor(payAmount * finalRate);
       if (earnedPoints < 1) earnedPoints = 1;
@@ -1634,6 +1635,7 @@ clearInterval(interval);
   }, 100);
 }
 
+// ルーレットを閉じる関数
 function closeRoulette() {
   playSound('beep');
   points += earnedPoints;
@@ -1648,6 +1650,8 @@ function closeRoulette() {
     payModal.classList.add("hidden");
   }
 }
+
+
 
   
   // --- 取引履歴機能 ---
