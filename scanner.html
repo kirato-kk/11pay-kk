@@ -1321,7 +1321,8 @@ function restartScanner() {
     });
   }
 }
-
+// 💡 ルーレット用変数の事前宣言（エラー防止）
+let earnedPoints = 0;
 // 修正版：QR読み取り成功時の処理（SHOP・COUPON・PAY店名拡張対応）
 function onScanSuccess(decodedText) {
     playSound('beep');
