@@ -233,7 +233,7 @@
       <div class="user-info">
         👤 <span id="user-display">きらと</span>
         <span style="font-size: 10px; background: #eee; color: #666; padding: 2px 6px; border-radius: 4px; margin-left: 6px; font-weight: bold;">
-          ver.26.9.29</span>
+          ver.26.9.30</span>
       </div>
       <div class="header-btns">
         <button class="small-btn" style="background:#007bff;" onclick="openPassModal()">パスワード変更</button>
@@ -1321,13 +1321,17 @@ function restartScanner() {
     });
   }
 }
-// 💡 ルーレット用変数の事前宣言（エラー防止）
+// 💡 変数の事前宣言（未定義エラー・ボタン不動作を防止）
 let earnedPoints = 0;
+let activeShopNameFromQR = typeof activeShopNameFromQR !== 'undefined' ? activeShopNameFromQR : "";
+let currentSelectedShop = typeof currentSelectedShop !== 'undefined' ? currentSelectedShop : "";
+let currentScanAmount = typeof currentScanAmount !== 'undefined' ? currentScanAmount : 0;
+
 // 修正版：QR読み取り成功時の処理（SHOP・COUPON・PAY店名拡張対応）
 function onScanSuccess(decodedText) {
-    playSound('beep');
-    stopScanner(() => {
-     
+    if (typeof playSound === 'function') playSound('beep');
+
+    const handleSuccess = () => {
       // 1. クーポンQRの読み取り処理
       if (decodedText.startsWith("COUPON:")) {
         const parts = decodedText.split(":");
@@ -1341,9 +1345,9 @@ function onScanSuccess(decodedText) {
           };
 
           let coupons = JSON.parse(localStorage.getItem('11pay_coupons')) || [];
-         
+        
           if (coupons.some(c => c.id === coupon.id)) {
-            playSound('error');
+            if (typeof playSound === 'function') playSound('error');
             alert("このクーポンはすでに登録されています");
             return;
           }
@@ -1351,7 +1355,7 @@ function onScanSuccess(decodedText) {
           coupons.push(coupon);
           localStorage.setItem('11pay_coupons', JSON.stringify(coupons));
 
-          playSound('win');
+          if (typeof playSound === 'function') playSound('win');
           alert(`クーポン「${coupon.title}」を追加しました！`);
           return;
         }
@@ -1361,19 +1365,19 @@ function onScanSuccess(decodedText) {
       if (decodedText.startsWith("SEND:")) {
         const parts = decodedText.split(":");
         const senderUser = parts[1];
-        const sendAmount = parseInt(parts[2]) || 0;
+        const sendAmount = parseInt(parts[2], 10) || 0;
 
-        if (senderUser === currentUser) {
-          playSound('error');
+        if (typeof currentUser !== 'undefined' && senderUser === currentUser) {
+          if (typeof playSound === 'function') playSound('error');
           alert("自分の送金QRコードは読み込めません");
           return;
         }
 
-        balance += sendAmount;
-        addTransaction('残高', sendAmount, `${senderUser}から受取`);
-        updateDisplay();
+        if (typeof balance !== 'undefined') balance += sendAmount;
+        if (typeof addTransaction === 'function') addTransaction('残高', sendAmount, `${senderUser}から受取`);
+        if (typeof updateDisplay === 'function') updateDisplay();
 
-        playSound('win');
+        if (typeof playSound === 'function') playSound('win');
         alert(`${senderUser} さんより ${sendAmount.toLocaleString()}円 を受取りました！`);
         return;
       }
@@ -1381,9 +1385,8 @@ function onScanSuccess(decodedText) {
       // ✨ 3. 店舗用QR（SHOP_店舗名）の読み取り
       if (decodedText.startsWith("SHOP_")) {
         const shopName = decodedText.replace("SHOP_", "");
-        if (typeof activeShopNameFromQR !== 'undefined') {
-          activeShopNameFromQR = shopName;
-        }
+        activeShopNameFromQR = shopName;
+
         if (typeof openShopCalcModal === 'function') {
           openShopCalcModal(shopName);
         } else {
@@ -1399,27 +1402,27 @@ function onScanSuccess(decodedText) {
 
       if (isCharge) {
         const amount = parseInt(decodedText.replace("CHARGE_", ""), 10) || 0;
-        balance += amount;
-        addTransaction('残高', amount, '残高チャージ');
-        updateDisplay();
-        playSound('win');
+        if (typeof balance !== 'undefined') balance += amount;
+        if (typeof addTransaction === 'function') addTransaction('残高', amount, '残高チャージ');
+        if (typeof updateDisplay === 'function') updateDisplay();
+        if (typeof playSound === 'function') playSound('win');
         alert(`残高に ${amount.toLocaleString()}円 チャージされました！`);
       }
       else if (isPoint) {
         const amount = parseInt(decodedText.replace("POINT_", ""), 10) || 0;
-        points += amount;
-        addTransaction('ポイント', amount, 'ポイント獲得');
-        updateDisplay();
-        playSound('win');
+        if (typeof points !== 'undefined') points += amount;
+        if (typeof addTransaction === 'function') addTransaction('ポイント', amount, 'ポイント獲得');
+        if (typeof updateDisplay === 'function') updateDisplay();
+        if (typeof playSound === 'function') playSound('win');
         alert(`${amount.toLocaleString()} ポイントを獲得しました！`);
       }
       else if (isPay) {
         // PAY_1000 または PAY_1000_11PaySHOP の解析
         const parts = decodedText.split("_");
         currentScanAmount = parseInt(parts[1], 10) || 0;
-        
+      
         // PAY_1000_店舗名 の形式なら店名を保持
-        if (parts[2] && typeof activeShopNameFromQR !== 'undefined') {
+        if (parts[2]) {
           activeShopNameFromQR = parts[2];
         }
 
@@ -1434,7 +1437,13 @@ function onScanSuccess(decodedText) {
         }
         alert("画像から有効なQRコードを検出できませんでした。");
       }
-    });
+    };
+
+    if (typeof stopScanner === 'function') {
+      stopScanner(handleSuccess);
+    } else {
+      handleSuccess();
+    }
 }
 
 
@@ -1442,7 +1451,7 @@ function onScanSuccess(decodedText) {
 
 function openPayConfirmModal() {
   currentScanAmount = currentScanAmount || 0;
- 
+
   const confirmAmountEl = document.getElementById("confirm-pay-amount");
   const maxPtEl = document.getElementById("max-pt-display");
   const usePtCheck = document.getElementById("use-pt-check");
@@ -1453,7 +1462,7 @@ function openPayConfirmModal() {
   if (maxPtEl) maxPtEl.innerText = (typeof points !== 'undefined' ? points : 0).toLocaleString();
   if (usePtCheck) usePtCheck.checked = false;
   if (usePtInput) usePtInput.value = "";
- 
+
   if (typeof togglePointInput === 'function') togglePointInput();
   if (payModal) payModal.classList.remove("hidden");
 }
@@ -1519,12 +1528,15 @@ function executePayment() {
   const usePtChecked = document.getElementById("use-pt-check") ? document.getElementById("use-pt-check").checked : false;
   let usePt = parseInt(document.getElementById("use-pt-input") ? document.getElementById("use-pt-input").value : 0) || 0;
 
+  const currentPoints = typeof points !== 'undefined' ? points : 0;
+  const currentBalance = typeof balance !== 'undefined' ? balance : 0;
+
   if (usePtChecked) {
     if (usePt <= 0) {
       alert("利用するポイントを入力してください");
       return;
     }
-    if (usePt > points) {
+    if (usePt > currentPoints) {
       if (typeof playSound === 'function') playSound('error');
       alert("保持ポイントを超えています");
       return;
@@ -1536,16 +1548,16 @@ function executePayment() {
 
   const cashPay = finalAmount - usePt;
 
-  if (cashPay > balance) {
+  if (cashPay > currentBalance) {
     if (typeof playSound === 'function') playSound('error');
-    alert(`残高が不足しています\nお支払い額: ${cashPay}円 / 残高: ${balance}円`);
+    alert(`残高が不足しています\nお支払い額: ${cashPay}円 / 残高: ${currentBalance}円`);
     return;
   }
 
   if (typeof playSound === 'function') playSound('pay');
 
-  balance -= cashPay;
-  points -= usePt;
+  if (typeof balance !== 'undefined') balance -= cashPay;
+  if (typeof points !== 'undefined') points -= usePt;
 
   // ✨【クーポン連動】お支払い完了時にクーポンを消費し、使ったクーポンのタイトルを取得
   let usedCouponTitle = "";
@@ -1553,13 +1565,11 @@ function executePayment() {
     usedCouponTitle = consumeActiveCouponOnPayment();
   } else if (discount > 0) {
     localStorage.removeItem('11pay_active_coupon');
-    activeDiscount = 0;
+    if (typeof activeDiscount !== 'undefined') activeDiscount = 0;
   }
 
   // ✨ 店名の判定・保持
-  let shopLabel = (typeof activeShopNameFromQR !== 'undefined' && activeShopNameFromQR) 
-                  ? activeShopNameFromQR 
-                  : (typeof currentSelectedShop !== 'undefined' ? currentSelectedShop : "");
+  let shopLabel = activeShopNameFromQR ? activeShopNameFromQR : currentSelectedShop;
 
   // ✨ 1. 残高でお支払いの履歴（店名・クーポン対応）
   if (cashPay > 0 && typeof addTransaction === 'function') {
@@ -1609,17 +1619,22 @@ function executePayment() {
 }
 
 function startRoulette(payAmount) {
-  document.getElementById("roulette-modal").classList.remove("hidden");
-  document.getElementById("roulette-close-btn").classList.add("hidden");
-  document.getElementById("roulette-sub").innerText = "ポイント還元率を抽選中...";
+  const rouletteModal = document.getElementById("roulette-modal");
+  const closeBtn = document.getElementById("roulette-close-btn");
+  const subText = document.getElementById("roulette-sub");
+  const display = document.getElementById("roulette-display");
+
+  if (rouletteModal) rouletteModal.classList.remove("hidden");
+  if (closeBtn) closeBtn.classList.add("hidden");
+  if (subText) subText.innerText = "ポイント還元率を抽選中...";
 
   let count = 0;
   const rates = [0.01, 0.05, 0.1, 0.5, 1.0];
 
   const interval = setInterval(() => {
-    playSound('tick');
+    if (typeof playSound === 'function') playSound('tick');
     const randomRate = rates[Math.floor(Math.random() * rates.length)];
-    document.getElementById("roulette-display").innerText = `${Math.round(randomRate * 100)}% 還元！`;
+    if (display) display.innerText = `${Math.round(randomRate * 100)}% 還元！`;
     count++;
 
     if (count > 20) {
@@ -1628,20 +1643,20 @@ function startRoulette(payAmount) {
       earnedPoints = Math.floor(payAmount * finalRate);
       if (earnedPoints < 1) earnedPoints = 1;
 
-      playSound('win');
-      document.getElementById("roulette-sub").innerText = "獲得ポイント決定！";
-      document.getElementById("roulette-display").innerText = `🎯 ${Math.round(finalRate * 100)}% 還元!\n(+${earnedPoints}pt)`;
-      document.getElementById("roulette-close-btn").classList.remove("hidden");
+      if (typeof playSound === 'function') playSound('win');
+      if (subText) subText.innerText = "獲得ポイント決定！";
+      if (display) display.innerText = `🎯 ${Math.round(finalRate * 100)}% 還元!\n(+${earnedPoints}pt)`;
+      if (closeBtn) closeBtn.classList.remove("hidden");
     }
   }, 100);
 }
 
 // ルーレットを閉じる関数
 function closeRoulette() {
-  playSound('beep');
-  points += earnedPoints;
-  addTransaction('ポイント', earnedPoints, '11Payルーレット還元');
-  updateDisplay();
+  if (typeof playSound === 'function') playSound('beep');
+  if (typeof points !== 'undefined') points += earnedPoints;
+  if (typeof addTransaction === 'function') addTransaction('ポイント', earnedPoints, '11Payルーレット還元');
+  if (typeof updateDisplay === 'function') updateDisplay();
 
   // ★ 2. ルーレットモーダルとお支払い確認モーダルの両方を確実に閉じる
   document.getElementById("roulette-modal")?.classList.add("hidden");
@@ -1650,9 +1665,7 @@ function closeRoulette() {
   if (payModal) {
     payModal.classList.add("hidden");
   }
-}
-
-
+} 
 
   
   // --- 取引履歴機能 ---
