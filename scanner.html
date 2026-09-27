@@ -3417,6 +3417,25 @@ function openNewsDetail(newsId) {
 
 
 
+// 🚨 エラー発生時に画面に警告を出すデバッグ機能
+window.onerror = function(message, source, lineno, colno, error) {
+  const errorMsg = `【エラーが発生しました】\n` +
+                   `内容: ${message}\n` +
+                   `行番号: ${lineno}行目\n` +
+                   `ファイル: ${source.split('/').pop()}`;
+  alert(errorMsg);
+  return false;
+};
+
+// 🚨 ログインボタンが押された時の動作チェック
+document.addEventListener('DOMContentLoaded', () => {
+  const loginBtn = document.querySelector('#form-login button') || 
+                   document.querySelector('button[onclick*="login"]');
+  
+  if (!loginBtn) {
+    alert("【確認】HTML上にログインボタンが見つかりません。\nbuttonタグや onclick='login()' の記述を確認してください。");
+  }
+});
 
 
   
