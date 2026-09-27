@@ -1568,7 +1568,8 @@ function closeRoulette() {
   if (payModal) payModal.classList.add("hidden");
 }
 
-// 🔐 ログイン・ログアウト処理
+// --- 🔐 ログイン・タブ切替（即時動作保証コード） ---
+
 function switchTab(tab) {
   const loginForm = document.getElementById('form-login');
   const regForm = document.getElementById('form-register');
@@ -1589,7 +1590,6 @@ function switchTab(tab) {
 }
 
 function login() {
-  if (typeof playSound === 'function') playSound('beep');
   const uInput = document.getElementById('login-user');
   const pInput = document.getElementById('login-pass');
   if (!uInput || !pInput) return;
@@ -1598,29 +1598,47 @@ function login() {
   const p = pInput.value.trim();
 
   if (!u || !p) {
-    if (typeof playSound === 'function') playSound('error');
     alert("ユーザー名とパスワードを入力してください");
     return;
   }
 
   const savedPass = localStorage.getItem(`user_${u}`);
   if (savedPass && savedPass === p) {
-    if (typeof currentUser !== 'undefined') currentUser = u;
     localStorage.setItem('loggedInUser', u);
-    if (typeof initApp === 'function') initApp();
-    if (typeof playSound === 'function') playSound('win');
-    if (typeof showToast === 'function') showToast(`おかえりなさい、${u} さん！`);
+    alert(`おかえりなさい、${u} さん！`);
+    location.reload(); // 画面を更新してログイン状態を適用
   } else if (!savedPass) {
     localStorage.setItem(`user_${u}`, p);
-    if (typeof currentUser !== 'undefined') currentUser = u;
     localStorage.setItem('loggedInUser', u);
-    if (typeof initApp === 'function') initApp();
-    if (typeof playSound === 'function') playSound('win');
-    if (typeof showToast === 'function') showToast(`アカウントを作成しました: ${u}`);
+    alert(`アカウントを作成してログインしました: ${u}`);
+    location.reload();
   } else {
-    if (typeof playSound === 'function') playSound('error');
     alert("パスワードが違います");
   }
+}
+
+function register() {
+  const uInput = document.getElementById('reg-user');
+  const pInput = document.getElementById('reg-pass');
+  const pcInput = document.getElementById('reg-pass-confirm');
+
+  const u = uInput ? uInput.value.trim() : "";
+  const p = pInput ? pInput.value.trim() : "";
+  const pc = pcInput ? pcInput.value.trim() : "";
+
+  if (!u || !p) {
+    alert("すべての項目を入力してください");
+    return;
+  }
+  if (p !== pc) {
+    alert("パスワード確認が一致しません");
+    return;
+  }
+
+  localStorage.setItem(`user_${u}`, p);
+  localStorage.setItem('loggedInUser', u);
+  alert("新規登録が完了しました！");
+  location.reload();
 }
 
 function logout() {
