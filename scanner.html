@@ -545,52 +545,7 @@
   </div>
 </div>
 
-<!-- 店舗用電卓＆反転金額確認モーダル -->
-<div id="shop-calc-modal" class="modal-overlay hidden">
-  <div class="modal-content" style="max-width: 320px;">
-    <!-- 店員側（上側・180度反転表示） -->
-    <div style="transform: rotate(180deg); background: #e9ecef; padding: 10px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed #666;">
-      <div style="font-size: 11px; color: #555;">【店員確認用】</div>
-      <div style="font-size: 22px; font-weight: bold; color: #000;"><span id="flip-amount-display">0</span> 円</div>
-      <div style="font-size: 12px; color: #333;" id="flip-shop-name"></div>
-    </div>
 
-    <hr style="border: none; border-top: 1px solid #ccc; margin: 10px 0;">
-
-    <!-- お客側（通常表示＆電卓UI） -->
-    <div>
-      <div style="font-size: 12px; color: #666;">支払い金額を入力</div>
-      <div id="calc-display" style="font-size: 28px; font-weight: bold; color: #ff0033; margin: 5px 0;">0 円</div>
-
-      <!-- 簡易電卓キーパッド -->
-      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 10px 0;">
-        <button class="calc-btn" onclick="pressCalc('1')">1</button>
-        <button class="calc-btn" onclick="pressCalc('2')">2</button>
-        <button class="calc-btn" onclick="pressCalc('3')">3</button>
-        <button class="calc-btn" onclick="pressCalc('4')">4</button>
-        <button class="calc-btn" onclick="pressCalc('5')">5</button>
-        <button class="calc-btn" onclick="pressCalc('6')">6</button>
-        <button class="calc-btn" onclick="pressCalc('7')">7</button>
-        <button class="calc-btn" onclick="pressCalc('8')">8</button>
-        <button class="calc-btn" onclick="pressCalc('9')">9</button>
-        <button class="calc-btn" onclick="pressCalc('C')" style="background: #ff4d4d; color: white;">C</button>
-        <button class="calc-btn" onclick="pressCalc('0')">0</button>
-        <button class="calc-btn" onclick="pressCalc('00')">00</button>
-      </div>
-
-      <button class="main-btn" onclick="submitShopAmount()">金額を確定して決済へ</button>
-      <button class="secondary-btn" onclick="closeShopCalcModal()" style="margin-top: 6px;">キャンセル</button>
-    </div>
-  </div>
-</div>
-
-<style>
-  .calc-btn { padding: 12px; font-size: 18px; font-weight: bold; border: 1px solid #ccc; border-radius: 6px; background: #fff; cursor: pointer; }
-  .calc-btn:active { background: #eee; }
-</style>
-
-
-  
 <script>
   let currentUser = localStorage.getItem("paypay_login_user") || "";
   let balance = 0;
