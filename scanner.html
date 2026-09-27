@@ -233,7 +233,7 @@
       <div class="user-info">
         👤 <span id="user-display">きらと</span>
         <span style="font-size: 10px; background: #eee; color: #666; padding: 2px 6px; border-radius: 4px; margin-left: 6px; font-weight: bold;">
-          ver.26.9.30</span>
+          ver.26.9.31</span>
       </div>
       <div class="header-btns">
         <button class="small-btn" style="background:#007bff;" onclick="openPassModal()">パスワード変更</button>
@@ -1321,7 +1321,8 @@ function restartScanner() {
     });
   }
 }
-// 💡 変数の事前宣言（未定義エラー・ボタン不動作を防止）
+
+            // 💡 変数の事前宣言（未定義エラー・ボタン不動作を防止）
 let earnedPoints = 0;
 let activeShopNameFromQR = typeof activeShopNameFromQR !== 'undefined' ? activeShopNameFromQR : "";
 let currentSelectedShop = typeof currentSelectedShop !== 'undefined' ? currentSelectedShop : "";
@@ -1444,7 +1445,7 @@ function onScanSuccess(decodedText) {
     } else {
       handleSuccess();
     }
-}
+} // 👈 閉じカッコを追加（構文エラー修復）
 
 
 // --- 💳 支払い確認・決済処理（クーポン割引対応・修復版） ---
@@ -1482,7 +1483,6 @@ function cancelPayment() {
   if (payModal) payModal.classList.add("hidden");
 }
 
-
 function executePayment() {
   // 1. 割引クーポンの適用チェック（安全に取得）
   let discount = 0;
@@ -1504,7 +1504,6 @@ function executePayment() {
   if (finalAmount >= 5000) {
     let savedPasscode = localStorage.getItem('11pay_security_passcode');
 
-    // 初めて5,000円以上のお会計をする場合、パスコードを新しく設定させる
     if (!savedPasscode) {
       let newPass = prompt("【セキュリティ設定】\n5,000円以上のお支払いに必要な4桁のパスコードを設定してください（半角数字）:");
       if (!newPass || newPass.length < 4) {
@@ -1516,7 +1515,6 @@ function executePayment() {
       alert("パスコードが設定されました！");
     }
 
-    // 設定されているパスコードで入力を求める
     let inputPass = prompt("【高額決済】\n5,000円以上のお支払いです。パスコードを入力してください:");
     if (inputPass !== savedPasscode) {
       if (typeof playSound === 'function') playSound('error');
@@ -1559,7 +1557,6 @@ function executePayment() {
   if (typeof balance !== 'undefined') balance -= cashPay;
   if (typeof points !== 'undefined') points -= usePt;
 
-  // ✨【クーポン連動】お支払い完了時にクーポンを消費し、使ったクーポンのタイトルを取得
   let usedCouponTitle = "";
   if (typeof consumeActiveCouponOnPayment === 'function') {
     usedCouponTitle = consumeActiveCouponOnPayment();
@@ -1568,10 +1565,8 @@ function executePayment() {
     if (typeof activeDiscount !== 'undefined') activeDiscount = 0;
   }
 
-  // ✨ 店名の判定・保持
   let shopLabel = activeShopNameFromQR ? activeShopNameFromQR : currentSelectedShop;
 
-  // ✨ 1. 残高でお支払いの履歴（店名・クーポン対応）
   if (cashPay > 0 && typeof addTransaction === 'function') {
     let memoText = shopLabel ? `${shopLabel}でお支払い` : 'お支払い';
 
@@ -1582,24 +1577,20 @@ function executePayment() {
     addTransaction('残高', -cashPay, memoText);
   }
 
-  // ✨ 2. ポイントでお支払い利用の履歴（店名対応）
   if (usePt > 0 && typeof addTransaction === 'function') {
     const ptMemo = shopLabel ? `${shopLabel}でお支払い利用` : 'お支払い利用';
     addTransaction('ポイント', -usePt, ptMemo);
   }
 
-  // ✨ 決済完了後に店名保持変数をリセット
   activeShopNameFromQR = "";
 
   if (typeof updateDisplay === 'function') updateDisplay();
 
-  // ★ 1. 決済処理完了時にお支払い確認モーダルを閉じる
   const payModal = document.getElementById("pay-confirm-modal") || document.getElementById("pay-modal");
   if (payModal) {
     payModal.classList.add("hidden");
   }
 
-  // 通知メッセージの調整
   if (usePt > 0) {
     let msg = `お支払い完了！(割引: ${discount}円 / pt利用: ${usePt}pt)`;
     if (usedCouponTitle) {
@@ -1651,22 +1642,92 @@ function startRoulette(payAmount) {
   }, 100);
 }
 
-// ルーレットを閉じる関数
 function closeRoulette() {
   if (typeof playSound === 'function') playSound('beep');
   if (typeof points !== 'undefined') points += earnedPoints;
   if (typeof addTransaction === 'function') addTransaction('ポイント', earnedPoints, '11Payルーレット還元');
   if (typeof updateDisplay === 'function') updateDisplay();
 
-  // ★ 2. ルーレットモーダルとお支払い確認モーダルの両方を確実に閉じる
   document.getElementById("roulette-modal")?.classList.add("hidden");
 
   const payModal = document.getElementById("pay-confirm-modal") || document.getElementById("pay-modal");
   if (payModal) {
     payModal.classList.add("hidden");
   }
-} 
+}
 
+// 🔐 --- ログイン・ログアウト・タブ切り替え機能（安全化版） ---
+
+function switchTab(tab) {
+  const loginForm = document.getElementById('form-login');
+  const regForm = document.getElementById('form-register');
+  const tabLogin = document.getElementById('tab-login');
+  const tabReg = document.getElementById('tab-register');
+
+  if (tab === 'login') {
+    if (loginForm) loginForm.classList.remove('hidden');
+    if (regForm) regForm.classList.add('hidden');
+    if (tabLogin) tabLogin.classList.add('active');
+    if (tabReg) tabReg.classList.remove('active');
+  } else {
+    if (loginForm) loginForm.classList.add('hidden');
+    if (regForm) regForm.classList.remove('hidden');
+    if (tabLogin) tabLogin.classList.remove('active');
+    if (tabReg) tabReg.classList.add('active');
+  }
+}
+
+function login() {
+  if (typeof playSound === 'function') playSound('beep');
+  const uInput = document.getElementById('login-user');
+  const pInput = document.getElementById('login-pass');
+  if (!uInput || !pInput) return;
+
+  const u = uInput.value.trim();
+  const p = pInput.value.trim();
+
+  if (!u || !p) {
+    if (typeof playSound === 'function') playSound('error');
+    alert("ユーザー名とパスワードを入力してください");
+    return;
+  }
+
+  const savedPass = localStorage.getItem(`user_${u}`);
+  if (savedPass && savedPass === p) {
+    if (typeof currentUser !== 'undefined') currentUser = u;
+    localStorage.setItem('loggedInUser', u);
+    if (typeof initApp === 'function') initApp();
+    if (typeof playSound === 'function') playSound('win');
+    if (typeof showToast === 'function') showToast(`おかえりなさい、${u} さん！`);
+  } else if (!savedPass) {
+    localStorage.setItem(`user_${u}`, p);
+    if (typeof currentUser !== 'undefined') currentUser = u;
+    localStorage.setItem('loggedInUser', u);
+    if (typeof initApp === 'function') initApp();
+    if (typeof playSound === 'function') playSound('win');
+    if (typeof showToast === 'function') showToast(`アカウントを作成しました: ${u}`);
+  } else {
+    if (typeof playSound === 'function') playSound('error');
+    alert("パスワードが違います");
+  }
+}
+
+function logout() {
+  if (typeof playSound === 'function') playSound('beep');
+  localStorage.removeItem('loggedInUser');
+  if (typeof currentUser !== 'undefined') currentUser = "";
+
+  if (typeof stopScanner === 'function') stopScanner();
+
+  document.getElementById('main-view')?.classList.add('hidden');
+  document.getElementById('bottom-nav')?.classList.add('hidden');
+  document.getElementById('auth-view')?.classList.remove('hidden');
+
+  switchTab('login');
+  if (typeof showToast === 'function') showToast("ログアウトしました");
+}
+
+ 
   
   // --- 取引履歴機能 ---
   let showAllTransactions = false;
