@@ -186,7 +186,7 @@
       <button id="toggle-camera-btn" class="camera-btn" onclick="toggleCamera()">カメラON</button>
       <div class="scanner-box">
         <div id="camera-off-msg" class="camera-off-placeholder">カメラOFF</div>
-        <div id="reader" class="hidden"></div>
+         <div id="reader" class="hidden" style="width: 100%;"></div>
       </div>
     </div>
 
@@ -1066,6 +1066,8 @@
     closeSendQrModal();
   }
 
+ // --- カメラ制御関連の修正コード ---
+
   function toggleCamera() {
     playSound('beep');
     if (isCameraOn) {
@@ -1080,8 +1082,16 @@
     const offMsg = document.getElementById("camera-off-msg");
     const btn = document.getElementById("toggle-camera-btn");
 
-    readerDiv.classList.remove("hidden");
+    // プレースホルダーを消して、リーダーを表示状態にする
     offMsg.classList.add("hidden");
+    readerDiv.classList.remove("hidden");
+
+    // すでにインスタンスがある場合はクリアしておく
+    if (html5QrCode) {
+      try {
+        html5QrCode.clear();
+      } catch (e) {}
+    }
 
     html5QrCode = new Html5Qrcode("reader");
     html5QrCode.start(
@@ -1094,7 +1104,7 @@
       btn.classList.add("active");
     }).catch(err => {
       console.log("カメラ起動エラー: ", err);
-      alert("カメラの起動に失敗しました");
+      alert("カメラの起動に失敗しました（権限やHTTPS接続を確認してください）");
       stopScanner();
     });
   }
@@ -1115,6 +1125,11 @@
         if (callback) callback();
       }).catch(err => {
         console.log("カメラ停止エラー: ", err);
+        isCameraOn = false;
+        readerDiv.classList.add("hidden");
+        offMsg.classList.remove("hidden");
+        btn.innerText = "カメラON";
+        btn.classList.remove("active");
         if (callback) callback();
       });
     } else {
@@ -1127,6 +1142,7 @@
     }
   }
 
+  
   function onScanSuccess(decodedText) {
     if (typeof playSound === 'function') playSound('beep');
 
