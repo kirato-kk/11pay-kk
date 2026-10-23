@@ -9,16 +9,16 @@
     * { box-sizing: border-box; }
     body { font-family: 'Helvetica Neue', Arial, sans-serif; text-align: center; padding: 15px 15px 75px 15px; background-color: #f4f6f9; margin: 0; }
     .container { max-width: 440px; margin: 0 auto; }
-   
+  
     .card-box { background: white; padding: 30px 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-top: 20px; }
-   
+  
     .tab-container { display: flex; margin-bottom: 20px; border-bottom: 2px solid #eee; }
     .tab-btn { flex: 1; padding: 12px; font-size: 16px; font-weight: bold; color: #888; background: none; border: none; cursor: pointer; border-bottom: 3px solid transparent; }
     .tab-btn.active { color: #ff0033; border-bottom-color: #ff0033; }
 
     .login-title { font-size: 24px; font-weight: bold; color: #ff0033; margin-bottom: 15px; }
     input[type="text"], input[type="password"], input[type="number"] { width: 100%; padding: 14px; font-size: 16px; border: 2px solid #ddd; border-radius: 12px; margin-bottom: 12px; text-align: center; }
-   
+  
     .main-btn { width: 100%; padding: 16px; font-size: 18px; color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; background: #ff0033; }
     .secondary-btn { width: 100%; padding: 12px; font-size: 15px; color: #666; border: 1px solid #ccc; border-radius: 12px; cursor: pointer; font-weight: bold; background: #fff; margin-top: 8px; }
 
@@ -44,7 +44,7 @@
       background: #333; color: white; border: none; padding: 10px 20px; border-radius: 20px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 10px; transition: background 0.2s;
     }
     .camera-btn.active { background: #007bff; }
-   
+  
     .scanner-box { position: relative; min-height: 250px; background: #222; border-radius: 20px; overflow: hidden; display: flex; justify-content: center; align-items: center; }
     #reader { width: 100%; border-radius: 20px; overflow: hidden; }
     .camera-off-placeholder { color: #aaa; font-weight: bold; font-size: 14px; position: absolute; }
@@ -55,33 +55,9 @@
     .tx-item:last-child { border-bottom: none; }
 
     .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 60px;
-      background: #ffffff;
-      border-top: 1px solid #e0e0e0;
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      z-index: 999;
-      box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+      position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background: #ffffff; border-top: 1px solid #e0e0e0; display: flex; justify-content: space-around; align-items: center; z-index: 999; box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
     }
-    .nav-item {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: none;
-      border: none;
-      color: #666;
-      font-size: 11px;
-      font-weight: bold;
-      cursor: pointer;
-      padding: 5px 0;
-    }
+    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: none; border: none; color: #666; font-size: 11px; font-weight: bold; cursor: pointer; padding: 5px 0; }
     .nav-svg { margin-bottom: 2px; fill: #666666; }
     .nav-item.active { color: #ff0033; }
     .nav-item.active .nav-svg { fill: #ff0033; }
@@ -89,7 +65,7 @@
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
     .modal-content { background: white; padding: 25px 20px; border-radius: 20px; width: 88%; max-width: 360px; text-align: center; }
     .roulette-box { font-size: 32px; font-weight: bold; color: #ff0033; margin: 20px 0; min-height: 48px; white-space: pre-line; }
-   
+  
     .scratch-container { position: relative; width: 200px; height: 100px; margin: 15px auto; user-select: none; }
     .scratch-result { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff; border: 2px dashed #ff9900; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 20px; font-weight: bold; color: #ff0033; padding: 10px; }
     .scratch-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 10px; cursor: pointer; }
@@ -98,113 +74,68 @@
 
     #qr-output-container { display: flex; justify-content: center; margin: 15px 0; }
     #qr-output-container img { width: 200px; height: 200px; border-radius: 10px; }
-   
+  
     .hidden { display: none !important; }
 
-    /* カメラの親要素を絶対配置の基準にする */
-#camera-container {
-  position: relative;
-}
+    #camera-container { position: relative; }
+    #camera-overlay-btn {
+      position: absolute; right: 15px; bottom: 25px; z-index: 20; width: 45px; height: 45px; border-radius: 50%; background: rgba(0, 0, 0, 0.6); color: white; border: 2px solid white; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+    #camera-overlay-btn:active { transform: scale(0.95); }
 
-/* カメラ右下の丸型アイコンボタン */
-#camera-overlay-btn {
-  position: absolute;
-  right: 15px;
-  bottom: 25px;
-  z-index: 20;
-  
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.6); /* カメラ映像で見やすい半透明の黒 */
-  color: white;
-  border: 2px solid white;
-  font-size: 20px;
-  cursor: pointer;
-  
-  /* アイコンを真ん中に配置 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-}
+    #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+    .toast-notification { background: rgba(30, 30, 30, 0.95); color: white; padding: 12px 20px; border-radius: 30px; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 10px; animation: toastSlideDown 0.3s ease, toastFadeOut 0.3s ease 2.7s forwards; pointer-events: auto; }
 
-#camera-overlay-btn:active {
-  transform: scale(0.95); /* 押したときに少し沈む演出 */
-}
+    @keyframes toastSlideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes toastFadeOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-10px); } }
 
+    .home-gift-btn-container { width: 100%; margin: 14px 0; box-sizing: border-box; }
+    .home-gift-btn {
+      width: 100%; padding: 14px; background: linear-gradient(135deg, #ff416c, #ff4b2b); color: white; font-weight: bold; font-size: 15px; border: none; border-radius: 14px; box-shadow: 0 4px 12px rgba(255, 65, 108, 0.35); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    @keyframes buttonPop { 0% { transform: scale(1); } 50% { transform: scale(0.95); } 100% { transform: scale(1); } }
+    .main-btn:active, .home-gift-btn:active { animation: buttonPop 0.2s ease; }
 
+    .game-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-height: 360px; overflow-y: auto; padding: 8px 2px; }
+    .game-item-btn { padding: 12px 6px; font-size: 13px; font-weight: bold; border: none; border-radius: 14px; color: #ffffff; cursor: pointer; transition: transform 0.1s; display: flex; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 3px 6px rgba(0,0,0,0.15); }
+    .game-item-btn:active { transform: scale(0.95); }
 
-/* --- 3. プッシュ通知（トースト）のスタイル --- */
-#toast-container {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 9999;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  pointer-events: none;
-}
+    .btn-color-1  { background-color: #28a745; }
+    .btn-color-2  { background-color: #007bff; }
+    .btn-color-3  { background-color: #6f42c1; }
+    .btn-color-4  { background-color: #fd7e14; }
+    .btn-color-5  { background-color: #e83e8c; }
+    .btn-color-6  { background-color: #17a2b8; }
+    .btn-color-7  { background-color: #dc3545; }
+    .btn-color-8  { background-color: #20c997; }
+    .btn-color-9  { background-color: #6610f2; }
+    .btn-color-10 { background-color: #ffc107; color: #212529; }
+    .btn-color-11 { background-color: #007bff; }
+    .btn-color-12 { background-color: #343a40; }
+    .btn-color-13 { background-color: #e83e8c; }
+    .btn-color-14 { background-color: #ff5722; }
+    .btn-color-15 { background-color: #00bcd4; }
+    .btn-color-16 { background-color: #8bc34a; }
 
-.toast-notification {
-  background: rgba(30, 30, 30, 0.95);
-  color: white;
-  padding: 12px 20px;
-  border-radius: 30px;
-  font-size: 14px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  animation: toastSlideDown 0.3s ease, toastFadeOut 0.3s ease 2.7s forwards;
-  pointer-events: auto;
-}
+    .crane-box { position: relative; width: 100%; height: 180px; background: #222; border-radius: 10px; overflow: hidden; margin-bottom: 10px; border: 3px solid #17a2b8; }
+    .crane-arm { position: absolute; top: 0; left: 10px; width: 30px; height: 30px; font-size: 24px; text-align: center; line-height: 30px; transition: left 0.1s linear, top 0.1s linear; z-index: 10; }
+    .crane-prize { position: absolute; bottom: 10px; font-size: 28px; }
+    .crane-hole { position: absolute; bottom: 0; left: 10px; width: 45px; height: 15px; background: #000; border-radius: 5px 5px 0 0; border: 1px dashed #fff; }
 
-@keyframes toastSlideDown {
-  from { transform: translateY(-20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-@keyframes toastFadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; transform: translateY(-10px); }
-}
-
- /* ギフトカードボタン Design */
-.home-gift-btn-container { 
-  width: 100%; 
-  margin: 14px 0; 
-  box-sizing: border-box; 
-}
-
-.home-gift-btn {
-  width: 100%; padding: 14px;
-  background: linear-gradient(135deg, #ff416c, #ff4b2b);
-  color: white; font-weight: bold; font-size: 15px;
-  border: none; border-radius: 14px;
-  box-shadow: 0 4px 12px rgba(255, 65, 108, 0.35);
-  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
-}
-   /* ボタンを押したときの小気味よいバウンス（跳ねる）演出 */
-@keyframes buttonPop {
-  0% { transform: scale(1); }
-  50% { transform: scale(0.95); }
-  100% { transform: scale(1); }
-}
-
-.main-btn:active, .home-gift-btn:active {
-  animation: buttonPop 0.2s ease;
-}
-
-　
+    .gift-input-box { width: 100%; padding: 12px; font-size: 16px; letter-spacing: 2px; text-transform: uppercase; text-align: center; border: 2px dashed #ff0033; border-radius: 12px; margin: 15px 0; box-sizing: border-box; }
+    .game-stage-box { background: #f8f9fa; border-radius: 12px; padding: 15px; margin: 10px 0; min-height: 220px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+    .memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; width: 100%; }
+    .memory-card { height: 50px; background: #007bff; color: #fff; font-size: 20px; font-weight: bold; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .memory-card.open { background: #fff; color: #333; border: 2px solid #007bff; }
+    .mole-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; }
+    .mole-hole { height: 60px; background: #8b4513; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; }
+    .diff-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; }
+    .num-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; }
   </style>
 </head>
 <body>
 
 <div class="container">
- 
   <!-- 認証画面 -->
   <div id="auth-view" class="card-box">
     <div class="tab-container">
@@ -227,13 +158,13 @@
       <button class="main-btn" onclick="register()">新規登録</button>
     </div>
   </div>
-<!-- メイン画面 -->
+
+  <!-- メイン画面 -->
   <div id="main-view" class="hidden">
     <div class="header">
       <div class="user-info">
         👤 <span id="user-display">きらと</span>
-        <span style="font-size: 10px; background: #eee; color: #666; padding: 2px 6px; border-radius: 4px; margin-left: 6px; font-weight: bold;">
-          ver.26.9.31</span>
+        <span style="font-size: 10px; background: #eee; color: #666; padding: 2px 6px; border-radius: 4px; margin-left: 6px; font-weight: bold;">ver.26.9.31</span>
       </div>
       <div class="header-btns">
         <button class="small-btn" style="background:#007bff;" onclick="openPassModal()">パスワード変更</button>
@@ -241,17 +172,14 @@
       </div>
     </div>
 
-
-
     <div class="balance-card">
       <div class="card-label">11Pay残高</div>
       <div class="card-amount"><span id="balance-display">0</span> 円</div>
       <div class="point-display">ポイント: <span id="point-display">0</span> pt</div>
     </div>
 
-
-<!-- 3. プッシュ通知（トースト通知）用のコンテナ -->
-<div id="toast-container"></div>
+    <!-- プッシュ通知用コンテナ -->
+    <div id="toast-container"></div>
 
     <!-- カメラ起動コントロール -->
     <div class="camera-area">
@@ -263,309 +191,257 @@
     </div>
 
     <!-- カメラとボタンを囲むコンテナ -->
-<div id="camera-container" style="position: relative; display: inline-block; width: 100%;">
-  <div id="reader" style="width: 100%;"></div>
-  
-  <!-- カメラの右下に配置する丸いイラスト（アイコン）ボタン -->
-  <button id="camera-overlay-btn" onclick="document.getElementById('qr-input-file').click()" title="画像から読み込む">
-    📁
-  </button>
-  
-  <!-- 端末内の画像を選択するための隠しファイルinput -->
-  <input type="file" id="qr-input-file" accept="image/*" style="display:none;" onchange="handleFileScan(this)">
-</div>
-
-
-<!-- 📰 HOME用NEWSバナーの箱 -->
-<div id="pay-news-banner" style="background: #fff8e1; border: 1px solid #ffe082; padding: 12px 14px; border-radius: 12px; margin: 12px auto; width: 100%; max-width: 100%; box-sizing: border-box; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 8px;">
-  
-  <!-- ✨ id="news-banner-click" を追加し、固定の onclick="openNewsDetail(1)" を削除しました -->
-  <div id="news-banner-click" style="display: flex; align-items: center; gap: 8px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; cursor: pointer;">
-    <span style="background: #e65100; color: #fff; font-size: 11px; padding: 3px 8px; border-radius: 4px; font-weight: bold;">NEWS</span>
-    <span id="news-title-text" style="color: #222; font-weight: bold; font-size: 14px; overflow: hidden; text-overflow: ellipsis;">キャンペーン実施！</span>
-  </div>
-  
-  <button style="background: #ffb300; color: #fff; border: none; font-size: 12px; font-weight: bold; cursor: pointer; width: 100%; padding: 6px; border-radius: 6px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.1);" onclick="openNewsList()">もっと見る</button>
-</div>
-
-
-
-
-    
-<!-- 歩数ポイント獲得セクション -->
-<div class="step-card" style="background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center;">
-  <h3 style="font-size: 14px; color: #333; margin: 0 0 10px 0;">歩数でポイントGET！</h3>
-  
-  <!-- ゲージ＆動くイラストのエリア -->
-  <div style="background: #f8f9fa; padding: 20px 12px 15px 12px; border-radius: 10px; margin-bottom: 10px; position: relative;">
-    
-    <!-- 移動するイラスト（SVGアイコン） -->
-    <div id="walking-character" style="position: absolute; top: 10px; left: 25px; transition: left 0.3s ease; transform: translateX(-50%);">
-      <svg id="character-svg" width="28" height="28" viewBox="0 0 24 24" fill="#ff4757" xmlns="http://www.w3.org/2000/svg">
-        <path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.2L6 8.5V13h2V9.6l1.8-.7z"/>
-      </svg>
+    <div id="camera-container" style="position: relative; display: inline-block; width: 100%;">
+      <button id="camera-overlay-btn" onclick="document.getElementById('qr-input-file').click()" title="画像から読み込む">📁</button>
+      <input type="file" id="qr-input-file" accept="image/*" style="display:none;" onchange="handleFileScan(this)">
     </div>
 
-    <div style="font-size: 13px; color: #666; margin: 15px 0 10px 0;">
-      現在の歩数: <strong id="current-steps" style="color: #ff4757;">0</strong> 歩 / 500歩
+    <!-- NEWSバナー -->
+    <div id="pay-news-banner" style="background: #fff8e1; border: 1px solid #ffe082; padding: 12px 14px; border-radius: 12px; margin: 12px auto; width: 100%; box-sizing: border-box; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 8px;">
+      <div id="news-banner-click" style="display: flex; align-items: center; gap: 8px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; cursor: pointer;">
+        <span style="background: #e65100; color: #fff; font-size: 11px; padding: 3px 8px; border-radius: 4px; font-weight: bold;">NEWS</span>
+        <span id="news-title-text" style="color: #222; font-weight: bold; font-size: 14px; overflow: hidden; text-overflow: ellipsis;">キャンペーン実施！</span>
+      </div>
+      <button style="background: #ffb300; color: #fff; border: none; font-size: 12px; font-weight: bold; cursor: pointer; width: 100%; padding: 6px; border-radius: 6px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.1);" onclick="openNewsList()">もっと見る</button>
     </div>
-    
-    <!-- 5つのゲージ表示 (100歩ごと) -->
-    <div style="display: flex; justify-content: center; gap: 6px; margin-bottom: 8px;">
-      <div class="step-gauge-box" id="gauge-0" style="flex: 1; height: 10px; background: #e0e0e0; border-radius: 5px; transition: background 0.3s;"></div>
-      <div class="step-gauge-box" id="gauge-1" style="flex: 1; height: 10px; background: #e0e0e0; border-radius: 5px; transition: background 0.3s;"></div>
-      <div class="step-gauge-box" id="gauge-2" style="flex: 1; height: 10px; background: #e0e0e0; border-radius: 5px; transition: background 0.3s;"></div>
-      <div class="step-gauge-box" id="gauge-3" style="flex: 1; height: 10px; background: #e0e0e0; border-radius: 5px; transition: background 0.3s;"></div>
-      <div class="step-gauge-box" id="gauge-4" style="flex: 1; height: 10px; background: #e0e0e0; border-radius: 5px; transition: background 0.3s;"></div>
+
+    <!-- 歩数ポイント獲得セクション -->
+    <div class="step-card" style="background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center;">
+      <h3 style="font-size: 14px; color: #333; margin: 0 0 10px 0;">歩数でポイントGET！</h3>
+     
+      <div style="background: #f8f9fa; padding: 20px 12px 15px 12px; border-radius: 10px; margin-bottom: 10px; position: relative;">
+        <div id="walking-character" style="position: absolute; top: 10px; left: 25px; transition: left 0.3s ease; transform: translateX(-50%);">
+          <svg id="character-svg" width="28" height="28" viewBox="0 0 24 24" fill="#ff4757" xmlns="http://www.w3.org/2000/svg">
+            <path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.2L6 8.5V13h2V9.6l1.8-.7z"/>
+          </svg>
+        </div>
+
+        <div style="font-size: 13px; color: #666; margin: 15px 0 10px 0;">
+          現在の歩数: <strong id="current-steps" style="color: #ff4757;">0</strong> 歩 / 500歩
+        </div>
+       
+        <div style="display: flex; justify-content: center; gap: 6px; margin-bottom: 8px;">
+          <div class="step-gauge-box" id="gauge-0" style="flex: 1; height: 10px; background: #e0e0e0; border-radius: 5px; transition: background 0.3s;"></div>
+          <div class="step-gauge-box" id="gauge-1" style="flex: 1; height: 10px; background: #e0e0e0; border-radius: 5px; transition: background 0.3s;"></div>
+          <div class="step-gauge-box" id="gauge-2" style="flex: 1; height: 10px; background: #e0e0e0; border-radius: 5px; transition: background 0.3s;"></div>
+          <div class="step-gauge-box" id="gauge-3" style="flex: 1; height: 10px; background: #e0e0e0; border-radius: 5px; transition: background 0.3s;"></div>
+          <div class="step-gauge-box" id="gauge-4" style="flex: 1; height: 10px; background: #e0e0e0; border-radius: 5px; transition: background 0.3s;"></div>
+        </div>
+        <div style="font-size: 11px; color: #888;" id="step-status-text">100歩ごとに100pt、5つ貯まると500pt！</div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <button onclick="requestMotionPermission()" style="background: #27ae60; color: white; border: none; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; width: 100%;">歩数センサーを有効にする</button>
+        <button onclick="claimStepPoints()" id="claim-btn" style="background: #ff4757; color: white; border: none; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; width: 100%;">ポイントを受け取る</button>
+      </div>
+      <div style="font-size: 10px; color: #aaa; margin-top: 6px;">本日の獲得: <span id="today-earned-points">0</span> / 10,000pt</div>
     </div>
-    <div style="font-size: 11px; color: #888;" id="step-status-text">100歩ごとに100pt、5つ貯まると500pt！</div>
-  </div>
 
-  <!-- アクションボタン -->
-  <div style="display: flex; flex-direction: column; gap: 8px;">
-    <button onclick="requestMotionPermission()" style="background: #27ae60; color: white; border: none; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; width: 100%;">
-      歩数センサーを有効にする
-    </button>
-    <button onclick="claimStepPoints()" id="claim-btn" style="background: #ff4757; color: white; border: none; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; width: 100%;">
-      ポイントを受け取る
-    </button>
-  </div>
-  <div style="font-size: 10px; color: #aaa; margin-top: 6px;">本日の獲得: <span id="today-earned-points">0</span> / 10,000pt</div>
-</div>
-
-
-    
-        
     <!-- 取引履歴エリア -->
     <div class="tx-card">
       <div class="tx-title">取引履歴</div>
       <div id="transaction-list"></div>
       <button id="tx-more-btn" class="secondary-btn hidden" style="margin-top: 10px;" onclick="toggleMoreTransactions()">もっと見る</button>
     </div>
-  
-    <!-- ✨ ギフトカードボタンをここ（#main-viewの中の一番下）に移動！ -->
+
+    <!-- ギフトカードボタン -->
     <div class="home-gift-btn-container">
-      <button class="home-gift-btn" onclick="openGiftModal()">
-        ギフトカードコード入力
-      </button>
+      <button class="home-gift-btn" onclick="openGiftModal()">ギフトカードコード入力</button>
     </div>
+  </div>
 
-  </div> <!-- ← ここが #main-view の閉じタグ -->
+  <!-- ボトムナビゲーション -->
+  <div id="bottom-nav" class="bottom-nav hidden">
+    <button class="nav-item" onclick="openCouponModal()">
+      <svg class="nav-svg" viewBox="0 0 24 24" width="22" height="22"><path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/></svg>
+      <span>COUPON</span>
+    </button>
+    <button class="nav-item" onclick="openSendQrModal()">
+      <svg class="nav-svg" viewBox="0 0 24 24" width="22" height="22"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      <span>SEND</span>
+    </button>
+    <button class="nav-item active" onclick="goHome()">
+      <svg class="nav-svg" viewBox="0 0 24 24" width="22" height="22"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      <span>HOME</span>
+    </button>
+    <button class="nav-item" onclick="openGameModal()">
+      <svg class="nav-svg" viewBox="0 0 24 24" width="22" height="22"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H9v2H7v-2H5v-2h2V9h2v2h2v2zm4.5 1c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm3-3c-.83 0-1.5-.67-1.5-1.5S17.67 9 18.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+      <span>GAME</span>
+    </button>
+    <button class="nav-item" onclick="openScratchModal()">
+      <svg class="nav-svg" viewBox="0 0 24 24" width="22" height="22"><path d="M22 10V6c0-1.11-.9-2-2-2H4c-1.1 0-1.99.89-1.99 2v4c1.1 0 1.99.9 1.99 2s-.89 2-2 2v4c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2v-4c-1.1 0-2-.9-2-2s.9-2 2-2zm-2-1.53c-1.19.69-2 1.97-2 3.53s.81 2.84 2 3.53V18H4v-2.47c1.19-.69 2-1.97 2-3.53s-.81-2.84-2-3.53V6h16v2.47z"/></svg>
+      <span>SCRATCH</span>
+    </button>
+  </div>
 
-
-
-<!-- ボトムナビゲーション -->
-<div id="bottom-nav" class="bottom-nav hidden">
-  <button class="nav-item" onclick="openCouponModal()">
-    <svg class="nav-svg" viewBox="0 0 24 24" width="22" height="22">
-      <path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/>
-    </svg>
-    <span>COUPON</span>
-  </button>
-  <button class="nav-item" onclick="openSendQrModal()">
-    <svg class="nav-svg" viewBox="0 0 24 24" width="22" height="22">
-      <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-    </svg>
-    <span>SEND</span>
-  </button>
-  <button class="nav-item active" onclick="goHome()">
-    <svg class="nav-svg" viewBox="0 0 24 24" width="22" height="22">
-      <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-    </svg>
-    <span>HOME</span>
-  </button>
-  <button class="nav-item" onclick="openGameModal()">
-    <svg class="nav-svg" viewBox="0 0 24 24" width="22" height="22">
-      <path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H9v2H7v-2H5v-2h2V9h2v2h2v2zm4.5 1c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm3-3c-.83 0-1.5-.67-1.5-1.5S17.67 9 18.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
-    </svg>
-    <span>GAME</span>
-  </button>
-  <button class="nav-item" onclick="openScratchModal()">
-    <svg class="nav-svg" viewBox="0 0 24 24" width="22" height="22">
-      <path d="M22 10V6c0-1.11-.9-2-2-2H4c-1.1 0-1.99.89-1.99 2v4c1.1 0 1.99.9 1.99 2s-.89 2-2 2v4c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2v-4c-1.1 0-2-.9-2-2s.9-2 2-2zm-2-1.53c-1.19.69-2 1.97-2 3.53s.81 2.84 2 3.53V18H4v-2.47c1.19-.69 2-1.97 2-3.53s-.81-2.84-2-3.53V6h16v2.47z"/>
-    </svg>
-    <span>SCRATCH</span>
-  </button>
-</div>
-
-
-<!-- GAMEモーダル（修正版） -->
-<div id="game-modal" class="modal-overlay hidden">
-  <div class="modal-content">
-   
-    <!-- ゲーム選択メニュー -->
-    <div id="game-menu-select">
-      <!-- メインカテゴリー選択 -->
-      <div id="game-category-content">
-        <h3>GAME</h3>
-        <p style="font-size: 13px; color: #666; margin-bottom: 20px;">どちらで遊ぶか選んでね！</p>
-        <button class="main-btn" style="margin-bottom: 12px; background: #007bff;" onclick="openMiniGameMenu()">ミニゲーム</button>
-        <button class="main-btn" style="background: #ff9900;" onclick="startGachaSelect()">11payガチャ</button>
-        <button class="secondary-btn" style="margin-top: 15px;" onclick="closeGameModal()">閉じる</button>
-      </div>
-
-      <!-- 16種ミニゲームグリッドメニュー（最初は非表示） -->
-      <div id="minigame-menu-select" class="hidden">
-        <h3>ミニゲーム メニュー</h3>
-        <p style="font-size: 12px; color: #666; margin-bottom: 10px;">遊ぶゲームを選んでね！</p>
-        <div class="game-grid">
-          <button class="game-item-btn btn-color-1" onclick="triggerTofuGame()">🧊豆腐タワー</button>
-          <button class="game-item-btn btn-color-2" onclick="playGame('janken')">✊じゃんけん</button>
-          <button class="game-item-btn btn-color-3" onclick="playGame('highlow')">🎴ハイ＆ロー</button>
-          <button class="game-item-btn btn-color-4" onclick="playGame('memory')">🃏神経衰弱</button>
-          <button class="game-item-btn btn-color-5" onclick="playGame('mole')">🕳️モグラ叩き</button>
-          <button class="game-item-btn btn-color-6" onclick="startCraneGame()">🏗️クレーンゲーム</button>
-          <button class="game-item-btn btn-color-7" onclick="playGame('dice')">🎲サイコロ</button>
-          <button class="game-item-btn btn-color-8" onclick="playGame('just555')">⏳5.55秒ストップ</button>
-          <button class="game-item-btn btn-color-9" onclick="playGame('nummem')">🧠数字記憶</button>
-          <button class="game-item-btn btn-color-10" onclick="playGame('chicken')">🐔チキンレース</button>
-          <button class="game-item-btn btn-color-11" onclick="playGame('diff')">😃間違い探し</button>
-          <button class="game-item-btn btn-color-12" onclick="playGame('bomb')">💣爆弾処理</button>
-          <button class="game-item-btn btn-color-13" onclick="playGame('tap')">🫵連打ラッシュ</button>
-          <button class="game-item-btn btn-color-14" onclick="playGame('balloon')">🎈風船ゲーム</button>
-          <button class="game-item-btn btn-color-15" onclick="playGame('seq')">🔢順番タップ</button>
-          <button class="game-item-btn btn-color-16" onclick="playGame('anagram')">📝アナグラム</button>
+  <!-- GAMEモーダル -->
+  <div id="game-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div id="game-menu-select">
+        <div id="game-category-content">
+          <h3>GAME</h3>
+          <p style="font-size: 13px; color: #666; margin-bottom: 20px;">どちらで遊ぶか選んでね！</p>
+          <button class="main-btn" style="margin-bottom: 12px; background: #007bff;" onclick="openMiniGameMenu()">ミニゲーム</button>
+          <button class="main-btn" style="background: #ff9900;" onclick="startGachaSelect()">11payガチャ</button>
+          <button class="secondary-btn" style="margin-top: 15px;" onclick="closeGameModal()">閉じる</button>
         </div>
-        <button class="secondary-btn" style="margin-top: 15px;" onclick="backToGameCategory()">戻る</button>
+
+        <div id="minigame-menu-select" class="hidden">
+          <h3>ミニゲーム メニュー</h3>
+          <p style="font-size: 12px; color: #666; margin-bottom: 10px;">遊ぶゲームを選んでね！</p>
+          <div class="game-grid">
+            <button class="game-item-btn btn-color-1" onclick="triggerTofuGame()">🧊豆腐タワー</button>
+            <button class="game-item-btn btn-color-2" onclick="playGame('janken')">✊じゃんけん</button>
+            <button class="game-item-btn btn-color-3" onclick="playGame('highlow')">🎴ハイ＆ロー</button>
+            <button class="game-item-btn btn-color-4" onclick="playGame('memory')">🃏神経衰弱</button>
+            <button class="game-item-btn btn-color-5" onclick="playGame('mole')">🕳️モグラ叩き</button>
+            <button class="game-item-btn btn-color-6" onclick="startCraneGame()">🏗️クレーンゲーム</button>
+            <button class="game-item-btn btn-color-7" onclick="playGame('dice')">🎲サイコロ</button>
+            <button class="game-item-btn btn-color-8" onclick="playGame('just555')">⏳5.55秒ストップ</button>
+            <button class="game-item-btn btn-color-9" onclick="playGame('nummem')">🧠数字記憶</button>
+            <button class="game-item-btn btn-color-10" onclick="playGame('chicken')">🐔チキンレース</button>
+            <button class="game-item-btn btn-color-11" onclick="playGame('diff')">😃間違い探し</button>
+            <button class="game-item-btn btn-color-12" onclick="playGame('bomb')">💣爆弾処理</button>
+            <button class="game-item-btn btn-color-13" onclick="playGame('tap')">🫵連打ラッシュ</button>
+            <button class="game-item-btn btn-color-14" onclick="playGame('balloon')">🎈風船ゲーム</button>
+            <button class="game-item-btn btn-color-15" onclick="playGame('seq')">🔢順番タップ</button>
+            <button class="game-item-btn btn-color-16" onclick="playGame('anagram')">📝アナグラム</button>
+          </div>
+          <button class="secondary-btn" style="margin-top: 15px;" onclick="backToGameCategory()">戻る</button>
+        </div>
+      </div>
+
+      <!-- 豆腐タワー画面 -->
+      <div id="game-tofu-screen" class="hidden">
+        <h3>豆腐タワーチャレンジ</h3>
+        <p style="font-size: 13px; color: #666; margin-bottom: 5px;">タップしてタイミングよく豆腐を重ねよう！</p>
+        <canvas id="game-canvas" width="300" height="300"></canvas>
+        <button class="secondary-btn" onclick="backToGameMenu()">メニューに戻る</button>
+      </div>
+
+      <!-- ガチャ画面 -->
+      <div id="gacha-screen" class="hidden">
+        <h3>11Payガチャ</h3>
+        <p style="font-size: 13px; color: #666; margin-bottom: 10px;">1回 200pt で運試し！</p>
+        <div id="gacha-box" style="font-size: 40px; margin: 20px 0;">🎁</div>
+        <div id="gacha-result-text" style="font-size: 18px; font-weight: bold; color: #ff0033; min-height: 28px; margin-bottom: 15px;"></div>
+        <button id="gacha-draw-btn" class="main-btn" style="background: #ff9900;" onclick="playGacha()">ガチャを回す</button>
+        <button class="secondary-btn" style="margin-top: 10px;" onclick="backToGameMenu()">メニューに戻る</button>
       </div>
     </div>
-
-    <!-- 豆腐タワー画面 -->
-    <div id="game-tofu-screen" class="hidden">
-      <h3>豆腐タワーチャレンジ</h3>
-      <p style="font-size: 13px; color: #666; margin-bottom: 5px;">タップしてタイミングよく豆腐を重ねよう！</p>
-      <canvas id="game-canvas" width="300" height="300"></canvas>
-      <button class="secondary-btn" onclick="backToGameMenu()">メニューに戻る</button>
-    </div>
-
-    <!-- ガチャ画面 -->
-    <div id="gacha-screen" class="hidden">
-      <h3>11Payガチャ</h3>
-      <p style="font-size: 13px; color: #666; margin-bottom: 10px;">1回 200pt で運試し！</p>
-     
-      <div id="gacha-box" style="font-size: 40px; margin: 20px 0;">🎁</div>
-      <div id="gacha-result-text" style="font-size: 18px; font-weight: bold; color: #ff0033; min-height: 28px; margin-bottom: 15px;"></div>
-
-      <button id="gacha-draw-btn" class="main-btn" style="background: #ff9900;" onclick="playGacha()">ガチャを回す</button>
-      <button class="secondary-btn" style="margin-top: 10px;" onclick="backToGameMenu()">メニューに戻る</button>
-    </div>
-
   </div>
-</div>
 
-<!-- ミニゲーム実行モーダル -->
-<div id="minigame-play-modal" class="modal-overlay hidden">
-  <div class="modal-content">
-    <h3 id="minigame-title">🎮 ミニゲーム</h3>
-    <div id="minigame-stage" class="game-stage-box"></div>
-    <button class="secondary-btn" onclick="closeMiniGamePlayModal()">メニューに戻る</button>
-  </div>
-</div>
-
-
-
-<!-- スクラッチモーダル -->
-<div id="scratch-modal" class="modal-overlay hidden">
-  <div class="modal-content">
-    <h3>毎日スクラッチ!!</h3>
-    <p style="font-size: 13px; color: #666; margin-bottom: 10px;">グレーの部分を指でけずってね！</p>
-   
-    <div class="scratch-container">
-      <div id="scratch-result-text" class="scratch-result">?</div>
-      <canvas id="scratch-canvas" class="scratch-canvas" width="200" height="100"></canvas>
+  <!-- ミニゲーム実行モーダル -->
+  <div id="minigame-play-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3 id="minigame-title">🎮 ミニゲーム</h3>
+      <div id="minigame-stage" class="game-stage-box"></div>
+      <button class="secondary-btn" onclick="closeMiniGamePlayModal()">メニューに戻る</button>
     </div>
-
-    <button class="main-btn hidden" id="scratch-claim-btn" onclick="claimScratchPoints()">ポイントを受け取る</button>
-    <button class="secondary-btn" id="scratch-close-btn" onclick="closeScratchModal()">閉じる</button>
   </div>
-</div>
 
-<!-- パスワード変更モーダル -->
-<div id="pass-modal" class="modal-overlay hidden">
-  <div class="modal-content">
-    <h3>パスワード変更</h3>
-    <input type="password" id="old-pass" placeholder="現在のパスワード">
-    <input type="password" id="new-pass" placeholder="新しいパスワード">
-    <input type="password" id="new-pass-confirm" placeholder="新しいパスワード (確認)">
-    <button class="main-btn" onclick="changePassword()">変更する</button>
-    <button class="secondary-btn" onclick="closePassModal()">キャンセル</button>
-  </div>
-</div>
-
-<!-- QRコードで送るモーダル -->
-<div id="send-qr-modal" class="modal-overlay hidden">
-  <div class="modal-content">
-    <h3>友達に送る</h3>
-    <p style="font-size: 13px; color: #666; margin-bottom: 10px;">送る金額を入力してください</p>
-   
-    <div id="qr-input-area">
-      <input type="number" id="send-qr-amount" placeholder="">
-      <button class="main-btn" onclick="generateSendQr()">QRコード作成</button>
-    </div>
-
-    <div id="qr-result-area" class="hidden">
-      <p style="font-weight: bold; margin-bottom: 5px;">相手に読み取ってもらってください</p>
-      <div id="qr-output-container"></div>
-      <p style="font-size: 14px; color: #333;" id="qr-desc-amount"></p>
-      <button class="secondary-btn" style="color:#ff0033; border-color:#ff0033;" onclick="cancelSendQr()">送金をキャンセルする</button>
-    </div>
-
-    <button class="secondary-btn" id="close-qr-btn" onclick="closeSendQrModal()">閉じる</button>
-  </div>
-</div>
-
-<!-- 決済・ポイント確認モーダル -->
-<div id="pay-confirm-modal" class="modal-overlay hidden">
-  <div class="modal-content">
-    <h3>お支払い確認</h3>
-    <p style="font-size: 18px; font-weight: bold; margin: 10px 0;">お支払い額: <span id="confirm-pay-amount" style="color:#ff0033;">0</span> 円</p>
-   
-    <div style="background: #f8f9fa; padding: 12px; border-radius: 10px; margin-bottom: 15px; text-align: left;">
-      <label style="font-weight: bold; display: block; margin-bottom: 5px;">
-        <input type="checkbox" id="use-pt-check" onchange="togglePointInput()"> ポイントを使用する
-      </label>
-      <div id="pt-input-container" class="hidden">
-        <input type="number" id="use-pt-input" placeholder="使用ポイント" style="margin-bottom: 0;">
-        <small style="color: #666;">利用可能: <span id="max-pt-display">0</span> pt</small>
-        <p style="color: #ff0033; font-size: 11px; margin: 4px 0 0 0;">※ポイント使用時はルーレット対象外となります</p>
+  <!-- スクラッチモーダル -->
+  <div id="scratch-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3>毎日スクラッチ!!</h3>
+      <p style="font-size: 13px; color: #666; margin-bottom: 10px;">グレーの部分を指でけずってね！</p>
+      <div class="scratch-container">
+        <div id="scratch-result-text" class="scratch-result">?</div>
+        <canvas id="scratch-canvas" class="scratch-canvas" width="200" height="100"></canvas>
       </div>
+      <button class="main-btn hidden" id="scratch-claim-btn" onclick="claimScratchPoints()">ポイントを受け取る</button>
+      <button class="secondary-btn" id="scratch-close-btn" onclick="closeScratchModal()">閉じる</button>
     </div>
+  </div>
 
-    <button class="main-btn" onclick="executePayment()">お支払いを確定する</button>
-    <button class="secondary-btn" onclick="cancelPayment()">キャンセル</button>
+  <!-- パスワード変更モーダル -->
+  <div id="pass-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3>パスワード変更</h3>
+      <input type="password" id="old-pass" placeholder="現在のパスワード">
+      <input type="password" id="new-pass" placeholder="新しいパスワード">
+      <input type="password" id="new-pass-confirm" placeholder="新しいパスワード (確認)">
+      <button class="main-btn" onclick="changePassword()">変更する</button>
+      <button class="secondary-btn" onclick="closePassModal()">キャンセル</button>
+    </div>
+  </div>
+
+  <!-- QRコードで送るモーダル -->
+  <div id="send-qr-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3>友達に送る</h3>
+      <p style="font-size: 13px; color: #666; margin-bottom: 10px;">送る金額を入力してください</p>
+      <div id="qr-input-area">
+        <input type="number" id="send-qr-amount" placeholder="">
+        <button class="main-btn" onclick="generateSendQr()">QRコード作成</button>
+      </div>
+      <div id="qr-result-area" class="hidden">
+        <p style="font-weight: bold; margin-bottom: 5px;">相手に読み取ってもらってください</p>
+        <div id="qr-output-container"></div>
+        <p style="font-size: 14px; color: #333;" id="qr-desc-amount"></p>
+        <button class="secondary-btn" style="color:#ff0033; border-color:#ff0033;" onclick="cancelSendQr()">送金をキャンセルする</button>
+      </div>
+      <button class="secondary-btn" id="close-qr-btn" onclick="closeSendQrModal()">閉じる</button>
+    </div>
+  </div>
+
+  <!-- 決済確認モーダル -->
+  <div id="pay-confirm-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3>お支払い確認</h3>
+      <p style="font-size: 18px; font-weight: bold; margin: 10px 0;">お支払い額: <span id="confirm-pay-amount" style="color:#ff0033;">0</span> 円</p>
+      <div style="background: #f8f9fa; padding: 12px; border-radius: 10px; margin-bottom: 15px; text-align: left;">
+        <label style="font-weight: bold; display: block; margin-bottom: 5px;">
+          <input type="checkbox" id="use-pt-check" onchange="togglePointInput()"> ポイントを使用する
+        </label>
+        <div id="pt-input-container" class="hidden">
+          <input type="number" id="use-pt-input" placeholder="使用ポイント" style="margin-bottom: 0;">
+          <small style="color: #666;">利用可能: <span id="max-pt-display">0</span> pt</small>
+          <p style="color: #ff0033; font-size: 11px; margin: 4px 0 0 0;">※ポイント使用時はルーレット対象外となります</p>
+        </div>
+      </div>
+      <button class="main-btn" onclick="executePayment()">お支払いを確定する</button>
+      <button class="secondary-btn" onclick="cancelPayment()">キャンセル</button>
+    </div>
+  </div>
+
+  <!-- ルーレット結果モーダル -->
+  <div id="roulette-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3>11Payルーレット！</h3>
+      <p style="color: #666; font-size: 14px;" id="roulette-sub">抽選中...</p>
+      <div id="roulette-display" class="roulette-box">回しています...</div>
+      <button id="roulette-close-btn" class="main-btn hidden" onclick="closeRoulette()">ポイントを受け取る</button>
+    </div>
+  </div>
+
+  <!-- ギフトカード入力モーダル -->
+  <div id="gift-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3>ギフトカードでチャージ</h3>
+      <p style="font-size: 13px; color: #666;">ギフトコードを入力してください</p>
+      <input type="text" id="gift-code-input" class="gift-input-box" placeholder="">
+      <button class="main-btn" onclick="redeemGiftCode()">チャージする</button>
+      <button class="secondary-btn" onclick="closeGiftModal()">閉じる</button>
+    </div>
   </div>
 </div>
-<!-- ルーレット結果モーダル -->
-<div id="roulette-modal" class="modal-overlay hidden">
-  <div class="modal-content">
-    <h3>11Payルーレット！</h3>
-    <p style="color: #666; font-size: 14px;" id="roulette-sub">抽選中...</p>
-    <div id="roulette-display" class="roulette-box">回しています...</div>
-    <button id="roulette-close-btn" class="main-btn hidden" onclick="closeRoulette()">ポイントを受け取る</button>
-  </div>
-</div>
-
 
 <script>
   let currentUser = localStorage.getItem("paypay_login_user") || "";
   let balance = 0;
   let points = 0;
   let transactions = [];
- 
   let currentScanAmount = 0;
   let earnedPoints = 0;
   let pendingSendAmount = 0;
   let html5QrCode = null;
   let isCameraOn = false;
 
-  
-
-  // スクラッチ用
   let scratchPointResult = 0;
   let scratchIsCleared = false;
   let isDrawing = false;
 
-  // 豆腐ゲーム用
   let gameAnimationId;
   let tofuCanvas, tofuCtx;
   let tofuStack = [];
@@ -583,7 +459,6 @@
     localStorage.setItem("paypay_users", JSON.stringify(users));
   }
 
-  // --- 効果音 ---
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
   function playSound(type) {
@@ -733,8 +608,6 @@
     closeScratchModal();
   }
 
- 
-  // --- GAMEメニュー機能 ---
   function openGameModal() {
     playSound('beep');
     document.getElementById("game-modal").classList.remove("hidden");
@@ -817,13 +690,11 @@
 
       if (count > 15) {
         clearInterval(interval);
-       
         points += wonPoint;
         addTransaction('ポイント', wonPoint, '11payガチャ');
         updateDisplay();
 
         box.innerText = wonPoint >= 500 ? "🎊" : "🎁";
-       
         if (wonPoint >= 500) {
           playSound('win');
           resultText.innerText = `超激レア！ ${wonPoint}pt 当選！`;
@@ -834,7 +705,6 @@
           playSound('beep');
           resultText.innerText = `${wonPoint}pt 獲得！`;
         }
-
         drawBtn.classList.remove("hidden");
       }
     }, 100);
@@ -862,7 +732,6 @@
     }
 
     playSound('tick');
-
     const newWidth = currentTofu.width - Math.abs(diff);
     const newX = diff > 0 ? currentTofu.x : topTofu.x;
 
@@ -968,7 +837,6 @@
     document.getElementById("game-modal").classList.add("hidden");
   }
 
-  // --- スクラッチ機能 ---
   function openScratchModal() {
     playSound('beep');
     const today = new Date().toLocaleDateString();
@@ -1031,7 +899,6 @@
 
   function checkScratchProgress(ctx, canvas) {
     if (scratchIsCleared) return;
-
     const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     let transparentPixels = 0;
     for (let i = 3; i < imgData.data.length; i += 4) {
@@ -1064,7 +931,6 @@
     document.getElementById("scratch-modal").classList.add("hidden");
   }
 
-  // --- パスワード変更 ---
   function openPassModal() {
     playSound('beep');
     document.getElementById("old-pass").value = "";
@@ -1084,7 +950,6 @@
     const newPassConfirm = document.getElementById("new-pass-confirm").value;
 
     const users = getUsers();
-
     if (users[currentUser] !== oldPass) {
       playSound('error');
       return alert("現在のパスワードが違います");
@@ -1131,7 +996,7 @@
 
     const savedTx = localStorage.getItem(`tx_${currentUser}`);
     transactions = savedTx ? JSON.parse(savedTx) : [];
-   
+  
     updateDisplay();
   }
 
@@ -1144,7 +1009,6 @@
     renderTransactions();
   }
 
-  // --- 送金QR機能 ---
   function openSendQrModal() {
     playSound('beep');
     document.getElementById("send-qr-amount").value = "";
@@ -1180,7 +1044,7 @@
 
     const qrData = `SEND:${currentUser}:${sendAmount}`;
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}`;
-   
+  
     const container = document.getElementById("qr-output-container");
     container.innerHTML = `<img src="${qrUrl}" alt="送金QRコード">`;
 
@@ -1201,7 +1065,7 @@
     }
     closeSendQrModal();
   }
-// --- スキャナー制御 ---
+
   function toggleCamera() {
     playSound('beep');
     if (isCameraOn) {
@@ -1263,160 +1127,108 @@
     }
   }
 
-  // カメラを再起動（またはもう一度スキャン状態に戻す）ための関数例
-function restartScanner() {
-  if (typeof html5QrCode !== 'undefined') {
-    // すでにスキャン中でなければ起動する
-    html5QrCode.start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: 250 },
-      onScanSuccess
-    ).catch(err => {
-      console.log("カメラ起動エラー:", err);
-    });
-  }
-}
-// 💡 変数の事前宣言
-let earnedPoints = 0;
-let currentScanAmount = typeof currentScanAmount !== 'undefined' ? currentScanAmount : 0;
+  function onScanSuccess(decodedText) {
+    if (typeof playSound === 'function') playSound('beep');
 
-// QR読み取り成功時の処理（標準版）
-function onScanSuccess(decodedText) {
-  if (typeof playSound === 'function') playSound('beep');
+    const handleSuccess = () => {
+      if (decodedText.startsWith("COUPON:")) {
+        const parts = decodedText.split(":");
+        if (parts.length >= 5) {
+          const coupon = {
+            id: parts[1],
+            title: parts[1],
+            discount: parseInt(parts[2], 10) || 0,
+            minPrice: parseInt(parts[3], 10) || 0,
+            expiry: parts[4]
+          };
+          let coupons = JSON.parse(localStorage.getItem('11pay_coupons')) || [];
+          if (coupons.some(c => c.id === coupon.id)) {
+            if (typeof playSound === 'function') playSound('error');
+            alert("このクーポンはすでに登録されています");
+            return;
+          }
+          coupons.push(coupon);
+          localStorage.setItem('11pay_coupons', JSON.stringify(coupons));
+          if (typeof playSound === 'function') playSound('win');
+          alert(`クーポン「${coupon.title}」を追加しました！`);
+          return;
+        }
+      }
 
-  const handleSuccess = () => {
-    // 1. クーポンQRの読み取り処理
-    if (decodedText.startsWith("COUPON:")) {
-      const parts = decodedText.split(":");
-      if (parts.length >= 5) {
-        const coupon = {
-          id: parts[1],
-          title: parts[1],
-          discount: parseInt(parts[2], 10) || 0,
-          minPrice: parseInt(parts[3], 10) || 0,
-          expiry: parts[4]
-        };
+      if (decodedText.startsWith("SEND:")) {
+        const parts = decodedText.split(":");
+        const senderUser = parts[1];
+        const sendAmount = parseInt(parts[2], 10) || 0;
 
-        let coupons = JSON.parse(localStorage.getItem('11pay_coupons')) || [];
-      
-        if (coupons.some(c => c.id === coupon.id)) {
+        if (senderUser === currentUser) {
           if (typeof playSound === 'function') playSound('error');
-          alert("このクーポンはすでに登録されています");
+          alert("自分の送金QRコードは読み込めません");
           return;
         }
 
-        coupons.push(coupon);
-        localStorage.setItem('11pay_coupons', JSON.stringify(coupons));
-
+        balance += sendAmount;
+        addTransaction('残高', sendAmount, `${senderUser}から受取`);
+        updateDisplay();
         if (typeof playSound === 'function') playSound('win');
-        alert(`クーポン「${coupon.title}」を追加しました！`);
+        alert(`${senderUser} さんより ${sendAmount.toLocaleString()}円 を受取りました！`);
         return;
       }
-    }
 
-    // 2. 送金用QRの読み取り
-    if (decodedText.startsWith("SEND:")) {
-      const parts = decodedText.split(":");
-      const senderUser = parts[1];
-      const sendAmount = parseInt(parts[2], 10) || 0;
+      const isCharge = decodedText.startsWith("CHARGE_");
+      const isPoint  = decodedText.startsWith("POINT_");
+      const isPay    = decodedText.startsWith("PAY_");
 
-      if (typeof currentUser !== 'undefined' && senderUser === currentUser) {
+      if (isCharge) {
+        const amount = parseInt(decodedText.replace("CHARGE_", ""), 10) || 0;
+        balance += amount;
+        addTransaction('残高', amount, '残高チャージ');
+        updateDisplay();
+        if (typeof playSound === 'function') playSound('win');
+        alert(`残高に ${amount.toLocaleString()}円 チャージされました！`);
+      } else if (isPoint) {
+        const amount = parseInt(decodedText.replace("POINT_", ""), 10) || 0;
+        points += amount;
+        addTransaction('ポイント', amount, 'ポイント獲得');
+        updateDisplay();
+        if (typeof playSound === 'function') playSound('win');
+        alert(`${amount.toLocaleString()} ポイントを獲得しました！`);
+      } else if (isPay) {
+        const parts = decodedText.split("_");
+        currentScanAmount = parseInt(parts[1], 10) || 0;
+        openPayConfirmModal();
+      } else {
         if (typeof playSound === 'function') playSound('error');
-        alert("自分の送金QRコードは読み込めません");
-        return;
+        alert("画像から有効なQRコードを検出できませんでした。");
       }
+    };
 
-      if (typeof balance !== 'undefined') balance += sendAmount;
-      if (typeof addTransaction === 'function') addTransaction('残高', sendAmount, `${senderUser}から受取`);
-      if (typeof updateDisplay === 'function') updateDisplay();
-
-      if (typeof playSound === 'function') playSound('win');
-      alert(`${senderUser} さんより ${sendAmount.toLocaleString()}円 を受取りました！`);
-      return;
-    }
-
-    // 3. チャージ / ポイント / お会計 の読み取り
-    const isCharge = decodedText.startsWith("CHARGE_");
-    const isPoint  = decodedText.startsWith("POINT_");
-    const isPay    = decodedText.startsWith("PAY_");
-
-    if (isCharge) {
-      const amount = parseInt(decodedText.replace("CHARGE_", ""), 10) || 0;
-      if (typeof balance !== 'undefined') balance += amount;
-      if (typeof addTransaction === 'function') addTransaction('残高', amount, '残高チャージ');
-      if (typeof updateDisplay === 'function') updateDisplay();
-      if (typeof playSound === 'function') playSound('win');
-      alert(`残高に ${amount.toLocaleString()}円 チャージされました！`);
-    }
-    else if (isPoint) {
-      const amount = parseInt(decodedText.replace("POINT_", ""), 10) || 0;
-      if (typeof points !== 'undefined') points += amount;
-      if (typeof addTransaction === 'function') addTransaction('ポイント', amount, 'ポイント獲得');
-      if (typeof updateDisplay === 'function') updateDisplay();
-      if (typeof playSound === 'function') playSound('win');
-      alert(`${amount.toLocaleString()} ポイントを獲得しました！`);
-    }
-    else if (isPay) {
-      const parts = decodedText.split("_");
-      currentScanAmount = parseInt(parts[1], 10) || 0;
-      openPayConfirmModal();
-    }
-    else {
-      if (typeof playForcedSound === 'function') {
-        playForcedSound('error');
-      } else if (typeof playSound === 'function') {
-        playSound('error');
-      }
-      alert("画像から有効なQRコードを検出できませんでした。");
-    }
-  };
-
-  if (typeof stopScanner === 'function') {
     stopScanner(handleSuccess);
-  } else {
-    handleSuccess();
   }
-}
 
-// 💳 支払い確認・決済処理（標準版）
-function openPayConfirmModal() {
-  currentScanAmount = currentScanAmount || 0;
+  function openPayConfirmModal() {
+    currentScanAmount = currentScanAmount || 0;
+    document.getElementById("confirm-pay-amount").innerText = currentScanAmount.toLocaleString();
+    document.getElementById("max-pt-display").innerText = points.toLocaleString();
+    document.getElementById("use-pt-check").checked = false;
+    document.getElementById("use-pt-input").value = "";
+    togglePointInput();
+    document.getElementById("pay-confirm-modal").classList.remove("hidden");
+  }
 
-  const confirmAmountEl = document.getElementById("confirm-pay-amount");
-  const maxPtEl = document.getElementById("max-pt-display");
-  const usePtCheck = document.getElementById("use-pt-check");
-  const usePtInput = document.getElementById("use-pt-input");
-  const payModal = document.getElementById("pay-confirm-modal");
-
-  if (confirmAmountEl) confirmAmountEl.innerText = currentScanAmount.toLocaleString();
-  if (maxPtEl) maxPtEl.innerText = (typeof points !== 'undefined' ? points : 0).toLocaleString();
-  if (usePtCheck) usePtCheck.checked = false;
-  if (usePtInput) usePtInput.value = "";
-
-  if (typeof togglePointInput === 'function') togglePointInput();
-  if (payModal) payModal.classList.remove("hidden");
-}
-
-function togglePointInput() {
-  if (typeof playSound === 'function') playSound('beep');
-  const usePtCheck = document.getElementById("use-pt-check");
-  const ptContainer = document.getElementById("pt-input-container");
-  if (usePtCheck && ptContainer) {
+  function togglePointInput() {
+    playSound('beep');
+    const usePtCheck = document.getElementById("use-pt-check");
+    const ptContainer = document.getElementById("pt-input-container");
     ptContainer.classList.toggle("hidden", !usePtCheck.checked);
   }
-}
 
-function cancelPayment() {
-  if (typeof playSound === 'function') playSound('beep');
-  const payModal = document.getElementById("pay-confirm-modal");
-  if (payModal) payModal.classList.add("hidden");
-}
+  function cancelPayment() {
+    playSound('beep');
+    document.getElementById("pay-confirm-modal").classList.add("hidden");
+  }
 
-function executePayment() {
-  let discount = 0;
-  if (typeof activeDiscount !== 'undefined') {
-    discount = activeDiscount;
-  } else {
+  function executePayment() {
+    let discount = 0;
     const savedCoupon = localStorage.getItem('11pay_active_coupon');
     if (savedCoupon) {
       try {
@@ -1424,543 +1236,128 @@ function executePayment() {
         discount = c.discount || 0;
       } catch (e) {}
     }
-  }
 
-  let finalAmount = Math.max(0, currentScanAmount - discount);
+    let finalAmount = Math.max(0, currentScanAmount - discount);
 
-  if (finalAmount >= 5000) {
-    let savedPasscode = localStorage.getItem('11pay_security_passcode');
-
-    if (!savedPasscode) {
-      let newPass = prompt("【セキュリティ設定】\n5,000円以上のお支払いに必要な4桁のパスコードを設定してください（半角数字）:");
-      if (!newPass || newPass.length < 4) {
-        alert("パスコードの設定がキャンセルされたため、お支払いを中断しました。");
-        return;
-      }
-      localStorage.setItem('11pay_security_passcode', newPass);
-      savedPasscode = newPass;
-      alert("パスコードが設定されました！");
-    }
-
-    let inputPass = prompt("【高額決済】\n5,000円以上のお支払いです。パスコードを入力してください:");
-    if (inputPass !== savedPasscode) {
-      if (typeof playSound === 'function') playSound('error');
-      alert("パスコードが間違っています。お支払いをキャンセルしました。");
-      return;
-    }
-  }
-
-  const usePtChecked = document.getElementById("use-pt-check") ? document.getElementById("use-pt-check").checked : false;
-  let usePt = parseInt(document.getElementById("use-pt-input") ? document.getElementById("use-pt-input").value : 0) || 0;
-
-  const currentPoints = typeof points !== 'undefined' ? points : 0;
-  const currentBalance = typeof balance !== 'undefined' ? balance : 0;
-
-  if (usePtChecked) {
-    if (usePt <= 0) {
-      alert("利用するポイントを入力してください");
-      return;
-    }
-    if (usePt > currentPoints) {
-      if (typeof playSound === 'function') playSound('error');
-      alert("保持ポイントを超えています");
-      return;
-    }
-    if (usePt > finalAmount) usePt = finalAmount;
-  } else {
-    usePt = 0;
-  }
-
-  const cashPay = finalAmount - usePt;
-
-  if (cashPay > currentBalance) {
-    if (typeof playSound === 'function') playSound('error');
-    alert(`残高が不足しています\nお支払い額: ${cashPay}円 / 残高: ${currentBalance}円`);
-    return;
-  }
-
-  if (typeof playSound === 'function') playSound('pay');
-
-  if (typeof balance !== 'undefined') balance -= cashPay;
-  if (typeof points !== 'undefined') points -= usePt;
-
-  let usedCouponTitle = "";
-  if (typeof consumeActiveCouponOnPayment === 'function') {
-    usedCouponTitle = consumeActiveCouponOnPayment();
-  } else if (discount > 0) {
-    localStorage.removeItem('11pay_active_coupon');
-    if (typeof activeDiscount !== 'undefined') activeDiscount = 0;
-  }
-
-  if (cashPay > 0 && typeof addTransaction === 'function') {
-    let memoText = 'お支払い';
-    if (usedCouponTitle) memoText += ` (クーポン: ${usedCouponTitle})`;
-    addTransaction('残高', -cashPay, memoText);
-  }
-
-  if (usePt > 0 && typeof addTransaction === 'function') {
-    addTransaction('ポイント', -usePt, 'お支払い利用');
-  }
-
-  if (typeof updateDisplay === 'function') updateDisplay();
-
-  const payModal = document.getElementById("pay-confirm-modal") || document.getElementById("pay-modal");
-  if (payModal) payModal.classList.add("hidden");
-
-  if (usePt > 0) {
-    let msg = `お支払い完了！(割引: ${discount}円 / pt利用: ${usePt}pt)`;
-    if (usedCouponTitle) {
-      msg = `クーポン「${usedCouponTitle}」を使いました！\nお支払い完了！(割引: ${discount}円 / pt利用: ${usePt}pt)`;
-    }
-    alert(msg);
-  } else {
-    if (usedCouponTitle) alert(`クーポン「${usedCouponTitle}」を使いました！`);
-    if (typeof startRoulette === 'function') {
-      startRoulette(finalAmount);
-    } else {
-      alert(`お支払い完了！ (${finalAmount.toLocaleString()}円)`);
-    }
-  }
-}
-
-function startRoulette(payAmount) {
-  const rouletteModal = document.getElementById("roulette-modal");
-  const closeBtn = document.getElementById("roulette-close-btn");
-  const subText = document.getElementById("roulette-sub");
-  const display = document.getElementById("roulette-display");
-
-  if (rouletteModal) rouletteModal.classList.remove("hidden");
-  if (closeBtn) closeBtn.classList.add("hidden");
-  if (subText) subText.innerText = "ポイント還元率を抽選中...";
-
-  let count = 0;
-  const rates = [0.01, 0.05, 0.1, 0.5, 1.0];
-
-  const interval = setInterval(() => {
-    if (typeof playSound === 'function') playSound('tick');
-    const randomRate = rates[Math.floor(Math.random() * rates.length)];
-    if (display) display.innerText = `${Math.round(randomRate * 100)}% 還元！`;
-    count++;
-
-    if (count > 20) {
-      clearInterval(interval);
-      const finalRate = rates[Math.floor(Math.random() * rates.length)];
-      earnedPoints = Math.floor(payAmount * finalRate);
-      if (earnedPoints < 1) earnedPoints = 1;
-
-      if (typeof playSound === 'function') playSound('win');
-      if (subText) subText.innerText = "獲得ポイント決定！";
-      if (display) display.innerText = `🎯 ${Math.round(finalRate * 100)}% 還元!\n(+${earnedPoints}pt)`;
-      if (closeBtn) closeBtn.classList.remove("hidden");
-    }
-  }, 100);
-}
-
-function closeRoulette() {
-  if (typeof playSound === 'function') playSound('beep');
-  if (typeof points !== 'undefined') points += earnedPoints;
-  if (typeof addTransaction === 'function') addTransaction('ポイント', earnedPoints, '11Payルーレット還元');
-  if (typeof updateDisplay === 'function') updateDisplay();
-
-  document.getElementById("roulette-modal")?.classList.add("hidden");
-
-  const payModal = document.getElementById("pay-confirm-modal") || document.getElementById("pay-modal");
-  if (payModal) payModal.classList.add("hidden");
-}
-
-// --- 🔐 ログイン・タブ切替（即時動作保証コード） ---
-
-function switchTab(tab) {
-  const loginForm = document.getElementById('form-login');
-  const regForm = document.getElementById('form-register');
-  const tabLogin = document.getElementById('tab-login');
-  const tabReg = document.getElementById('tab-register');
-
-  if (tab === 'login') {
-    if (loginForm) loginForm.classList.remove('hidden');
-    if (regForm) regForm.classList.add('hidden');
-    if (tabLogin) tabLogin.classList.add('active');
-    if (tabReg) tabReg.classList.remove('active');
-  } else {
-    if (loginForm) loginForm.classList.add('hidden');
-    if (regForm) regForm.classList.remove('hidden');
-    if (tabLogin) tabLogin.classList.remove('active');
-    if (tabReg) tabReg.classList.add('active');
-  }
-}
-
-function login() {
-  const uInput = document.getElementById('login-user');
-  const pInput = document.getElementById('login-pass');
-  if (!uInput || !pInput) return;
-
-  const u = uInput.value.trim();
-  const p = pInput.value.trim();
-
-  if (!u || !p) {
-    alert("ユーザー名とパスワードを入力してください");
-    return;
-  }
-
-  const savedPass = localStorage.getItem(`user_${u}`);
-  if (savedPass && savedPass === p) {
-    localStorage.setItem('loggedInUser', u);
-    alert(`おかえりなさい、${u} さん！`);
-    location.reload(); // 画面を更新してログイン状態を適用
-  } else if (!savedPass) {
-    localStorage.setItem(`user_${u}`, p);
-    localStorage.setItem('loggedInUser', u);
-    alert(`アカウントを作成してログインしました: ${u}`);
-    location.reload();
-  } else {
-    alert("パスワードが違います");
-  }
-}
-
-function register() {
-  const uInput = document.getElementById('reg-user');
-  const pInput = document.getElementById('reg-pass');
-  const pcInput = document.getElementById('reg-pass-confirm');
-
-  const u = uInput ? uInput.value.trim() : "";
-  const p = pInput ? pInput.value.trim() : "";
-  const pc = pcInput ? pcInput.value.trim() : "";
-
-  if (!u || !p) {
-    alert("すべての項目を入力してください");
-    return;
-  }
-  if (p !== pc) {
-    alert("パスワード確認が一致しません");
-    return;
-  }
-
-  localStorage.setItem(`user_${u}`, p);
-  localStorage.setItem('loggedInUser', u);
-  alert("新規登録が完了しました！");
-  location.reload();
-}
-
-function logout() {
-  if (typeof playSound === 'function') playSound('beep');
-  localStorage.removeItem('loggedInUser');
-  if (typeof currentUser !== 'undefined') currentUser = "";
-
-  if (typeof stopScanner === 'function') stopScanner();
-
-  document.getElementById('main-view')?.classList.add('hidden');
-  document.getElementById('bottom-nav')?.classList.add('hidden');
-  document.getElementById('auth-view')?.classList.remove('hidden');// 💡 変数の事前宣言
-let earnedPoints = 0;
-let currentScanAmount = typeof currentScanAmount !== 'undefined' ? currentScanAmount : 0;
-
-// QR読み取り成功時の処理（標準版）
-function onScanSuccess(decodedText) {
-  if (typeof playSound === 'function') playSound('beep');
-
-  const handleSuccess = () => {
-    // 1. クーポンQRの読み取り処理
-    if (decodedText.startsWith("COUPON:")) {
-      const parts = decodedText.split(":");
-      if (parts.length >= 5) {
-        const coupon = {
-          id: parts[1],
-          title: parts[1],
-          discount: parseInt(parts[2], 10) || 0,
-          minPrice: parseInt(parts[3], 10) || 0,
-          expiry: parts[4]
-        };
-
-        let coupons = JSON.parse(localStorage.getItem('11pay_coupons')) || [];
-      
-        if (coupons.some(c => c.id === coupon.id)) {
-          if (typeof playSound === 'function') playSound('error');
-          alert("このクーポンはすでに登録されています");
+    if (finalAmount >= 5000) {
+      let savedPasscode = localStorage.getItem('11pay_security_passcode');
+      if (!savedPasscode) {
+        let newPass = prompt("【セキュリティ設定】\n5,000円以上のお支払いに必要な4桁のパスコードを設定してください（半角数字）:");
+        if (!newPass || newPass.length < 4) {
+          alert("パスコードの設定がキャンセルされたため、お支払いを中断しました。");
           return;
         }
-
-        coupons.push(coupon);
-        localStorage.setItem('11pay_coupons', JSON.stringify(coupons));
-
-        if (typeof playSound === 'function') playSound('win');
-        alert(`クーポン「${coupon.title}」を追加しました！`);
-        return;
-      }
-    }
-
-    // 2. 送金用QRの読み取り
-    if (decodedText.startsWith("SEND:")) {
-      const parts = decodedText.split(":");
-      const senderUser = parts[1];
-      const sendAmount = parseInt(parts[2], 10) || 0;
-
-      if (typeof currentUser !== 'undefined' && senderUser === currentUser) {
-        if (typeof playSound === 'function') playSound('error');
-        alert("自分の送金QRコードは読み込めません");
-        return;
+        localStorage.setItem('11pay_security_passcode', newPass);
+        savedPasscode = newPass;
+        alert("パスコードが設定されました！");
       }
 
-      if (typeof balance !== 'undefined') balance += sendAmount;
-      if (typeof addTransaction === 'function') addTransaction('残高', sendAmount, `${senderUser}から受取`);
-      if (typeof updateDisplay === 'function') updateDisplay();
-
-      if (typeof playSound === 'function') playSound('win');
-      alert(`${senderUser} さんより ${sendAmount.toLocaleString()}円 を受取りました！`);
-      return;
-    }
-
-    // 3. チャージ / ポイント / お会計 の読み取り
-    const isCharge = decodedText.startsWith("CHARGE_");
-    const isPoint  = decodedText.startsWith("POINT_");
-    const isPay    = decodedText.startsWith("PAY_");
-
-    if (isCharge) {
-      const amount = parseInt(decodedText.replace("CHARGE_", ""), 10) || 0;
-      if (typeof balance !== 'undefined') balance += amount;
-      if (typeof addTransaction === 'function') addTransaction('残高', amount, '残高チャージ');
-      if (typeof updateDisplay === 'function') updateDisplay();
-      if (typeof playSound === 'function') playSound('win');
-      alert(`残高に ${amount.toLocaleString()}円 チャージされました！`);
-    }
-    else if (isPoint) {
-      const amount = parseInt(decodedText.replace("POINT_", ""), 10) || 0;
-      if (typeof points !== 'undefined') points += amount;
-      if (typeof addTransaction === 'function') addTransaction('ポイント', amount, 'ポイント獲得');
-      if (typeof updateDisplay === 'function') updateDisplay();
-      if (typeof playSound === 'function') playSound('win');
-      alert(`${amount.toLocaleString()} ポイントを獲得しました！`);
-    }
-    else if (isPay) {
-      const parts = decodedText.split("_");
-      currentScanAmount = parseInt(parts[1], 10) || 0;
-      openPayConfirmModal();
-    }
-    else {
-      if (typeof playForcedSound === 'function') {
-        playForcedSound('error');
-      } else if (typeof playSound === 'function') {
+      let inputPass = prompt("【高額決済】\n5,000円以上のお支払いです。パスコードを入力してください:");
+      if (inputPass !== savedPasscode) {
         playSound('error');
-      }
-      alert("画像から有効なQRコードを検出できませんでした。");
-    }
-  };
-
-  if (typeof stopScanner === 'function') {
-    stopScanner(handleSuccess);
-  } else {
-    handleSuccess();
-  }
-}
-
-// 💳 支払い確認・決済処理（標準版）
-function openPayConfirmModal() {
-  currentScanAmount = currentScanAmount || 0;
-
-  const confirmAmountEl = document.getElementById("confirm-pay-amount");
-  const maxPtEl = document.getElementById("max-pt-display");
-  const usePtCheck = document.getElementById("use-pt-check");
-  const usePtInput = document.getElementById("use-pt-input");
-  const payModal = document.getElementById("pay-confirm-modal");
-
-  if (confirmAmountEl) confirmAmountEl.innerText = currentScanAmount.toLocaleString();
-  if (maxPtEl) maxPtEl.innerText = (typeof points !== 'undefined' ? points : 0).toLocaleString();
-  if (usePtCheck) usePtCheck.checked = false;
-  if (usePtInput) usePtInput.value = "";
-
-  if (typeof togglePointInput === 'function') togglePointInput();
-  if (payModal) payModal.classList.remove("hidden");
-}
-
-function togglePointInput() {
-  if (typeof playSound === 'function') playSound('beep');
-  const usePtCheck = document.getElementById("use-pt-check");
-  const ptContainer = document.getElementById("pt-input-container");
-  if (usePtCheck && ptContainer) {
-    ptContainer.classList.toggle("hidden", !usePtCheck.checked);
-  }
-}
-
-function cancelPayment() {
-  if (typeof playSound === 'function') playSound('beep');
-  const payModal = document.getElementById("pay-confirm-modal");
-  if (payModal) payModal.classList.add("hidden");
-}
-
-function executePayment() {
-  let discount = 0;
-  if (typeof activeDiscount !== 'undefined') {
-    discount = activeDiscount;
-  } else {
-    const savedCoupon = localStorage.getItem('11pay_active_coupon');
-    if (savedCoupon) {
-      try {
-        const c = JSON.parse(savedCoupon);
-        discount = c.discount || 0;
-      } catch (e) {}
-    }
-  }
-
-  let finalAmount = Math.max(0, currentScanAmount - discount);
-
-  if (finalAmount >= 5000) {
-    let savedPasscode = localStorage.getItem('11pay_security_passcode');
-
-    if (!savedPasscode) {
-      let newPass = prompt("【セキュリティ設定】\n5,000円以上のお支払いに必要な4桁のパスコードを設定してください（半角数字）:");
-      if (!newPass || newPass.length < 4) {
-        alert("パスコードの設定がキャンセルされたため、お支払いを中断しました。");
+        alert("パスコードが間違っています。お支払いをキャンセルしました。");
         return;
       }
-      localStorage.setItem('11pay_security_passcode', newPass);
-      savedPasscode = newPass;
-      alert("パスコードが設定されました！");
     }
 
-    let inputPass = prompt("【高額決済】\n5,000円以上のお支払いです。パスコードを入力してください:");
-    if (inputPass !== savedPasscode) {
-      if (typeof playSound === 'function') playSound('error');
-      alert("パスコードが間違っています。お支払いをキャンセルしました。");
-      return;
-    }
-  }
+    const usePtChecked = document.getElementById("use-pt-check").checked;
+    let usePt = parseInt(document.getElementById("use-pt-input").value) || 0;
 
-  const usePtChecked = document.getElementById("use-pt-check") ? document.getElementById("use-pt-check").checked : false;
-  let usePt = parseInt(document.getElementById("use-pt-input") ? document.getElementById("use-pt-input").value : 0) || 0;
-
-  const currentPoints = typeof points !== 'undefined' ? points : 0;
-  const currentBalance = typeof balance !== 'undefined' ? balance : 0;
-
-  if (usePtChecked) {
-    if (usePt <= 0) {
-      alert("利用するポイントを入力してください");
-      return;
-    }
-    if (usePt > currentPoints) {
-      if (typeof playSound === 'function') playSound('error');
-      alert("保持ポイントを超えています");
-      return;
-    }
-    if (usePt > finalAmount) usePt = finalAmount;
-  } else {
-    usePt = 0;
-  }
-
-  const cashPay = finalAmount - usePt;
-
-  if (cashPay > currentBalance) {
-    if (typeof playSound === 'function') playSound('error');
-    alert(`残高が不足しています\nお支払い額: ${cashPay}円 / 残高: ${currentBalance}円`);
-    return;
-  }
-
-  if (typeof playSound === 'function') playSound('pay');
-
-  if (typeof balance !== 'undefined') balance -= cashPay;
-  if (typeof points !== 'undefined') points -= usePt;
-
-  let usedCouponTitle = "";
-  if (typeof consumeActiveCouponOnPayment === 'function') {
-    usedCouponTitle = consumeActiveCouponOnPayment();
-  } else if (discount > 0) {
-    localStorage.removeItem('11pay_active_coupon');
-    if (typeof activeDiscount !== 'undefined') activeDiscount = 0;
-  }
-
-  if (cashPay > 0 && typeof addTransaction === 'function') {
-    let memoText = 'お支払い';
-    if (usedCouponTitle) memoText += ` (クーポン: ${usedCouponTitle})`;
-    addTransaction('残高', -cashPay, memoText);
-  }
-
-  if (usePt > 0 && typeof addTransaction === 'function') {
-    addTransaction('ポイント', -usePt, 'お支払い利用');
-  }
-
-  if (typeof updateDisplay === 'function') updateDisplay();
-
-  const payModal = document.getElementById("pay-confirm-modal") || document.getElementById("pay-modal");
-  if (payModal) payModal.classList.add("hidden");
-
-  if (usePt > 0) {
-    let msg = `お支払い完了！(割引: ${discount}円 / pt利用: ${usePt}pt)`;
-    if (usedCouponTitle) {
-      msg = `クーポン「${usedCouponTitle}」を使いました！\nお支払い完了！(割引: ${discount}円 / pt利用: ${usePt}pt)`;
-    }
-    alert(msg);
-  } else {
-    if (usedCouponTitle) alert(`クーポン「${usedCouponTitle}」を使いました！`);
-    if (typeof startRoulette === 'function') {
-      startRoulette(finalAmount);
+    if (usePtChecked) {
+      if (usePt <= 0) return alert("利用するポイントを入力してください");
+      if (usePt > points) {
+        playSound('error');
+        return alert("保持ポイントを超えています");
+      }
+      if (usePt > finalAmount) usePt = finalAmount;
     } else {
-      alert(`お支払い完了！ (${finalAmount.toLocaleString()}円)`);
+      usePt = 0;
+    }
+
+    const cashPay = finalAmount - usePt;
+    if (cashPay > balance) {
+      playSound('error');
+      return alert(`残高が不足しています\nお支払い額: ${cashPay}円 / 残高: ${balance}円`);
+    }
+
+    playSound('pay');
+    balance -= cashPay;
+    points -= usePt;
+
+    const usedCouponTitle = consumeActiveCouponOnPayment();
+
+    if (cashPay > 0) {
+      let memoText = 'お支払い';
+      if (usedCouponTitle) memoText += ` (クーポン: ${usedCouponTitle})`;
+      addTransaction('残高', -cashPay, memoText);
+    }
+
+    if (usePt > 0) {
+      addTransaction('ポイント', -usePt, 'お支払い利用');
+    }
+
+    updateDisplay();
+    document.getElementById("pay-confirm-modal").classList.add("hidden");
+
+    if (usePt > 0) {
+      let msg = `お支払い完了！(割引: ${discount}円 / pt利用: ${usePt}pt)`;
+      if (usedCouponTitle) msg = `クーポン「${usedCouponTitle}」を使いました！\n${msg}`;
+      alert(msg);
+    } else {
+      if (usedCouponTitle) alert(`クーポン「${usedCouponTitle}」を使いました！`);
+      startRoulette(finalAmount);
     }
   }
-}
 
-function startRoulette(payAmount) {
-  const rouletteModal = document.getElementById("roulette-modal");
-  const closeBtn = document.getElementById("roulette-close-btn");
-  const subText = document.getElementById("roulette-sub");
-  const display = document.getElementById("roulette-display");
+  function startRoulette(payAmount) {
+    const rouletteModal = document.getElementById("roulette-modal");
+    const closeBtn = document.getElementById("roulette-close-btn");
+    const subText = document.getElementById("roulette-sub");
+    const display = document.getElementById("roulette-display");
 
-  if (rouletteModal) rouletteModal.classList.remove("hidden");
-  if (closeBtn) closeBtn.classList.add("hidden");
-  if (subText) subText.innerText = "ポイント還元率を抽選中...";
+    rouletteModal.classList.remove("hidden");
+    closeBtn.classList.add("hidden");
+    subText.innerText = "ポイント還元率を抽選中...";
 
-  let count = 0;
-  const rates = [0.01, 0.05, 0.1, 0.5, 1.0];
+    let count = 0;
+    const rates = [0.01, 0.05, 0.1, 0.5, 1.0];
 
-  const interval = setInterval(() => {
-    if (typeof playSound === 'function') playSound('tick');
-    const randomRate = rates[Math.floor(Math.random() * rates.length)];
-    if (display) display.innerText = `${Math.round(randomRate * 100)}% 還元！`;
-    count++;
+    const interval = setInterval(() => {
+      playSound('tick');
+      const randomRate = rates[Math.floor(Math.random() * rates.length)];
+      display.innerText = `${Math.round(randomRate * 100)}% 還元！`;
+      count++;
 
-    if (count > 20) {
-      clearInterval(interval);
-      const finalRate = rates[Math.floor(Math.random() * rates.length)];
-      earnedPoints = Math.floor(payAmount * finalRate);
-      if (earnedPoints < 1) earnedPoints = 1;
+      if (count > 20) {
+        clearInterval(interval);
+        const finalRate = rates[Math.floor(Math.random() * rates.length)];
+        earnedPoints = Math.floor(payAmount * finalRate);
+        if (earnedPoints < 1) earnedPoints = 1;
 
-      if (typeof playSound === 'function') playSound('win');
-      if (subText) subText.innerText = "獲得ポイント決定！";
-      if (display) display.innerText = `🎯 ${Math.round(finalRate * 100)}% 還元!\n(+${earnedPoints}pt)`;
-      if (closeBtn) closeBtn.classList.remove("hidden");
-    }
-  }, 100);
-}
+        playSound('win');
+        subText.innerText = "獲得ポイント決定！";
+        display.innerText = `🎯 ${Math.round(finalRate * 100)}% 還元!\n(+${earnedPoints}pt)`;
+        closeBtn.classList.remove("hidden");
+      }
+    }, 100);
+  }
 
-function closeRoulette() {
-  if (typeof playSound === 'function') playSound('beep');
-  if (typeof points !== 'undefined') points += earnedPoints;
-  if (typeof addTransaction === 'function') addTransaction('ポイント', earnedPoints, '11Payルーレット還元');
-  if (typeof updateDisplay === 'function') updateDisplay();
+  function closeRoulette() {
+    playSound('beep');
+    points += earnedPoints;
+    addTransaction('ポイント', earnedPoints, '11Payルーレット還元');
+    updateDisplay();
+    document.getElementById("roulette-modal").classList.add("hidden");
+  }
 
-  document.getElementById("roulette-modal")?.classList.add("hidden");
-
-  const payModal = document.getElementById("pay-confirm-modal") || document.getElementById("pay-modal");
-  if (payModal) payModal.classList.add("hidden");
-}
-
-
-        
-    // --- 取引履歴機能 ---
   let showAllTransactions = false;
 
   function addTransaction(type, amount, detail) {
     const now = new Date();
     const timeStr = `${now.getMonth() + 1}/${now.getDate()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-   
-    transactions.unshift({
-      type: type,
-      amount: amount,
-      detail: detail,
-      time: timeStr
-    });
-
-    if (transactions.length > 20) {
-      transactions.pop();
-    }
+  
+    transactions.unshift({ type, amount, detail, time: timeStr });
+    if (transactions.length > 20) transactions.pop();
   }
 
   function renderTransactions() {
@@ -1988,9 +1385,7 @@ function closeRoulette() {
             <div style="font-weight:bold; font-size:14px; color:#333;">${tx.detail} (${tx.type})</div>
             <div style="font-size:12px; color:#888;">${tx.time}</div>
           </div>
-          <div style="font-weight:bold; font-size:15px; color:${color};">
-            ${sign}${tx.amount.toLocaleString()} ${unit}
-          </div>
+          <div style="font-weight:bold; font-size:15px; color:${color};">${sign}${tx.amount.toLocaleString()} ${unit}</div>
         </div>
       `;
     }).join('');
@@ -2010,297 +1405,89 @@ function closeRoulette() {
     showAllTransactions = !showAllTransactions;
     renderTransactions();
   }
-</script>
 
-<!-- ========================================== -->
-<!-- 16種ミニゲーム＆ポイント設定機能付きコード -->
-<!-- ========================================== -->
-
-<style>
-  /* グリッドレイアウト */
-  .game-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    max-height: 360px;
-    overflow-y: auto;
-    padding: 8px 2px;
-  }
-
-  /* ミニゲームボタン */
-  .game-item-btn {
-    padding: 12px 6px;
-    font-size: 13px;
-    font-weight: bold;
-    border: none;
-    border-radius: 14px;
-    color: #ffffff;
-    cursor: pointer;
-    transition: transform 0.1s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
-  }
-  .game-item-btn:active { transform: scale(0.95); }
-
-  /* 個別カラー */
-  .btn-color-1  { background-color: #28a745; }
-  .btn-color-2  { background-color: #007bff; }
-  .btn-color-3  { background-color: #6f42c1; }
-  .btn-color-4  { background-color: #fd7e14; }
-  .btn-color-5  { background-color: #e83e8c; }
-  .btn-color-6  { background-color: #17a2b8; }
-  .btn-color-7  { background-color: #dc3545; }
-  .btn-color-8  { background-color: #20c997; }
-  .btn-color-9  { background-color: #6610f2; }
-  .btn-color-10 { background-color: #ffc107; color: #212529; }
-  .btn-color-11 { background-color: #007bff; }
-  .btn-color-12 { background-color: #343a40; }
-  .btn-color-13 { background-color: #e83e8c; }
-  .btn-color-14 { background-color: #ff5722; }
-  .btn-color-15 { background-color: #00bcd4; }
-  .btn-color-16 { background-color: #8bc34a; }
-
-  /* クレーンゲーム専用スタイル */
-  .crane-box {
-    position: relative;
-    width: 100%;
-    height: 180px;
-    background: #222;
-    border-radius: 10px;
-    overflow: hidden;
-    margin-bottom: 10px;
-    border: 3px solid #17a2b8;
-  }
-  .crane-arm {
-    position: absolute;
-    top: 0;
-    left: 10px;
-    width: 30px;
-    height: 30px;
-    font-size: 24px;
-    text-align: center;
-    line-height: 30px;
-    transition: left 0.1s linear, top 0.1s linear;
-    z-index: 10;
-  }
-  .crane-prize { position: absolute; bottom: 10px; font-size: 28px; }
-  .crane-hole { position: absolute; bottom: 0; left: 10px; width: 45px; height: 15px; background: #000; border-radius: 5px 5px 0 0; border: 1px dashed #fff; }
-
-
-  /* モーダル共通 */
-  .gift-input-box { width: 100%; padding: 12px; font-size: 16px; letter-spacing: 2px; text-transform: uppercase; text-align: center; border: 2px dashed #ff0033; border-radius: 12px; margin: 15px 0; box-sizing: border-box; }
-  .game-stage-box { background: #f8f9fa; border-radius: 12px; padding: 15px; margin: 10px 0; min-height: 220px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-  .memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; width: 100%; }
-  .memory-card { height: 50px; background: #007bff; color: #fff; font-size: 20px; font-weight: bold; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-  .memory-card.open { background: #fff; color: #333; border: 2px solid #007bff; }
-  .mole-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; }
-  .mole-hole { height: 60px; background: #8b4513; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; }
-  .diff-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; }
-  .num-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; }
-</style>
-
-<!-- ギフトカード入力モーダル -->
-<div id="gift-modal" class="modal-overlay hidden">
-  <div class="modal-content">
-    <h3>ギフトカードでチャージ</h3>
-    <p style="font-size: 13px; color: #666;">ギフトコードを入力してください</p>
-    <input type="text" id="gift-code-input" class="gift-input-box" placeholder="">
-    <button class="main-btn" onclick="redeemGiftCode()">チャージする</button>
-    <button class="secondary-btn" onclick="closeGiftModal()">閉じる</button>
-  </div>
-</div>
-
-<!-- ミニゲーム実行モーダル -->
-<div id="minigame-play-modal" class="modal-overlay hidden">
-  <div class="modal-content">
-    <h3 id="minigame-title">🎮 ミニゲーム</h3>
-    <div id="minigame-stage" class="game-stage-box"></div>
-    <button class="secondary-btn" onclick="closeMiniGamePlayModal()">メニューに戻る</button>
-  </div>
-</div>
-
-<script>
-(function() {
-
-  // =========================================================
-  // ⚙️ ポイント獲得量の設定（ここを変更するとポイントが変わります）
-  // =========================================================
   const GAME_REWARDS = {
-    janken: 20,       // じゃんけん
-    highlow: 30,      // ハイ＆ロー
-    memory: 100,      // 神経衰弱
-    moleMultiplier: 5,// モグラ叩き（1匹につき）
-    dice: 30,         // サイコロ
-    just555: 150,     // 5.55秒ストップ
-    nummem: 100,      // 数字記憶
-    chickenMultiplier: 1, // チキンレース（数字×）
-    diff: 100,        // 間違い探し
-    bomb: 50,        // 爆弾処理
-    craneGift: 100,   // クレーン（ギフト箱）
-    craneBear: 50,   // クレーン（くま）
-    craneDiamond: 200,// クレーン（ダイヤ）
-   
-    // 【新ゲーム】
-    tapRushMultiplier: 1, // 連打ゲーム（1回タップにつき）
-    balloon: 50,         // 風船あおぎ
-    numSequence: 80,     // 順番タップ
-    anagram: 60           // アナグラム
+    janken: 20, highlow: 30, memory: 100, moleMultiplier: 5, dice: 30,
+    just555: 150, nummem: 100, chickenMultiplier: 1, diff: 100, bomb: 50,
+    craneGift: 100, craneBear: 50, craneDiamond: 200, tapRushMultiplier: 1,
+    balloon: 50, numSequence: 80, anagram: 60
   };
 
-  
-      // 有効なギフトコード一覧
   const VALID_GIFTS = {
     "GIFT1000": { amount: 1000, type: "残高", name: "1000円ギフト" },
     "GIFT5000": { amount: 5000, type: "残高", name: "5000円ギフト" },
     "LUCKY100PT": { amount: 100, type: "ポイント", name: "100ptギフト" }
   };
 
-  // モーダルを開く
-  window.openGiftModal = function() {
-    if (typeof playSound === 'function') playSound('beep');
+  function openGiftModal() {
+    playSound('beep');
     document.getElementById("gift-code-input").value = "";
     document.getElementById("gift-modal").classList.remove("hidden");
-  };
+  }
 
-  // モーダルを閉じる
-  window.closeGiftModal = function() {
-    if (typeof playSound === 'function') playSound('beep');
+  function closeGiftModal() {
+    playSound('beep');
     document.getElementById("gift-modal").classList.add("hidden");
-  };
+  }
 
-  // ギフトコードを適用する
-  window.redeemGiftCode = function() {
+  function redeemGiftCode() {
     const input = document.getElementById("gift-code-input").value.trim().toUpperCase();
     if (!input) return alert("ギフトコードを入力してください");
-    const user = typeof currentUser !== 'undefined' ? currentUser : 'default';
-    const usedGifts = JSON.parse(localStorage.getItem(`used_gifts_${user}`) || "[]");
+    const usedGifts = JSON.parse(localStorage.getItem(`used_gifts_${currentUser}`) || "[]");
     if (usedGifts.includes(input)) {
-      if (typeof playSound === 'function') playSound('error');
+      playSound('error');
       return alert("このギフトコードは使用済みです");
     }
 
     const giftData = VALID_GIFTS[input];
     if (giftData) {
       usedGifts.push(input);
-      localStorage.setItem(`used_gifts_${user}`, JSON.stringify(usedGifts));
+      localStorage.setItem(`used_gifts_${currentUser}`, JSON.stringify(usedGifts));
       if (giftData.type === "残高") {
-        if (typeof balance !== 'undefined') balance += giftData.amount;
-        if (typeof addTransaction === 'function') addTransaction('残高', giftData.amount, `ギフト: ${giftData.name}`);
+        balance += giftData.amount;
+        addTransaction('残高', giftData.amount, `ギフト: ${giftData.name}`);
       } else {
-        if (typeof points !== 'undefined') points += giftData.amount;
-        if (typeof addTransaction === 'function') addTransaction('ポイント', giftData.amount, `ギフト: ${giftData.name}`);
+        points += giftData.amount;
+        addTransaction('ポイント', giftData.amount, `ギフト: ${giftData.name}`);
       }
-      if (typeof updateDisplay === 'function') updateDisplay();
-      if (typeof playSound === 'function') playSound('win');
+      updateDisplay();
+      playSound('win');
       alert(`チャージ成功！\n${giftData.name} を受取りました！`);
       closeGiftModal();
     } else {
-      if (typeof playSound === 'function') playSound('error');
+      playSound('error');
       alert("無効なギフトコードです");
     }
-  };
-
-  function buildGameMenuUI() {
-    const gameMenuSelect = document.getElementById("game-menu-select");
-    if (!gameMenuSelect) return;
-
-    gameMenuSelect.innerHTML = `
-      <div id="game-category-content">
-        <h3>GAME MENU</h3>
-        <p style="font-size: 13px; color: #666; margin-bottom: 20px;">どちらで遊ぶか選んでね！</p>
-        <button class="main-btn" style="margin-bottom: 12px; background: #007bff;" onclick="openMiniGameMenu()">ミニゲーム</button>
-        <button class="main-btn" style="background: #ff9900;" onclick="startGachaSelect()">11payガチャ</button>
-        <button class="secondary-btn" style="margin-top: 15px;" onclick="closeGameModal()">閉じる</button>
-      </div>
-      <div id="minigame-menu-select" class="hidden">
-        <h3>ミニゲーム</h3>
-        <p style="font-size: 12px; color: #666; margin-bottom: 10px;">ゲームを選んでね！</p>
-        <div class="game-grid">
-          <button class="game-item-btn btn-color-1" onclick="triggerTofuGame()">🧊豆腐タワー</button>
-          <button class="game-item-btn btn-color-2" onclick="playGame('janken')">✊じゃんけん</button>
-          <button class="game-item-btn btn-color-3" onclick="playGame('highlow')">🎴ハイ＆ロー</button>
-          <button class="game-item-btn btn-color-4" onclick="playGame('memory')">🃏神経衰弱</button>
-          <button class="game-item-btn btn-color-5" onclick="playGame('mole')">🕳️モグラ叩き</button>
-          <button class="game-item-btn btn-color-6" onclick="startCraneGame()">🏗️クレーンゲーム</button>
-          <button class="game-item-btn btn-color-7" onclick="playGame('dice')">🎲サイコロ</button>
-          <button class="game-item-btn btn-color-8" onclick="playGame('just555')">⏳5.55秒ストップ</button>
-          <button class="game-item-btn btn-color-9" onclick="playGame('nummem')">🧠数字記憶</button>
-          <button class="game-item-btn btn-color-10" onclick="playGame('chicken')">🐔チキンレース</button>
-          <button class="game-item-btn btn-color-11" onclick="playGame('diff')">😃間違い探し</button>
-          <button class="game-item-btn btn-color-12" onclick="playGame('bomb')">💣爆弾処理</button>
-          <button class="game-item-btn btn-color-13" onclick="playGame('tap')">🫵連打ラッシュ</button>
-          <button class="game-item-btn btn-color-14" onclick="playGame('balloon')">🎈風船ゲーム</button>
-          <button class="game-item-btn btn-color-15" onclick="playGame('seq')">🔢順番タップ</button>
-          <button class="game-item-btn btn-color-16" onclick="playGame('anagram')">📝アナグラム</button>
-        </div>
-        <button class="secondary-btn" style="margin-top: 15px;" onclick="backToGameCategory()">戻る</button>
-      </div>
-    `;
   }
 
-  function init() {
-    injectGiftButton();
-    buildGameMenuUI();
+  function openMiniGameMenu() {
+    playSound('beep');
+    document.getElementById("game-category-content").style.display = "none";
+    document.getElementById("minigame-menu-select").classList.remove("hidden");
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
+  function backToGameCategory() {
+    playSound('beep');
+    document.getElementById("game-category-content").style.display = "block";
+    document.getElementById("minigame-menu-select").classList.add("hidden");
   }
-  window.addEventListener('load', init);
 
-  // モーダル切り替え用のJavaScript追加関数
-window.openMiniGameMenu = function() {
-  if (typeof playSound === 'function') playSound('beep');
-  const catContent = document.getElementById("game-category-content");
-  const miniMenu = document.getElementById("minigame-menu-select");
-  if (catContent) catContent.style.display = "none";
-  if (miniMenu) miniMenu.classList.remove("hidden");
-};
+  function closeMiniGamePlayModal() {
+    playSound('beep');
+    document.getElementById("minigame-play-modal").classList.add("hidden");
+  }
 
-window.backToGameCategory = function() {
-  if (typeof playSound === 'function') playSound('beep');
-  const catContent = document.getElementById("game-category-content");
-  const miniMenu = document.getElementById("minigame-menu-select");
-  if (catContent) catContent.style.display = "block";
-  if (miniMenu) miniMenu.classList.add("hidden");
-};
-
-window.closeGameModal = function() {
-  if (typeof playSound === 'function') playSound('beep');
-  backToGameCategory();
-  const modal = document.getElementById("game-modal");
-  if (modal) modal.classList.add("hidden");
-};
-
-window.closeMiniGamePlayModal = function() {
-  if (typeof playSound === 'function') playSound('beep');
-  document.getElementById("minigame-play-modal").classList.add("hidden");
-};
-
-window.triggerTofuGame = function() {
-  if (typeof playSound === 'function') playSound('beep');
-  if (typeof startTofuGameSelect === "function") {
+  function triggerTofuGame() {
+    playSound('beep');
     startTofuGameSelect();
-  } else {
-    alert("豆腐タワーの起動関数(startTofuGameSelect)が見つかりません。");
   }
-};
 
-
-  // クレーンゲーム
-  window.startCraneGame = function() {
-    if (typeof playSound === 'function') playSound('beep');
+  function startCraneGame() {
+    playSound('beep');
     const modal = document.getElementById("minigame-play-modal");
-    const title = document.getElementById("minigame-title");
+    document.getElementById("minigame-title").innerText = "クレーンゲーム";
     const stage = document.getElementById("minigame-stage");
     modal.classList.remove("hidden");
-
-    title.innerText = "クレーンゲーム";
 
     stage.innerHTML = `
       <div class="crane-box" id="crane-box">
@@ -2328,10 +1515,7 @@ window.triggerTofuGame = function() {
       catchBtn.disabled = false;
       if (moveInterval) return;
       moveInterval = setInterval(() => {
-        if (armX < 210) {
-          armX += 12;
-          arm.style.left = armX + "px";
-        }
+        if (armX < 210) { armX += 12; arm.style.left = armX + "px"; }
       }, 5);
     };
 
@@ -2348,10 +1532,7 @@ window.triggerTofuGame = function() {
         arm.style.top = armY + "px";
         if (armY >= 120) {
           clearInterval(downInterval);
-
-          let caught = false;
-          let prizeName = "ポイント";
-          let rewardPt = 0;
+          let caught = false, prizeName = "ポイント", rewardPt = 0;
 
           if (armX >= 55 && armX <= 95) { caught = true; prizeName = "🎁 ギフト箱"; rewardPt = GAME_REWARDS.craneGift; }
           else if (armX >= 115 && armX <= 155) { caught = true; prizeName = "🧸 くまのぬいぐるみ"; rewardPt = GAME_REWARDS.craneBear; }
@@ -2363,13 +1544,13 @@ window.triggerTofuGame = function() {
             if (armY <= 0) {
               clearInterval(upInterval);
               if (caught) {
-                if (typeof points !== 'undefined') points += rewardPt;
-                if (typeof addTransaction === 'function') addTransaction('ポイント', rewardPt, `クレーンゲーム: ${prizeName}`);
-                if (typeof updateDisplay === 'function') updateDisplay();
-                if (typeof playSound === 'function') playSound('win');
+                points += rewardPt;
+                addTransaction('ポイント', rewardPt, `クレーンゲーム: ${prizeName}`);
+                updateDisplay();
+                playSound('win');
                 alert(`ゲット！ ${prizeName} (${rewardPt}pt) を獲得しました！`);
               } else {
-                if (typeof playSound === 'function') playSound('error');
+                playSound('error');
                 alert("残念！何も掴めませんでした...");
               }
               closeMiniGamePlayModal();
@@ -2378,11 +1559,10 @@ window.triggerTofuGame = function() {
         }
       }, 30);
     };
-  };
+  }
 
-  // その他ゲーム処理
-  window.playGame = function(type) {
-    if (typeof playSound === 'function') playSound('beep');
+  function playGame(type) {
+    playSound('beep');
     const modal = document.getElementById("minigame-play-modal");
     const title = document.getElementById("minigame-title");
     const stage = document.getElementById("minigame-stage");
@@ -2403,11 +1583,12 @@ window.triggerTofuGame = function() {
             matched++; openCards = [];
             if (matched === 6) {
               const pt = GAME_REWARDS.memory;
-              if (typeof points !== 'undefined') points += pt;
-              if (typeof addTransaction === 'function') addTransaction('ポイント', pt, '神経衰弱クリア');
-              if (typeof updateDisplay === 'function') updateDisplay();
-              if (typeof playSound === 'function') playSound('win');
-              alert(`全ペア獲得！ ${pt}pt ゲット！`); closeMiniGamePlayModal();
+              points += pt;
+              addTransaction('ポイント', pt, '神経衰弱クリア');
+              updateDisplay();
+              playSound('win');
+              alert(`全ペア獲得！ ${pt}pt ゲット！`);
+              closeMiniGamePlayModal();
             }
           } else {
             setTimeout(() => {
@@ -2420,25 +1601,24 @@ window.triggerTofuGame = function() {
           }
         }
       };
-
     } else if (type === 'highlow') {
       title.innerText = "ハイ＆ロー";
       const baseNum = Math.floor(Math.random() * 8) + 2;
-      stage.innerHTML = `<p>現在の数字: <b style="font-size:24px;">${baseNum}</b></p><p>次の数字はこれより大きい？小さい？</p>
-        <div style="display:flex; gap:10px;"><button class="main-btn" onclick="runHL(${baseNum},'H')">HIGH</button><button class="main-btn" onclick="runHL(${baseNum},'L')">LOW</button></div>`;
+      stage.innerHTML = `<p>現在の数字: <b style="font-size:24px;">${baseNum}</b></p><p>次の数字はこれより大きい？小さい？</p><div style="display:flex; gap:10px;"><button class="main-btn" onclick="runHL(${baseNum},'H')">HIGH</button><button class="main-btn" onclick="runHL(${baseNum},'L')">LOW</button></div>`;
       window.runHL = function(b, c) {
         const n = Math.floor(Math.random() * 9) + 1;
         if ((c === 'H' && n > b) || (c === 'L' && n < b)) {
           const pt = GAME_REWARDS.highlow;
-          if (typeof points !== 'undefined') points += pt;
-          if (typeof addTransaction === 'function') addTransaction('ポイント', pt, 'ハイ＆ロー勝利');
-          if (typeof updateDisplay === 'function') updateDisplay();
-          if (typeof playSound === 'function') playSound('win');
+          points += pt;
+          addTransaction('ポイント', pt, 'ハイ＆ロー勝利');
+          updateDisplay();
+          playSound('win');
           alert(`次: ${n} で当たり！ ${pt}pt獲得！`);
-        } else alert(`次: ${n} で残念！`);
+        } else {
+          alert(`次: ${n} で残念！`);
+        }
         closeMiniGamePlayModal();
       };
-
     } else if (type === 'janken') {
       title.innerText = "じゃんけん";
       stage.innerHTML = `<div style="display:flex; gap:10px;"><button class="main-btn" onclick="runJK('✊')">✊</button><button class="main-btn" onclick="runJK('✌️')">✌️</button><button class="main-btn" onclick="runJK('✋')">✋</button></div>`;
@@ -2446,15 +1626,16 @@ window.triggerTofuGame = function() {
         const c = ['✊','✌️','✋'][Math.floor(Math.random()*3)];
         if ((u==='✊'&&c==='✌️')||(u==='✌️'&&c==='✋')||(u==='✋'&&c==='✊')) {
           const pt = GAME_REWARDS.janken;
-          if (typeof points !== 'undefined') points += pt;
-          if (typeof addTransaction === 'function') addTransaction('ポイント', pt, 'じゃんけん勝利');
-          if (typeof updateDisplay === 'function') updateDisplay();
-          if (typeof playSound === 'function') playSound('win');
+          points += pt;
+          addTransaction('ポイント', pt, 'じゃんけん勝利');
+          updateDisplay();
+          playSound('win');
           alert(`相手: ${c}\n勝ち！ ${pt}pt獲得！`);
-        } else alert(`相手: ${c}\n${u===c?'あいこ':'負け'}`);
+        } else {
+          alert(`相手: ${c}\n${u===c?'あいこ':'負け'}`);
+        }
         closeMiniGamePlayModal();
       };
-
     } else if (type === 'mole') {
       title.innerText = "モグラ叩き";
       let score = 0, interval = null;
@@ -2468,16 +1649,16 @@ window.triggerTofuGame = function() {
       setTimeout(() => {
         clearInterval(interval);
         const pt = score * GAME_REWARDS.moleMultiplier;
-        if (typeof points !== 'undefined') points += pt;
-        if (typeof addTransaction === 'function') addTransaction('ポイント', pt, 'モグラ叩き報酬');
-        if (typeof updateDisplay === 'function') updateDisplay();
-        if (typeof playSound === 'function') playSound('win');
-        alert(`タイムアップ！${score}匹叩いて ${pt}pt 獲得！`); closeMiniGamePlayModal();
+        points += pt;
+        addTransaction('ポイント', pt, 'モグラ叩き報酬');
+        updateDisplay();
+        playSound('win');
+        alert(`タイムアップ！${score}匹叩いて ${pt}pt 獲得！`);
+        closeMiniGamePlayModal();
       }, 10000);
       window.hitMole = function(i) {
-        if(i === activeHole) { score++; if (typeof playSound === 'function') playSound('tick'); document.getElementById("mole-score").innerText = `スコア: ${score}`; activeHole = -1; document.getElementById(`mh-${i}`).innerText = "💥"; }
+        if(i === activeHole) { score++; playSound('tick'); document.getElementById("mole-score").innerText = `スコア: ${score}`; activeHole = -1; document.getElementById(`mh-${i}`).innerText = "💥"; }
       };
-
     } else if (type === 'dice') {
       title.innerText = "サイコロ";
       stage.innerHTML = `<p>出目は奇数？偶数？</p><div style="display:flex; gap:10px;"><button class="main-btn" onclick="runDiceEx('奇数')">奇数 (1,3,5)</button><button class="main-btn" onclick="runDiceEx('偶数')">偶数 (2,4,6)</button></div>`;
@@ -2485,15 +1666,16 @@ window.triggerTofuGame = function() {
         const v = Math.floor(Math.random()*6)+1; const res = v % 2 === 0 ? '偶数' : '奇数';
         if (u === res) {
           const pt = GAME_REWARDS.dice;
-          if (typeof points !== 'undefined') points += pt;
-          if (typeof addTransaction === 'function') addTransaction('ポイント', pt, 'サイコロ的中');
-          if (typeof updateDisplay === 'function') updateDisplay();
-          if (typeof playSound === 'function') playSound('win');
+          points += pt;
+          addTransaction('ポイント', pt, 'サイコロ的中');
+          updateDisplay();
+          playSound('win');
           alert(`出目: ${v} (${res})！ ${pt}pt獲得！`);
-        } else alert(`出目: ${v} (${res}) でハズレ！`);
+        } else {
+          alert(`出目: ${v} (${res}) でハズレ！`);
+        }
         closeMiniGamePlayModal();
       };
-
     } else if (type === 'just555') {
       title.innerText = "5.55秒ストップ";
       let start = 0;
@@ -2504,16 +1686,17 @@ window.triggerTofuGame = function() {
           const diff = Math.abs((Date.now() - start) / 1000 - 5.55);
           if (diff < 0.2) {
             const pt = GAME_REWARDS.just555;
-            if (typeof points !== 'undefined') points += pt;
-            if (typeof addTransaction === 'function') addTransaction('ポイント', pt, 'ピッタリ成功');
-            if (typeof updateDisplay === 'function') updateDisplay();
-            if (typeof playSound === 'function') playSound('win');
+            points += pt;
+            addTransaction('ポイント', pt, 'ピッタリ成功');
+            updateDisplay();
+            playSound('win');
             alert(`神業！誤差 ${diff.toFixed(2)}秒！ ${pt}pt獲得！`);
-          } else alert(`結果: 誤差 ${diff.toFixed(2)}秒でした`);
+          } else {
+            alert(`結果: 誤差 ${diff.toFixed(2)}秒でした`);
+          }
           closeMiniGamePlayModal();
         }
       };
-
     } else if (type === 'nummem') {
       title.innerText = "数字記憶";
       const target = Math.floor(1000 + Math.random() * 9000).toString();
@@ -2525,15 +1708,16 @@ window.triggerTofuGame = function() {
         const val = document.getElementById("mem-in").value;
         if(val === ans) {
           const pt = GAME_REWARDS.nummem;
-          if (typeof points !== 'undefined') points += pt;
-          if (typeof addTransaction === 'function') addTransaction('ポイント', pt, '数字記憶クリア');
-          if (typeof updateDisplay === 'function') updateDisplay();
-          if (typeof playSound === 'function') playSound('win');
+          points += pt;
+          addTransaction('ポイント', pt, '数字記憶クリア');
+          updateDisplay();
+          playSound('win');
           alert(`正解！ ${pt}pt獲得！`);
-        } else alert(`不正解！正解は ${ans} でした`);
+        } else {
+          alert(`不正解！正解は ${ans} でした`);
+        }
         closeMiniGamePlayModal();
       };
-
     } else if (type === 'chicken') {
       title.innerText = "チキンレース";
       let num = 0, timer = null;
@@ -2543,7 +1727,7 @@ window.triggerTofuGame = function() {
         if(document.getElementById("chk-num")) document.getElementById("chk-num").innerText = num;
         if(num > 100) {
           clearInterval(timer);
-          if (typeof playSound === 'function') playSound('error');
+          playSound('error');
           alert("💥 100を超えて爆発しました！");
           closeMiniGamePlayModal();
         }
@@ -2552,26 +1736,20 @@ window.triggerTofuGame = function() {
         clearInterval(timer);
         if(num <= 100) {
           const pt = num * GAME_REWARDS.chickenMultiplier;
-          if (typeof points !== 'undefined') points += pt;
-          if (typeof addTransaction === 'function') addTransaction('ポイント', pt, 'チキンレース成功');
-          if (typeof updateDisplay === 'function') updateDisplay();
-          if (typeof playSound === 'function') playSound('win');
+          points += pt;
+          addTransaction('ポイント', pt, 'チキンレース成功');
+          updateDisplay();
+          playSound('win');
           alert(`記録: ${num}！ ${pt}pt 獲得！`);
         }
         closeMiniGamePlayModal();
       };
-
     } else if (type === 'diff') {
       title.innerText = "間違い探し";
-      const setList = [
-        { normal: '😀', diff: '😃' },
-        { normal: '⭐', diff: '🌟' },
-        { normal: '🍎', diff: '🍅' },
-        { normal: '🐱', diff: '😸' }
-      ];
+      const setList = [{ normal: '😀', diff: '😃' }, { normal: '⭐', diff: '🌟' }, { normal: '🍎', diff: '🍅' }, { normal: '🐱', diff: '😸' }];
       const currentSet = setList[Math.floor(Math.random() * setList.length)];
       const targetIdx = Math.floor(Math.random() * 16);
-     
+    
       let html = `<p>1つだけ違う顔・マークを探してね！</p><div class="diff-grid">`;
       for(let i=0; i<16; i++) {
         const icon = (i === targetIdx) ? currentSet.diff : currentSet.normal;
@@ -2583,15 +1761,16 @@ window.triggerTofuGame = function() {
       window.runDiff = function(win) {
         if(win) {
           const pt = GAME_REWARDS.diff;
-          if (typeof points !== 'undefined') points += pt;
-          if (typeof addTransaction === 'function') addTransaction('ポイント', pt, '間違い探しクリア');
-          if (typeof updateDisplay === 'function') updateDisplay();
-          if (typeof playSound === 'function') playSound('win');
+          points += pt;
+          addTransaction('ポイント', pt, '間違い探しクリア');
+          updateDisplay();
+          playSound('win');
           alert(`大正解！ ${pt}pt獲得！`);
-        } else alert("ハズレ！よく見て探してね！");
+        } else {
+          alert("ハズレ！よく見て探してね！");
+        }
         closeMiniGamePlayModal();
       };
-
     } else if (type === 'bomb') {
       title.innerText = "爆弾処理";
       let safeCutCount = 0;
@@ -2599,9 +1778,9 @@ window.triggerTofuGame = function() {
       const boomIndex = Math.floor(Math.random() * 4);
 
       stage.innerHTML = `
-        <p id="bomb-desc">線を<b>【2本】</b>安全に切れば解除成功！<br>(1本だけドカン！)</p>
+        <p>線を<b>【2本】</b>安全に切れば解除成功！<br>(1本だけドカン！)</p>
         <p id="bomb-status" style="font-weight:bold; color:#007bff;">成功数: 0 / 2</p>
-        <div id="wire-btns" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%;">
           ${wires.map((w, i) => `<button class="main-btn" id="wb-${i}" onclick="runB(${i}, ${boomIndex})">${w}</button>`).join('')}
         </div>
       `;
@@ -2613,28 +1792,24 @@ window.triggerTofuGame = function() {
         btn.style.opacity = "0.3";
 
         if (cutIndex === boomIdx) {
-          if (typeof playSound === 'function') playSound('error');
+          playSound('error');
           alert("💣 💥 ボカン！！爆弾が爆発しました！");
           closeMiniGamePlayModal();
         } else {
           safeCutCount++;
-          if (typeof playSound === 'function') playSound('tick');
+          playSound('tick');
           document.getElementById("bomb-status").innerText = `成功数: ${safeCutCount} / 2`;
           if (safeCutCount >= 2) {
             const pt = GAME_REWARDS.bomb;
-            if (typeof points !== 'undefined') points += pt;
-            if (typeof addTransaction === 'function') addTransaction('ポイント', pt, '爆弾処理成功');
-            if (typeof updateDisplay === 'function') updateDisplay();
-            if (typeof playSound === 'function') playSound('win');
+            points += pt;
+            addTransaction('ポイント', pt, '爆弾処理成功');
+            updateDisplay();
+            playSound('win');
             alert(`見事に2本切断成功！爆弾解除完了！ ${pt}pt獲得！`);
             closeMiniGamePlayModal();
           }
         }
       };
-
-    // ==========================================
-    // ⚡ 【追加】連打ラッシュ
-    // ==========================================
     } else if (type === 'tap') {
       title.innerText = "5秒連打ラッシュ";
       let count = 0, started = false;
@@ -2655,27 +1830,23 @@ window.triggerTofuGame = function() {
               clearInterval(t);
               btn.disabled = true;
               const pt = count * GAME_REWARDS.tapRushMultiplier;
-              if (typeof points !== 'undefined') points += pt;
-              if (typeof addTransaction === 'function') addTransaction('ポイント', pt, '連打ラッシュ報酬');
-              if (typeof updateDisplay === 'function') updateDisplay();
-              if (typeof playSound === 'function') playSound('win');
+              points += pt;
+              addTransaction('ポイント', pt, '連打ラッシュ報酬');
+              updateDisplay();
+              playSound('win');
               alert(`タイムアップ！ ${count}回タップで ${pt}pt 獲得！`);
               closeMiniGamePlayModal();
             }
           }, 1000);
         }
         count++;
-        if (typeof playSound === 'function') playSound('tick');
+        playSound('tick');
         document.getElementById("tap-count").innerText = `${count} 回`;
       };
-
-    // ==========================================
-    // 🎈 【追加】風船膨らましゲーム
-    // ==========================================
     } else if (type === 'balloon') {
       title.innerText = "風船ギリギリ勝負";
       let size = 30;
-      const limit = 90 + Math.floor(Math.random() * 30); // 90~120pxで爆発
+      const limit = 90 + Math.floor(Math.random() * 30);
       stage.innerHTML = `
         <div id="balloon-obj" style="font-size:${size}px; transition:0.1s;">🎈</div>
         <p>空気を入れまくれ！割れる前にストップ！</p>
@@ -2686,28 +1857,24 @@ window.triggerTofuGame = function() {
       `;
       document.getElementById("pump-btn").onclick = function() {
         size += 8;
-        if (typeof playSound === 'function') playSound('tick');
+        playSound('tick');
         document.getElementById("balloon-obj").style.fontSize = size + "px";
         if (size >= limit) {
           document.getElementById("balloon-obj").innerText = "💥";
-          if (typeof playSound === 'function') playSound('error');
+          playSound('error');
           alert("💥 パンッ！！風船が割れてしまいました！");
           closeMiniGamePlayModal();
         }
       };
       document.getElementById("stop-balloon-btn").onclick = function() {
         const pt = GAME_REWARDS.balloon;
-        if (typeof points !== 'undefined') points += pt;
-        if (typeof addTransaction === 'function') addTransaction('ポイント', pt, '風船成功');
-        if (typeof updateDisplay === 'function') updateDisplay();
-        if (typeof playSound === 'function') playSound('win');
+        points += pt;
+        addTransaction('ポイント', pt, '風船成功');
+        updateDisplay();
+        playSound('win');
         alert(`ナイスチキン回避！ ${pt}pt 獲得！`);
         closeMiniGamePlayModal();
       };
-
-    // ==========================================
-    // 🔢 【追加】順番タップ (1〜6)
-    // ==========================================
     } else if (type === 'seq') {
       title.innerText = "1から順にタップ！";
       let nextNum = 1;
@@ -2720,28 +1887,24 @@ window.triggerTofuGame = function() {
       `;
       window.pressSeq = function(n) {
         if (n === nextNum) {
-          if (typeof playSound === 'function') playSound('tick');
+          playSound('tick');
           document.getElementById(`nb-${n}`).disabled = true;
           document.getElementById(`nb-${n}`).style.opacity = "0.3";
           nextNum++;
           if (nextNum > 6) {
             const pt = GAME_REWARDS.numSequence;
-            if (typeof points !== 'undefined') points += pt;
-            if (typeof addTransaction === 'function') addTransaction('ポイント', pt, '順番タップクリア');
-            if (typeof updateDisplay === 'function') updateDisplay();
-            if (typeof playSound === 'function') playSound('win');
+            points += pt;
+            addTransaction('ポイント', pt, '順番タップクリア');
+            updateDisplay();
+            playSound('win');
             alert(`クリア！ ${pt}pt 獲得！`);
             closeMiniGamePlayModal();
           }
         } else {
-          if (typeof playSound === 'function') playSound('error');
+          playSound('error');
           alert("順番が違います！");
         }
       };
-
-    // ==========================================
-    // 🔤 【追加】アナグラム (並び替え)
-    // ==========================================
     } else if (type === 'anagram') {
       title.innerText = "単語並び替え";
       const questions = [
@@ -2749,7 +1912,7 @@ window.triggerTofuGame = function() {
         { quiz: "に・う・ち・よ・び", ans: "にちようび" },
         { quiz: "ん・ご・り", ans: "りんご" },
         { quiz: "り・ん・お・さ", ans: "さんりお" },
-      　{ quiz: "し・そ・み・る", ans: "みそしる" },
+        { quiz: "し・そ・み・る", ans: "みそしる" },
         { quiz: "み・く・ろ", ans: "くろみ" },
         { quiz: "ら・く・ま", ans: "まくら" }
       ];
@@ -2764,700 +1927,308 @@ window.triggerTofuGame = function() {
         const input = document.getElementById("ana-in").value.trim();
         if (input === ans) {
           const pt = GAME_REWARDS.anagram;
-          if (typeof points !== 'undefined') points += pt;
-          if (typeof addTransaction === 'function') addTransaction('ポイント', pt, 'アナグラム正解');
-          if (typeof updateDisplay === 'function') updateDisplay();
-          if (typeof playSound === 'function') playSound('win');
+          points += pt;
+          addTransaction('ポイント', pt, 'アナグラム正解');
+          updateDisplay();
+          playSound('win');
           alert(`正解 (${ans})！ ${pt}pt 獲得！`);
           closeMiniGamePlayModal();
         } else {
-          if (typeof playSound === 'function') playSound('error');
+          playSound('error');
           alert("残念！違います");
         }
       };
     }
-  };
-
-})();
-
-
-  // --- 🎟️ クーポンボックス（完全版：適用・解除・パスコード削除・使用時自動消去対応） ---
-
-function openCouponModal() {
-  if (typeof playSound === 'function') playSound('beep');
-
-  const modal = document.getElementById("minigame-play-modal");
-  const title = document.getElementById("minigame-title");
-  const stage = document.getElementById("minigame-stage");
-  if (!modal) return;
-
-  // モーダル全体の横幅をゆったり広げる
-  const modalContent = modal.querySelector(".modal-content") || modal.firstElementChild;
-  if (modalContent) {
-    modalContent.style.width = "92%";
-    modalContent.style.maxWidth = "440px";
   }
 
-  modal.classList.remove("hidden");
-  title.innerText = "COUPON";
+  function openCouponModal() {
+    playSound('beep');
+    const modal = document.getElementById("minigame-play-modal");
+    document.getElementById("minigame-title").innerText = "COUPON";
+    modal.classList.remove("hidden");
+    updateCouponDisplay();
 
-  updateCouponDisplay();
+    setTimeout(() => {
+      const buttons = modal.querySelectorAll("button");
+      buttons.forEach(btn => {
+        if (btn.innerText.includes("メニューに戻る") || btn.innerText.includes("戻る")) {
+          btn.innerText = "閉じる";
+          btn.onclick = function() {
+            playSound('beep');
+            modal.classList.add("hidden");
+          };
+        }
+      });
+    }, 10);
+  }
 
-  // ✨ 下部のボタンのテキストを「閉じる」に変更し、モーダルを閉じる処理を割り当てる
-  setTimeout(() => {
-    const buttons = modal.querySelectorAll("button");
-    buttons.forEach(btn => {
-      if (btn.innerText.includes("メニューに戻る") || btn.innerText.includes("戻る")) {
-        btn.innerText = "閉じる";
-        btn.onclick = function() {
-          if (typeof playSound === 'function') playSound('beep');
-          modal.classList.add("hidden");
-        };
-      }
-    });
-  }, 10);
-}
+  function updateCouponDisplay() {
+    const stage = document.getElementById("minigame-stage");
+    if (!stage) return;
 
-function updateCouponDisplay() {
-  const stage = document.getElementById("minigame-stage");
-  if (!stage) return;
+    let coupons = JSON.parse(localStorage.getItem('11pay_coupons')) || [];
+    const todayStr = new Date().toISOString().split('T')[0];
+    const validCoupons = coupons.filter(c => !c.expiry || c.expiry >= todayStr);
+    localStorage.setItem('11pay_coupons', JSON.stringify(validCoupons));
 
-  let coupons = JSON.parse(localStorage.getItem('11pay_coupons')) || [];
-  const todayStr = new Date().toISOString().split('T')[0];
+    const activeCoupon = JSON.parse(localStorage.getItem('11pay_active_coupon'));
 
-  // 期限切れの自動除外
-  const validCoupons = coupons.filter(c => {
-    return !c.expiry || c.expiry >= todayStr;
-  });
-  localStorage.setItem('11pay_coupons', JSON.stringify(validCoupons));
+    let couponsHtml = "";
+    if (validCoupons.length === 0) {
+      couponsHtml = `<p style="font-size: 13px; color: #666; text-align: center; padding: 30px;">利用可能なクーポンはありません。</p>`;
+    } else {
+      couponsHtml = validCoupons.map(c => {
+        const isActive = activeCoupon && activeCoupon.id === c.id;
+        const bgStyle = isActive ? "#f1f8e9" : "#fff8e1";
+        const borderStyle = isActive ? "2px solid #66bb6a" : "1px solid #ffe082";
 
-  const activeCoupon = JSON.parse(localStorage.getItem('11pay_active_coupon'));
-
-  let couponsHtml = "";
-  if (validCoupons.length === 0) {
-    couponsHtml = `<p style="font-size: 13px; color: #666; text-align: center; padding: 30px;">利用可能なクーポンはありません。</p>`;
-  } else {
-    couponsHtml = validCoupons.map(c => {
-      const isActive = activeCoupon && activeCoupon.id === c.id;
-      const bgStyle = isActive ? "#f1f8e9" : "#fff8e1";
-      const borderStyle = isActive ? "2px solid #66bb6a" : "1px solid #ffe082";
-
-      return `
-        <div style="background: ${bgStyle}; padding: 16px; border-radius: 12px; border: ${borderStyle}; display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; width: 100%; box-sizing: border-box; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-          <div>
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-              <span style="font-weight: bold; font-size: 15px; color: #e65100;">${c.title}</span>
-              ${isActive ? '<span style="background: #4caf50; color: #fff; font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: bold;">✨ 適用中</span>' : ''}
+        return `
+          <div style="background: ${bgStyle}; padding: 16px; border-radius: 12px; border: ${borderStyle}; display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; width: 100%; box-sizing: border-box; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                <span style="font-weight: bold; font-size: 15px; color: #e65100;">${c.title}</span>
+                ${isActive ? '<span style="background: #4caf50; color: #fff; font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: bold;">✨ 適用中</span>' : ''}
+              </div>
+              <p style="font-size: 12px; color: #444; margin: 3px 0;">割引: <b>${c.discount}円</b> (${c.minPrice}円以上)</p>
+              <p style="font-size: 11px; color: #777; margin: 2px 0;">有効期限: ${c.expiry}</p>
             </div>
-            <p style="font-size: 12px; color: #444; margin: 3px 0;">割引: <b>${c.discount}円</b> (${c.minPrice}円以上)</p>
-            <p style="font-size: 11px; color: #777; margin: 2px 0;">有効期限: ${c.expiry}</p>
+            <div style="display: flex; gap: 8px; justify-content: flex-end; border-top: 1px dashed rgba(0,0,0,0.1); padding-top: 10px;">
+              ${isActive
+                ? `<button class="main-btn" style="background: #ffa726; color: #fff; font-size: 11px; padding: 6px 14px; border-radius: 6px;" onclick="cancelCoupon('${c.id}')">解除</button>`
+                : `<button class="main-btn" style="background: #4caf50; color: #fff; font-size: 11px; padding: 6px 14px; border-radius: 6px;" onclick="useCoupon('${c.id}')">使う</button>`
+              }
+              <button class="main-btn" style="background: #e53935; color: #fff; font-size: 11px; padding: 6px 14px; border-radius: 6px;" onclick="promptDeleteCoupon('${c.id}')">削除</button>
+            </div>
           </div>
-         
-          <div style="display: flex; gap: 8px; justify-content: flex-end; border-top: 1px dashed rgba(0,0,0,0.1); padding-top: 10px;">
-            ${isActive
-              ? `<button class="main-btn" style="background: #ffa726; color: #fff; font-size: 11px; padding: 6px 14px; border-radius: 6px;" onclick="cancelCoupon('${c.id}')">解除</button>`
-              : `<button class="main-btn" style="background: #4caf50; color: #fff; font-size: 11px; padding: 6px 14px; border-radius: 6px;" onclick="useCoupon('${c.id}')">使う</button>`
-            }
-            <button class="main-btn" style="background: #e53935; color: #fff; font-size: 11px; padding: 6px 14px; border-radius: 6px;" onclick="promptDeleteCoupon('${c.id}')">削除</button>
-          </div>
-        </div>
-      `;
-    }).join('');
-  }
-
-  stage.innerHTML = `
-    <div style="text-align: left; padding: 8px; display: flex; flex-direction: column; gap: 4px; max-height: 70vh; overflow-y: auto; width: 100%; box-sizing: border-box;">
-      ${couponsHtml}
-    </div>
-  `;
-}
-
-// クーポンを使うボタン
-function useCoupon(couponId) {
-  let coupons = JSON.parse(localStorage.getItem('11pay_coupons')) || [];
-  const coupon = coupons.find(c => c.id === couponId);
-
-  if (!coupon) {
-    alert("クーポンが見つかりません。");
-    return;
-  }
-
-  localStorage.setItem('11pay_active_coupon', JSON.stringify(coupon));
-
-  if (typeof activeDiscount !== 'undefined') {
-    activeDiscount = coupon.discount;
-  }
-
-  if (typeof playSound === 'function') playSound('win');
-  alert(`クーポン「${coupon.title}」を適用しました！（${coupon.discount}円引き）`);
-
-  updateCouponDisplay();
-}
-
-// クーポンの適用を解除するボタン
-function cancelCoupon(couponId) {
-  localStorage.removeItem('11pay_active_coupon');
-  if (typeof activeDiscount !== 'undefined') {
-    activeDiscount = 0;
-  }
-  if (typeof playSound === 'function') playSound('beep');
-  alert("クーポンの適用を解除しました。");
-  updateCouponDisplay();
-}
-
-// 決済完了時にクーポンを消去する処理（従来の関数）
-function consumeActiveCoupon() {
-  const activeCoupon = JSON.parse(localStorage.getItem('11pay_active_coupon'));
-  if (!activeCoupon) return;
-
-  let coupons = JSON.parse(localStorage.getItem('11pay_coupons')) || [];
-  const newCoupons = coupons.filter(c => c.id !== activeCoupon.id);
-
-  localStorage.setItem('11pay_coupons', JSON.stringify(newCoupons));
-  localStorage.removeItem('11pay_active_coupon');
- 
-  if (typeof activeDiscount !== 'undefined') {
-    activeDiscount = 0;
-  }
-}
-
-// ✨お支払い時に使ったクーポンの名前を取得して自動消去する関数
-function consumeActiveCouponOnPayment() {
-  const activeCoupon = JSON.parse(localStorage.getItem('11pay_active_coupon'));
-  if (!activeCoupon) return "";
-
-  let coupons = JSON.parse(localStorage.getItem('11pay_coupons')) || [];
-  const newCoupons = coupons.filter(c => c.id !== activeCoupon.id);
-
-  localStorage.setItem('11pay_coupons', JSON.stringify(newCoupons));
-  
-  const couponTitle = activeCoupon.title;
-
-  localStorage.removeItem('11pay_active_coupon');
-  if (typeof activeDiscount !== 'undefined') {
-    activeDiscount = 0;
-  }
-  return couponTitle;
-}
-
-// パスコード認証付き削除処理
-function promptDeleteCoupon(couponId) {
-  const passcode = prompt("クーポンを削除するためのパスコードを入力してください：");
-
-  if (passcode !== "4869") {
-    alert("パスコードが間違っています！");
-    return;
-  }
-
-  let coupons = JSON.parse(localStorage.getItem('11pay_coupons')) || [];
-  const newCoupons = coupons.filter(c => c.id !== couponId);
-
-  localStorage.setItem('11pay_coupons', JSON.stringify(newCoupons));
-
-  const activeCoupon = JSON.parse(localStorage.getItem('11pay_active_coupon'));
-  if (activeCoupon && activeCoupon.id === couponId) {
-    localStorage.removeItem('11pay_active_coupon');
-    if (typeof activeDiscount !== 'undefined') activeDiscount = 0;
-  }
-
-  if (typeof playSound === 'function') playSound('beep');
-  alert("クーポンを削除しました。");
-
-  updateCouponDisplay();
-}
-
-
-    
-  // ==========================================
-// 📁 スマホ内の画像（スクショ等）からQRを読み取る処理
-// ==========================================
-function handleFileScan(input) {
-  if (input.files.length === 0) return;
-  const file = input.files[0];
-
-  // html5-qrcodeライブラリを使って画像ファイル内をスキャン
-  const html5QrCodeForFile = new Html5Qrcode("reader");
-  
-  html5QrCodeForFile.scanFile(file, true)
-    .then(decodedText => {
-      console.log("画像からQRコードを検出:", decodedText);
-      // 既存のQR読み取り成功時と同じ関数に渡す
-      onScanSuccess(decodedText);
-    })
-    .catch(err => {
-      console.log("画像スキャンエラー:", err);
-      if (typeof playSound === 'function') playSound('error');
-      alert("画像からQRコードを検出できませんでした");
-    });
-}
-
-
-// ==========================================
-// 2. プッシュ通知（トースト）を表示する関数
-// ==========================================
-function showToast(message) {
-  const container = document.getElementById('toast-container');
-  
-  const toast = document.createElement('div');
-  toast.className = 'toast-notification';
-  toast.innerHTML = `⚡ <span>${message}</span>`;
-  
-  container.appendChild(toast);
-  
-  // 3秒後に自動で消去
-  setTimeout(() => {
-    toast.remove();
-  }, 3000);
-}
-
-// ==========================================
-// 3. マイコードを読み取ってお支払いする処理（金額入力型）
-// ==========================================
-function processMyCodePayment(targetUserId, storeName = "店舗での決済") {
-  // 1. 支払い金額を入力してもらう
-  const inputAmount = prompt(`${targetUserId} さんへの支払い金額を入力してください（円）:`);
-  if (!inputAmount) return; // キャンセル時は中止
-
-  const amount = parseInt(inputAmount, 10);
-  if (isNaN(amount) || amount <= 0) {
-    alert("正しい金額を入力してください。");
-    return;
-  }
-
-  // 2. 現在の残高を取得（localStorageから読み込み）
-  let currentBalance = parseInt(localStorage.getItem('11pay_balance')) || 1000;
-
-  // 3. 残高不足チェック
-  if (currentBalance < amount) {
-    alert("残高が不足しています！");
-    return;
-  }
-
-  // 4. 残高を減らして保存
-  currentBalance -= amount;
-  localStorage.setItem('11pay_balance', currentBalance);
-
-  // 5. 画面の残高表示を更新
-  if (typeof updateBalanceUI === 'function') {
-    updateBalanceUI();
-  } else {
-    document.getElementById('balance-display').innerText = currentBalance + " 円";
-  }
-
-  // 6. 取引履歴に追加
-  addHistoryRecord(storeName, -amount);
-
-  // 7. おしゃれなプッシュ通知を表示
-  showToast(`${storeName}で ${amount.toLocaleString()}円 支払いました`);
-}
-
-// 履歴追加用のヘルパー関数
-function addHistoryRecord(title, amount) {
-  let history = JSON.parse(localStorage.getItem('11pay_history')) || [];
-  history.unshift({
-    title: title,
-    amount: amount,
-    date: new Date().toLocaleString()
-  });
-  localStorage.setItem('11pay_history', JSON.stringify(history));
-}
-
-// 保持用変数
-let currentPaymentAmount = 0;
-
-// ページ読み込み時にURLパラメータをチェック
-window.addEventListener('DOMContentLoaded', () => {
-  const params = new URLSearchParams(window.location.search);
-  const payAmount = params.get('pay_amount'); // 例: index.html?pay_amount=1200
-
-  if (payAmount) {
-    const amount = parseInt(payAmount, 10);
-    if (!isNaN(amount) && amount > 0) {
-      currentPaymentAmount = amount;
-      openCheckoutModal(amount);
+        `;
+      }).join('');
     }
+
+    stage.innerHTML = `<div style="text-align: left; padding: 8px; display: flex; flex-direction: column; gap: 4px; max-height: 70vh; overflow-y: auto; width: 100%; box-sizing: border-box;">${couponsHtml}</div>`;
   }
-});
 
-// お会計モーダルを開く関数
-function openpayconfirmmodal(amount) {
-  // 金額をモーダル内の表示要素にセット
-  const amountElem = document.getElementById('checkout-amount-display');
-  if (amountElem) {
-    amountElem.innerText = amount.toLocaleString() + "円";
+  function useCoupon(couponId) {
+    let coupons = JSON.parse(localStorage.getItem('11pay_coupons')) || [];
+    const coupon = coupons.find(c => c.id === couponId);
+    if (!coupon) return alert("クーポンが見つかりません。");
+
+    localStorage.setItem('11pay_active_coupon', JSON.stringify(coupon));
+    playSound('win');
+    alert(`クーポン「${coupon.title}」を適用しました！（${coupon.discount}円引き）`);
+    updateCouponDisplay();
   }
-  // モーダルを表示（flexまたはblock、既存のモーダルのスタイルに合わせて変更してください）
-  const modal = document.getElementById('checkout-modal');
-  if (modal) {
-    modal.style.display = 'flex';
+
+  function cancelCoupon() {
+    localStorage.removeItem('11pay_active_coupon');
+    playSound('beep');
+    alert("クーポンの適用を解除しました。");
+    updateCouponDisplay();
   }
-}
 
-// お会計モーダルを閉じる関数
-function closepayconfirmmodal() {
-  const modal = document.getElementById('checkout-modal');
-  if (modal) {
-    modal.style.display = 'none';
+  function consumeActiveCouponOnPayment() {
+    const activeCoupon = JSON.parse(localStorage.getItem('11pay_active_coupon'));
+    if (!activeCoupon) return "";
+
+    let coupons = JSON.parse(localStorage.getItem('11pay_coupons')) || [];
+    const newCoupons = coupons.filter(c => c.id !== activeCoupon.id);
+    localStorage.setItem('11pay_coupons', JSON.stringify(newCoupons));
+   
+    const couponTitle = activeCoupon.title;
+    localStorage.removeItem('11pay_active_coupon');
+    return couponTitle;
   }
-  // URLのパラメータをきれいにする（リロード時に何度も開かないようにするため）
-  window.history.replaceState({}, document.title, window.location.pathname);
-}
 
-  // 歩数データの取得・管理
-function getStepData() {
-  const data = JSON.parse(localStorage.getItem('11pay_step_data')) || {
-    steps: 0,          // 現在の未取得歩数 (0〜500)
-    todayPoints: 0,    // 本日の獲得ポイント
-    lastDate: new Date().toDateString()
-  };
+  function promptDeleteCoupon(couponId) {
+    const passcode = prompt("クーポンを削除するためのパスコードを入力してください：");
+    if (passcode !== "4869") return alert("パスコードが間違っています！");
 
-  // 日付が変わっていれば本日の獲得ポイントをリセット
-  if (data.lastDate !== new Date().toDateString()) {
-    data.todayPoints = 0;
-    data.lastDate = new Date().toDateString();
+    let coupons = JSON.parse(localStorage.getItem('11pay_coupons')) || [];
+    const newCoupons = coupons.filter(c => c.id !== couponId);
+    localStorage.setItem('11pay_coupons', JSON.stringify(newCoupons));
+
+    const activeCoupon = JSON.parse(localStorage.getItem('11pay_active_coupon'));
+    if (activeCoupon && activeCoupon.id === couponId) {
+      localStorage.removeItem('11pay_active_coupon');
+    }
+
+    playSound('beep');
+    alert("クーポンを削除しました。");
+    updateCouponDisplay();
   }
-  return data;
-}
 
-function saveStepData(data) {
-  localStorage.setItem('11pay_step_data', JSON.stringify(data));
-}
+  function handleFileScan(input) {
+    if (input.files.length === 0) return;
+    const file = input.files[0];
+    const html5QrCodeForFile = new Html5Qrcode("reader");
+ 
+    html5QrCodeForFile.scanFile(file, true)
+      .then(decodedText => { onScanSuccess(decodedText); })
+      .catch(err => {
+        playSound('error');
+        alert("画像からQRコードを検出できませんでした");
+      });
+  }
 
-// 画面の歩数表示やゲージ、イラストの連動更新
-function updateStepUI() {
-  const data = getStepData();
-  
-  const stepsElem = document.getElementById('current-steps');
-  const todayElem = document.getElementById('today-earned-points');
-  if (stepsElem) stepsElem.innerText = data.steps;
-  if (todayElem) todayElem.innerText = data.todayPoints.toLocaleString();
+  function getStepData() {
+    const data = JSON.parse(localStorage.getItem('11pay_step_data')) || { steps: 0, todayPoints: 0, lastDate: new Date().toDateString() };
+    if (data.lastDate !== new Date().toDateString()) {
+      data.todayPoints = 0;
+      data.lastDate = new Date().toDateString();
+    }
+    return data;
+  }
 
-  // 5つのゲージ（100歩ごと）の見た目を更新
-  for (let i = 0; i < 5; i++) {
-    const gauge = document.getElementById(`gauge-${i}`);
-    if (gauge) {
-      if (data.steps >= (i + 1) * 100) {
-        gauge.style.background = '#27ae60'; // 達成済み
-      } else if (data.steps >= i * 100) {
-        gauge.style.background = '#ff4757'; // 進行中
-      } else {
-        gauge.style.background = '#e0e0e0'; // 未達成
+  function saveStepData(data) {
+    localStorage.setItem('11pay_step_data', JSON.stringify(data));
+  }
+
+  function updateStepUI() {
+    const data = getStepData();
+    document.getElementById('current-steps').innerText = data.steps;
+    document.getElementById('today-earned-points').innerText = data.todayPoints.toLocaleString();
+
+    for (let i = 0; i < 5; i++) {
+      const gauge = document.getElementById(`gauge-${i}`);
+      if (gauge) {
+        if (data.steps >= (i + 1) * 100) gauge.style.background = '#27ae60';
+        else if (data.steps >= i * 100) gauge.style.background = '#ff4757';
+        else gauge.style.background = '#e0e0e0';
       }
     }
-  }
 
-  // イラスト（SVGアイコン）を歩数に応じてゲージ上に移動させる
-  const character = document.getElementById('walking-character');
-  const svgElem = document.getElementById('character-svg');
-  if (character) {
-    const percentage = Math.min(data.steps / 500, 1);
-    const containerWidth = character.parentElement.clientWidth - 30;
-    const positionX = Math.max(25, percentage * containerWidth);
-    character.style.left = `${positionX}px`;
-
-    // 500歩達成時は色を変更
-    if (data.steps >= 500 && svgElem) {
-      svgElem.setAttribute('fill', '#27ae60');
-    } else if (svgElem) {
-      svgElem.setAttribute('fill', '#ff4757');
+    const character = document.getElementById('walking-character');
+    const svgElem = document.getElementById('character-svg');
+    if (character) {
+      const percentage = Math.min(data.steps / 500, 1);
+      const containerWidth = character.parentElement.clientWidth - 30;
+      character.style.left = `${Math.max(25, percentage * containerWidth)}px`;
+      if (svgElem) svgElem.setAttribute('fill', data.steps >= 500 ? '#27ae60' : '#ff4757');
     }
   }
-}
 
-// スマホの加速度センサー有効化（iOS対応）
-function requestMotionPermission() {
-  if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-    DeviceMotionEvent.requestPermission()
-      .then(permissionState => {
-        if (permissionState === 'granted') {
+  function requestMotionPermission() {
+    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+      DeviceMotionEvent.requestPermission().then(state => {
+        if (state === 'granted') {
           window.addEventListener('devicemotion', handleMotionEvent);
-          alert("歩数センサーが有効になりました！スマホを持って歩いてみてください。");
+          alert("歩数センサーが有効になりました！");
         } else {
           alert("センサーの利用が許可されませんでした。");
         }
-      })
-      .catch(console.error);
-  } else {
-    window.addEventListener('devicemotion', handleMotionEvent);
-    alert("歩数センサーが有効になりました！");
+      }).catch(console.error);
+    } else {
+      window.addEventListener('devicemotion', handleMotionEvent);
+      alert("歩数センサーが有効になりました！");
+    }
   }
-}
 
-// 実際の揺れを検知して1歩ずつカウントするロジック
-let lastAcceleration = { x: 0, y: 0, z: 0 };
-let lastStepTime = 0;
-const threshold = 12; // 揺れの感度
+  let lastAcceleration = { x: 0, y: 0, z: 0 };
+  let lastStepTime = 0;
+  const threshold = 12;
 
-function handleMotionEvent(event) {
-  const acc = event.accelerationIncludingGravity;
-  if (!acc) return;
+  function handleMotionEvent(event) {
+    const acc = event.accelerationIncludingGravity;
+    if (!acc) return;
 
-  const currentX = acc.x || 0;
-  const currentY = acc.y || 0;
-  const currentZ = acc.z || 0;
+    const delta = Math.abs((acc.x || 0) - lastAcceleration.x) + Math.abs((acc.y || 0) - lastAcceleration.y) + Math.abs((acc.z || 0) - lastAcceleration.z);
+    const currentTime = new Date().getTime();
 
-  const delta = Math.abs(currentX - lastAcceleration.x) +
-                Math.abs(currentY - lastAcceleration.y) +
-                Math.abs(currentZ - lastAcceleration.z);
+    if (delta > threshold && (currentTime - lastStepTime) > 300) {
+      let data = getStepData();
+      if (data.todayPoints < 10000 && data.steps < 500) {
+        data.steps += 1;
+        saveStepData(data);
+        updateStepUI();
+      }
+      lastStepTime = currentTime;
+    }
+    lastAcceleration = { x: acc.x || 0, y: acc.y || 0, z: acc.z || 0 };
+  }
 
-  const currentTime = new Date().getTime();
-
-  // 一定以上の揺れがあり、前回のステップから300ms以上空いている場合を1歩とみなす
-  if (delta > threshold && (currentTime - lastStepTime) > 300) {
+  function claimStepPoints() {
     let data = getStepData();
-    
-    if (data.todayPoints < 10000 && data.steps < 500) {
-      data.steps += 1;
-      saveStepData(data);
-      updateStepUI();
-    }
+    const earnedPoints = data.steps;
 
-    lastStepTime = currentTime;
-  }
+    if (earnedPoints <= 0) return alert("受け取れるポイントがありません");
 
-  lastAcceleration = { x: currentX, y: currentY, z: currentZ };
-}
-
-// ポイントを受け取る関数（クレーンゲームの仕組みに合わせた完全連携版）
-function claimStepPoints() {
-  let data = getStepData();
-  const earnedPoints = data.steps;
-
-  if (earnedPoints <= 0) {
-    alert("受け取れるポイントがありません");
-    return;
-  }
-
-  // 1日の上限チェック (10,000pt)
-  if (data.todayPoints + earnedPoints > 10000) {
-    alert("本日の上限（10,000pt）を超えるため、上限まで獲得します。");
-  }
-
-  try {
-    // 1. クレーンゲームと同じ方法でポイント変数に加算
-    if (typeof points !== 'undefined') {
-      points += earnedPoints;
-    } else {
-      // 変数が見つからない場合の保険（localStorageへの保存）
-      let currentPoints = parseInt(localStorage.getItem('11pay_points'), 10) || 0;
-      currentPoints += earnedPoints;
-      localStorage.setItem('11pay_points', currentPoints);
-    }
-
-    // 2. クレーンゲームと同じ `addTransaction` 関数を使って履歴に追加
-    if (typeof addTransaction === 'function') {
-      addTransaction('ポイント', earnedPoints, `歩数ポイント獲得`);
-    } else {
-      // 関数がない場合の保険
-      let history = JSON.parse(localStorage.getItem('11pay_history')) || [];
-      history.unshift({
-        title: `歩数ポイント獲得 (${earnedPoints}pt)`,
-        amount: earnedPoints,
-        date: new Date().toLocaleString()
-      });
-      localStorage.setItem('11pay_history', JSON.stringify(history));
-    }
-
-    // 3. 歩数データを更新（歩数をリセットし、本日の獲得数を加算）
+    points += earnedPoints;
+    addTransaction('ポイント', earnedPoints, `歩数ポイント獲得`);
     data.todayPoints += earnedPoints;
     data.steps = 0;
     saveStepData(data);
-
-    // 4. 画面の歩数UIを更新
     updateStepUI();
-
-    // 5. クレーンゲームと同じ `updateDisplay()` で全体の画面（残高など）を更新
-    if (typeof updateDisplay === 'function') {
-      updateDisplay();
-    }
-
-    // 効果音があれば鳴らす
-    if (typeof playSound === 'function') {
-      playSound('win');
-    }
-
+    updateDisplay();
+    playSound('win');
     alert(`${earnedPoints.toLocaleString()}ポイントを獲得しました！`);
-
-  } catch (error) {
-    console.error("ポイント受取エラー:", error);
-    alert("エラーが発生しました: " + error.message);
   }
-}
 
+  let newsData = [
+    { id: 6, title: "アップデート実施！ ver.26.9.23", date: "2026-09-17-17:00", content: "《アップデート内容》 ver.26.9.23\n・お店用QRを追加、読み込み設定を追加いたしました\n・その他いくつかの不具合を修正いたしました" },
+    { id: 5, title: "アップデート実施！ ver.26.9.18", date: "2026-09-16-18:30", content: "《アップデート内容》 ver.26.9.18\n・ミニゲームの不具合を修正いたしました" },
+    { id: 4, title: "アップデート実施！ ver.26.9.15", date: "2026-09-16-18:20", content: "《アップデート内容》 ver.26.9.15\n・ミニゲームの不具合を修正いたしました" }
+  ];
 
-// ページ読み込み時に初期化
-window.addEventListener('DOMContentLoaded', () => {
-  updateStepUI();
-});
-
-  // --- 📰 NEWS・お知らせ機能（コード管理版 / 最新版） ---
-
-// 💡 ニュースを無くしたいときは `[]` のまにしてください
-// 💡 ニュースを追加したいときは、下記のようにデータを書き込んでください（上が最新になります）
-let newsData = [
-
- { id: 6, title: "アップデート実施！ ver.26.9.23", 
-   date: "2026-09-17-17:00",
-  content: `《アップデート内容》 ver.26.9.23
-  ・お店用QRを追加、読み込み設定を追加いたしました
-  ・その他いくつかの不具合を修正いたしました
-  
-  今後とも11Payをよろしくお願いいたします。`},
-  
- { id: 5, title: "アップデート実施！ ver.26.9.18", 
-   date: "2026-09-16-18:30",
-  content: `《アップデート内容》 ver.26.9.18
-  ・ミニゲームの不具合を修正いたしました
-  ・いくつかの不具合を修正いたしました
-  
-  今後とも11Payをよろしくお願いいたします。`},
-
-  
- { id: 4, title: "アップデート実施！ ver.26.9.15", 
-   date: "2026-09-16-18:20",
-  content: `《アップデート内容》 ver.26.9.15
-  ・ミニゲームの不具合を修正いたしました
-  ・いくつかの不具合を修正いたしました
-  
-  今後とも11Payをよろしくお願いいたします。`}
-  
-   
-];
-
-// アプリ起動時の処理（ホーム画面のバナー連動）
-window.addEventListener('DOMContentLoaded', () => {
-  const titleTextEl = document.getElementById('news-title-text');
-  const bannerClickEl = document.getElementById('news-banner-click');
-
-  if (titleTextEl) {
-    if (newsData && newsData.length > 0) {
-      // 最新のニュースタイトルを表示
+  window.addEventListener('DOMContentLoaded', () => {
+    updateStepUI();
+    const titleTextEl = document.getElementById('news-title-text');
+    const bannerClickEl = document.getElementById('news-banner-click');
+    if (titleTextEl && newsData.length > 0) {
       titleTextEl.innerText = newsData[0].title;
-      
-    // ✨ 最新のニュースIDを自動でクリックイベントに設定する
-      if (bannerClickEl) {
-        bannerClickEl.onclick = () => openNewsDetail(newsData[0].id);
-      }
-    } else {
-      titleTextEl.innerText = "現在お知らせはありません";
-      if (bannerClickEl) {
-        bannerClickEl.onclick = null;
-      }
+      if (bannerClickEl) bannerClickEl.onclick = () => openNewsDetail(newsData[0].id);
     }
-  }
-});
+  });
 
-// NEWS一覧のモーダルを開く関数
-function openNewsList() {
-  if (typeof playSound === 'function') playSound('beep');
+  function openNewsList() {
+    playSound('beep');
+    const modal = document.getElementById("minigame-play-modal");
+    document.getElementById("minigame-title").innerText = "NEWS";
+    modal.classList.remove("hidden");
 
-  const modal = document.getElementById("minigame-play-modal");
-  const title = document.getElementById("minigame-title");
-  const stage = document.getElementById("minigame-stage");
-  if (!modal) return;
-
-  const modalContent = modal.querySelector(".modal-content") || modal.firstElementChild;
-  if (modalContent) {
-    modalContent.style.width = "92%";
-    modalContent.style.maxWidth = "440px";
-  }
-
-  modal.classList.remove("hidden");
-  title.innerText = "NEWS";
-
-  // ニュースが0件の場合の表示
-  let listHtml = `<p style="font-size: 13px; color: #666; text-align: center; padding: 30px;">現在お知らせはありません</p>`;
-
-  // ニュースデータがある場合はリストを表示
-  if (newsData && newsData.length > 0) {
-    listHtml = newsData.map(n => `
-      <div style="background: #fff8e1; padding: 14px; border-radius: 10px; border: 1px solid #ffe082; margin-bottom: 10px; cursor: pointer; text-align: left; box-shadow: 0 1px 3px rgba(0,0,0,0.04);" onclick="openNewsDetail(${n.id})">
+    let listHtml = newsData.map(n => `
+      <div style="background: #fff8e1; padding: 14px; border-radius: 10px; border: 1px solid #ffe082; margin-bottom: 10px; cursor: pointer; text-align: left;" onclick="openNewsDetail(${n.id})">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
           <span style="background: #e65100; color: #fff; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: bold;">NEWS</span>
           <span style="font-size: 11px; color: #777;">${n.date}</span>
         </div>
-        <div style="font-size: 14px; font-weight: bold; color: #333; display: flex; justify-content: space-between; align-items: center;">
-          <span>${n.title}</span>
-          <span style="color: #e65100; font-size: 16px;">></span>
-        </div>
+        <div style="font-size: 14px; font-weight: bold; color: #333;">${n.title}</div>
       </div>
     `).join('');
+
+    document.getElementById("minigame-stage").innerHTML = `<div style="text-align: left; padding: 4px; max-height: 70vh; overflow-y: auto; width: 100%; box-sizing: border-box;">${listHtml}</div>`;
+
+    setTimeout(() => {
+      const closeButtons = modal.querySelectorAll("button");
+      closeButtons.forEach(btn => {
+        if (btn.innerText.includes("メニューに戻る") || btn.innerText.includes("戻る")) {
+          btn.innerText = "閉じる";
+          btn.onclick = function() {
+            playSound('beep');
+            modal.classList.add("hidden");
+          };
+        }
+      });
+    }, 10);
   }
-}
-  
 
+  function openNewsDetail(newsId) {
+    playSound('beep');
+    const item = newsData.find(n => n.id === Number(newsId));
+    if (!item) return;
 
-  stage.innerHTML = `
-    <div style="text-align: left; padding: 4px; max-height: 70vh; overflow-y: auto; width: 100%; box-sizing: border-box;">
-      ${listHtml}
-    </div>
-  `;
+    const modal = document.getElementById("minigame-play-modal");
+    document.getElementById("minigame-title").innerText = "お知らせ詳細";
+    modal.classList.remove("hidden");
 
-  // モーダル下部のボタンを「閉じる」に書き換える処理
-  setTimeout(() => {
-    const closeButtons = modal.querySelectorAll("button");
-    closeButtons.forEach(btn => {
-      if (btn.innerText.includes("メニューに戻る") || btn.innerText.includes("戻る")) {
-        btn.innerText = "閉じる";
-        btn.onclick = function() {
-          if (typeof playSound === 'function') playSound('beep');
-          modal.classList.add("hidden");
-        };
-      }
-    });
-  }, 10);
-}
-
-// 個別ニュースの詳細モーダルを開く関数
-function openNewsDetail(newsId) {
-  if (typeof playSound === 'function') playSound('beep');
-  const item = newsData.find(n => n.id === Number(newsId));
-  if (!item) return;
-
-  const modal = document.getElementById("minigame-play-modal");
-  const title = document.getElementById("minigame-title");
-  const stage = document.getElementById("minigame-stage");
-  if (!modal) return;
-
-  modal.classList.remove("hidden");
-  title.innerText = "お知らせ詳細";
-
-  stage.innerHTML = `
-    <div style="text-align: left; padding: 12px; display: flex; flex-direction: column; gap: 12px; max-height: 70vh; overflow-y: auto; width: 100%; box-sizing: border-box;">
-      <p style="font-size: 11px; color: #e65100; font-weight: bold; margin: 0;">${item.date}</p>
-      <h3 style="font-size: 16px; color: #e65100; margin: 0;">${item.title}</h3>
-      <p style="font-size: 13px; color: #444; line-height: 1.6; margin: 0; white-space: pre-wrap; background: #fff8e1; padding: 10px; border-radius: 6px; border: 1px solid #ffe082;">${item.content}</p>
-      
-      <button class="main-btn" style="width: 100%; background: #f5f5f5; color: #333; font-size: 14px; font-weight: bold; padding: 12px; border-radius: 8px; border: 1px solid #ddd; margin-top: 10px; cursor: pointer;" onclick="openNewsList()">← NEWS一覧に戻る</button>
-    </div>
-  `;
-}
-
-
-
-// 🚨 エラー発生時に画面に警告を出すデバッグ機能
-window.onerror = function(message, source, lineno, colno, error) {
-  const errorMsg = `【エラーが発生しました】\n` +
-                   `内容: ${message}\n` +
-                   `行番号: ${lineno}行目\n` +
-                   `ファイル: ${source.split('/').pop()}`;
-  alert(errorMsg);
-  return false;
-};
-
-// 🚨 ログインボタンが押された時の動作チェック
-document.addEventListener('DOMContentLoaded', () => {
-  const loginBtn = document.querySelector('#form-login button') || 
-                   document.querySelector('button[onclick*="login"]');
-  
-  if (!loginBtn) {
-    alert("【確認】HTML上にログインボタンが見つかりません。\nbuttonタグや onclick='login()' の記述を確認してください。");
+    document.getElementById("minigame-stage").innerHTML = `
+      <div style="text-align: left; padding: 12px; display: flex; flex-direction: column; gap: 12px; max-height: 70vh; overflow-y: auto; width: 100%; box-sizing: border-box;">
+        <p style="font-size: 11px; color: #e65100; font-weight: bold; margin: 0;">${item.date}</p>
+        <h3 style="font-size: 16px; color: #e65100; margin: 0;">${item.title}</h3>
+        <p style="font-size: 13px; color: #444; line-height: 1.6; margin: 0; white-space: pre-wrap; background: #fff8e1; padding: 10px; border-radius: 6px; border: 1px solid #ffe082;">${item.content}</p>
+        <button class="main-btn" style="width: 100%; background: #f5f5f5; color: #333; font-size: 14px; font-weight: bold; padding: 12px; border-radius: 8px; border: 1px solid #ddd; margin-top: 10px; cursor: pointer;" onclick="openNewsList()">← NEWS一覧に戻る</button>
+      </div>
+    `;
   }
-});
+</script>
 
-
-  
-</script> 
- 
 </body>
 </html> 
