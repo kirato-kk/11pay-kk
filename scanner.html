@@ -1066,7 +1066,7 @@
     closeSendQrModal();
   }
 
- // --- カメラ制御関連の修正コード ---
+// --- 修正版：確実に再起動できるようにしたカメラ制御コード ---
 
   function toggleCamera() {
     playSound('beep');
@@ -1082,17 +1082,24 @@
     const offMsg = document.getElementById("camera-off-msg");
     const btn = document.getElementById("toggle-camera-btn");
 
-    // プレースホルダーを消して、リーダーを表示状態にする
+    // プレースホルダーを非表示にし、リーダー領域を表示
     offMsg.classList.add("hidden");
     readerDiv.classList.remove("hidden");
 
-    // すでにインスタンスがある場合はクリアしておく
+    // すでにインスタンスがあれば、完全にクリア・破棄する
     if (html5QrCode) {
       try {
         html5QrCode.clear();
-      } catch (e) {}
+      } catch (e) {
+        console.log(e);
+      }
+      html5QrCode = null;
     }
 
+    // 念のためreaderの中身を一度空にしてDOMの競合を防ぐ
+    readerDiv.innerHTML = "";
+
+    // 新しくインスタンスを生成して起動
     html5QrCode = new Html5Qrcode("reader");
     html5QrCode.start(
       { facingMode: "environment" },
@@ -1104,7 +1111,7 @@
       btn.classList.add("active");
     }).catch(err => {
       console.log("カメラ起動エラー: ", err);
-      alert("カメラの起動に失敗しました（権限やHTTPS接続を確認してください）");
+      alert("カメラの起動に失敗しました。ブラウザの権限やHTTPS接続を確認してください。");
       stopScanner();
     });
   }
@@ -1114,9 +1121,14 @@
     const offMsg = document.getElementById("camera-off-msg");
     const btn = document.getElementById("toggle-camera-btn");
 
-    if (html5QrCode && isCameraOn) {
+    if (html5QrCode) {
+      // 停止処理を試みる
       html5QrCode.stop().then(() => {
-        html5QrCode.clear();
+        try {
+          html5QrCode.clear();
+        } catch (e) {}
+        html5QrCode = null;
+       
         isCameraOn = false;
         readerDiv.classList.add("hidden");
         offMsg.classList.remove("hidden");
@@ -1124,7 +1136,13 @@
         btn.classList.remove("active");
         if (callback) callback();
       }).catch(err => {
-        console.log("カメラ停止エラー: ", err);
+        // 万が一stopに失敗した場合でも強制リセットをかける
+        console.log("カメラ停止エラー（強制リセット）: ", err);
+        try {
+          html5QrCode.clear();
+        } catch (e) {}
+        html5QrCode = null;
+
         isCameraOn = false;
         readerDiv.classList.add("hidden");
         offMsg.classList.remove("hidden");
@@ -1140,7 +1158,7 @@
       btn.classList.remove("active");
       if (callback) callback();
     }
-  }
+  } 
 
   
   function onScanSuccess(decodedText) {
