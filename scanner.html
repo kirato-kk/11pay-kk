@@ -385,6 +385,40 @@
     </div>
   </div>
 
+ <!-- SHOP電卓入力モーダル -->
+  <div id="shop-calc-modal" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width: 380px;">
+      <h3 style="margin-bottom: 5px;">お支払い金額入力</h3>
+      <p id="calc-shop-title" style="font-size: 13px; color: #666; margin-bottom: 15px;">金額を入力してください</p>
+      
+      <!-- 【重要】店員さんが見やすいように大きく反転表示するエリア -->
+      <div style="background: #111; color: #00ffcc; padding: 20px; border-radius: 12px; font-size: 36px; font-weight: bold; text-align: right; margin-bottom: 15px; letter-spacing: 2px; box-shadow: inset 0 2px 6px rgba(0,0,0,0.5);">
+        <span id="calc-display-amount">0</span> <span style="font-size: 20px;">円</span>
+      </div>
+
+      <!-- 電卓キーパッド -->
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px;">
+        <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendCalcNumber('1')">1</button>
+        <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendCalcNumber('2')">2</button>
+        <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendCalcNumber('3')">3</button>
+        <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendCalcNumber('4')">4</button>
+        <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendCalcNumber('5')">5</button>
+        <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendCalcNumber('6')">6</button>
+        <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendCalcNumber('7')">7</button>
+        <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendCalcNumber('8')">8</button>
+        <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendCalcNumber('9')">9</button>
+        <button class="secondary-btn" style="margin:0; font-size:18px; padding:12px; background:#ffeeee; color:#ff0033;" onclick="clearCalc()">C</button>
+        <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendCalcNumber('0')">0</button>
+        <button class="secondary-btn" style="margin:0; font-size:18px; padding:12px;" onclick="appendCalcNumber('00')">00</button>
+      </div>
+
+      <button class="main-btn" style="background: #28a745; margin-bottom: 8px;" onclick="submitCalcAmount()">OK（確定）</button>
+      <button class="secondary-btn" style="margin-top:0;" onclick="cancelShopCalc()">キャンセル</button>
+    </div>
+  </div>
+
+
+  
   <!-- 決済確認モーダル -->
   <div id="pay-confirm-modal" class="modal-overlay hidden">
     <div class="modal-content">
@@ -1161,10 +1195,12 @@
   } 
 
   
+ // --- 修正版：onScanSuccess関数 ---
   function onScanSuccess(decodedText) {
     if (typeof playSound === 'function') playSound('beep');
 
     const handleSuccess = () => {
+      // 1. クーポンの場合
       if (decodedText.startsWith("COUPON:")) {
         const parts = decodedText.split(":");
         if (parts.length >= 5) {
@@ -1189,6 +1225,7 @@
         }
       }
 
+      // 2. 送金の場合
       if (decodedText.startsWith("SEND:")) {
         const parts = decodedText.split(":");
         const senderUser = parts[1];
@@ -1208,9 +1245,9 @@
         return;
       }
 
+      // 3. チャージ / ポイントの場合
       const isCharge = decodedText.startsWith("CHARGE_");
-      const isPoint  = decodedText.startsWith("POINT_");
-      const isPay    = decodedText.startsWith("PAY_");
+      const isPoint = decodedText.startsWith("POINT_");
 
       if (isCharge) {
         const amount = parseInt(decodedText.replace("CHARGE_", ""), 10) || 0;
@@ -1219,6 +1256,7 @@
         updateDisplay();
         if (typeof playSound === 'function') playSound('win');
         alert(`残高に ${amount.toLocaleString()}円 チャージされました！`);
+        return;
       } else if (isPoint) {
         const amount = parseInt(decodedText.replace("POINT_", ""), 10) || 0;
         points += amount;
@@ -1226,18 +1264,40 @@
         updateDisplay();
         if (typeof playSound === 'function') playSound('win');
         alert(`${amount.toLocaleString()} ポイントを獲得しました！`);
-      } else if (isPay) {
+        return;
+      }
+
+      // 4. 【NEW】SHOP_店舗名（金額なし）の場合 → 電卓入力画面へ
+      if (decodedText.startsWith("SHOP_")) {
+        const shopName = decodedText.replace("SHOP_", "");
+        openShopCalculatorModal(shopName);
+        return;
+      }
+
+      // 5. 【NEW】PAY_金額_店舗名 または PAY_金額（従来）の場合
+      if (decodedText.startsWith("PAY_")) {
         const parts = decodedText.split("_");
         currentScanAmount = parseInt(parts[1], 10) || 0;
-        openPayConfirmModal();
-      } else {
-        if (typeof playSound === 'function') playSound('error');
-        alert("画像から有効なQRコードを検出できませんでした。");
+       
+        // 店舗名が含まれている場合（parts[2]以降が存在する場合）
+        let targetShopName = "";
+        if (parts.length > 2) {
+          targetShopName = parts.slice(2).join("_"); // 店舗名にアンダースコアが含まれていた場合の対策
+        }
+
+        openPayConfirmModal(targetShopName);
+        return;
       }
+
+      // どれにも当てはまらない場合
+      if (typeof playSound === 'function') playSound('error');
+      alert("画像から有効なQRコードを検出できませんでした。");
     };
 
     stopScanner(handleSuccess);
-  }
+  } 
+
+
 
   function openPayConfirmModal() {
     currentScanAmount = currentScanAmount || 0;
@@ -1261,6 +1321,24 @@
     document.getElementById("pay-confirm-modal").classList.add("hidden");
   }
 
+   // 現在の決済で保持する店舗名用変数
+  let currentPayShopName = "";
+
+  // 引数に shopName を追加
+  function openPayConfirmModal(shopName = "") {
+    currentPayShopName = shopName;
+    currentScanAmount = currentScanAmount || 0;
+    
+    document.getElementById("confirm-pay-amount").innerText = currentScanAmount.toLocaleString();
+    document.getElementById("max-pt-display").innerText = points.toLocaleString();
+    document.getElementById("use-pt-check").checked = false;
+    document.getElementById("use-pt-input").value = "";
+    togglePointInput();
+    
+    // もし店舗名があれば確認画面に表示する要素を出すなど自由に使えます
+    document.getElementById("pay-confirm-modal").classList.remove("hidden");
+  }
+
   function executePayment() {
     let discount = 0;
     const savedCoupon = localStorage.getItem('11pay_active_coupon');
@@ -1273,6 +1351,7 @@
 
     let finalAmount = Math.max(0, currentScanAmount - discount);
 
+    // 5円以上などのパスコード認証（既存のまま）
     if (finalAmount >= 5000) {
       let savedPasscode = localStorage.getItem('11pay_security_passcode');
       if (!savedPasscode) {
@@ -1321,13 +1400,16 @@
     const usedCouponTitle = consumeActiveCouponOnPayment();
 
     if (cashPay > 0) {
-      let memoText = 'お支払い';
+      let memoText = 'お支払い利用'; // 基本は「お支払い利用」
+      // 店舗名がある場合のみ詳細に含めるか、あるいは第4引数のshopNameに渡す
       if (usedCouponTitle) memoText += ` (クーポン: ${usedCouponTitle})`;
-      addTransaction('残高', -cashPay, memoText);
+      
+      // 【ポイント】店舗名がある場合は店舗名を渡す、なければ店舗名なし
+      addTransaction('残高', -cashPay, memoText, currentPayShopName);
     }
 
     if (usePt > 0) {
-      addTransaction('ポイント', -usePt, 'お支払い利用');
+      addTransaction('ポイント', -usePt, 'お支払い利用', currentPayShopName);
     }
 
     updateDisplay();
@@ -1342,6 +1424,68 @@
       startRoulette(finalAmount);
     }
   }
+
+let calcInputAmount = "0";
+  let targetShopForCalc = "";
+
+  function openShopCalculatorModal(shopName) {
+    targetShopForCalc = shopName;
+    calcInputAmount = "0";
+    updateCalcDisplay();
+    
+    // 専用の電卓モーダルを表示
+    document.getElementById("shop-calc-modal").classList.remove("hidden");
+  }
+
+  function appendCalcNumber(num) {
+    playSound('tick');
+    if (calcInputAmount === "0") {
+      calcInputAmount = num;
+    } else {
+      if (calcInputAmount.length < 7) { // 桁数制限
+        calcInputAmount += num;
+      }
+    }
+    updateCalcDisplay();
+  }
+
+  function clearCalc() {
+    playSound('beep');
+    calcInputAmount = "0";
+    updateCalcDisplay();
+  }
+
+  function updateCalcDisplay() {
+    const displayEl = document.getElementById("calc-display-amount");
+    if (displayEl) {
+      displayEl.innerText = parseInt(calcInputAmount).toLocaleString();
+    }
+  }
+
+  function submitCalcAmount() {
+    playSound('beep');
+    const amount = parseInt(calcInputAmount, 10);
+    if (isNaN(amount) || amount <= 0) {
+      alert("有効な金額を入力してください");
+      return;
+    }
+
+    // 電卓モーダルを閉じる
+    document.getElementById("shop-calc-modal").classList.add("hidden");
+
+    // いつものお支払い確認モーダルへ（店舗名を渡す）
+    currentScanAmount = amount;
+    openPayConfirmModal(targetShopForCalc);
+  }
+
+  function cancelShopCalc() {
+    playSound('beep');
+    document.getElementById("shop-calc-modal").classList.add("hidden");
+  }
+
+
+
+  
 
   function startRoulette(payAmount) {
     const rouletteModal = document.getElementById("roulette-modal");
