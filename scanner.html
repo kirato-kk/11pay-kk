@@ -186,7 +186,7 @@
       <button id="toggle-camera-btn" class="camera-btn" onclick="toggleCamera()">カメラON</button>
       <div class="scanner-box">
         <div id="camera-off-msg" class="camera-off-placeholder">カメラOFF</div>
-         <div id="reader" class="hidden" style="width: 100%;"></div>
+        <div id="reader" class="hidden"></div>
       </div>
     </div>
 
@@ -385,41 +385,6 @@
     </div>
   </div>
 
-  <!-- SHOP電卓入力モーダル -->
-  <div id="shop-calc-modal" class="modal-overlay hidden">
-    <div class="modal-content" style="max-width: 380px;">
-      <h3 style="margin-bottom: 5px;">お支払い金額入力</h3>
-      <p id="calc-shop-title" style="font-size: 13px; color: #666; margin-bottom: 15px;">金額を入力してください</p>
-      
-      <!-- 【重要】店員さんが見やすいように大きく反転表示するエリア -->
-      <div style="background: #111; color: #00ffcc; padding: 20px; border-radius: 12px; font-size: 36px; font-weight: bold; text-align: right; margin-bottom: 15px; letter-spacing: 2px; box-shadow: inset 0 2px 6px rgba(0,0,0,0.5);">
-        <span id="calc-display-amount">0</span> <span style="font-size: 20px;">円</span>
-      </div>
-
-      <!-- 電卓キーパッド -->
-      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px;">
-        <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendCalcNumber('1')">1</button>
-        <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendCalcNumber('2')">2</button>
-        <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendCalcNumber('3')">3</button>
-        <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendCalcNumber('4')">4</button>
-        <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendCalcNumber('5')">5</button>
-        <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendCalcNumber('6')">6</button>
-        <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendCalcNumber('7')">7</button>
-        <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendCalcNumber('8')">8</button>
-        <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendCalcNumber('9')">9</button>
-        <button class="secondary-btn" style="margin:0; font-size:18px; padding:12px; background:#ffeeee; color:#ff0033;" onclick="clearCalc()">C</button>
-        <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendCalcNumber('0')">0</button>
-        <button class="secondary-btn" style="margin:0; font-size:18px; padding:12px;" onclick="appendCalcNumber('00')">00</button>
-      </div>
-
-      <button class="main-btn" style="background: #28a745; margin-bottom: 8px;" onclick="submitCalcAmount()">OK（確定）</button>
-      <button class="secondary-btn" style="margin-top:0;" onclick="cancelShopCalc()">キャンセル</button>
-    </div>
-  </div>
-
-
-
-  
   <!-- 決済確認モーダル -->
   <div id="pay-confirm-modal" class="modal-overlay hidden">
     <div class="modal-content">
@@ -1101,6 +1066,7 @@
     closeSendQrModal();
   }
 
+  
 // --- 修正版：確実に再起動できるようにしたカメラ制御コード ---
 
   function toggleCamera() {
@@ -1195,13 +1161,10 @@
     }
   } 
 
-  
- // --- 1. QRコード読み取り処理（店舗名なしの元の形に戻す） ---
   function onScanSuccess(decodedText) {
     if (typeof playSound === 'function') playSound('beep');
 
     const handleSuccess = () => {
-      // 1. クーポンの場合
       if (decodedText.startsWith("COUPON:")) {
         const parts = decodedText.split(":");
         if (parts.length >= 5) {
@@ -1226,7 +1189,6 @@
         }
       }
 
-      // 2. 送金の場合
       if (decodedText.startsWith("SEND:")) {
         const parts = decodedText.split(":");
         const senderUser = parts[1];
@@ -1246,10 +1208,9 @@
         return;
       }
 
-      // 3. チャージ / ポイント / 決済の場合
       const isCharge = decodedText.startsWith("CHARGE_");
-      const isPoint = decodedText.startsWith("POINT_");
-      const isPay = decodedText.startsWith("PAY_");
+      const isPoint  = decodedText.startsWith("POINT_");
+      const isPay    = decodedText.startsWith("PAY_");
 
       if (isCharge) {
         const amount = parseInt(decodedText.replace("CHARGE_", ""), 10) || 0;
@@ -1258,7 +1219,6 @@
         updateDisplay();
         if (typeof playSound === 'function') playSound('win');
         alert(`残高に ${amount.toLocaleString()}円 チャージされました！`);
-        return;
       } else if (isPoint) {
         const amount = parseInt(decodedText.replace("POINT_", ""), 10) || 0;
         points += amount;
@@ -1266,22 +1226,19 @@
         updateDisplay();
         if (typeof playSound === 'function') playSound('win');
         alert(`${amount.toLocaleString()} ポイントを獲得しました！`);
-        return;
       } else if (isPay) {
-        currentScanAmount = parseInt(decodedText.replace("PAY_", ""), 10) || 0;
+        const parts = decodedText.split("_");
+        currentScanAmount = parseInt(parts[1], 10) || 0;
         openPayConfirmModal();
-        return;
+      } else {
+        if (typeof playSound === 'function') playSound('error');
+        alert("画像から有効なQRコードを検出できませんでした。");
       }
-
-      if (typeof playSound === 'function') playSound('error');
-      alert("画像から有効なQRコードを検出できませんでした。");
     };
 
     stopScanner(handleSuccess);
   }
 
-
-  // --- 2. 決済確認モーダルを開く（元の形） ---
   function openPayConfirmModal() {
     currentScanAmount = currentScanAmount || 0;
     document.getElementById("confirm-pay-amount").innerText = currentScanAmount.toLocaleString();
@@ -1304,8 +1261,6 @@
     document.getElementById("pay-confirm-modal").classList.add("hidden");
   }
 
-
-  // --- 3. 決済実行処理（元の形） ---
   function executePayment() {
     let discount = 0;
     const savedCoupon = localStorage.getItem('11pay_active_coupon');
@@ -1366,7 +1321,7 @@
     const usedCouponTitle = consumeActiveCouponOnPayment();
 
     if (cashPay > 0) {
-      let memoText = 'お支払い利用';
+      let memoText = 'お支払い';
       if (usedCouponTitle) memoText += ` (クーポン: ${usedCouponTitle})`;
       addTransaction('残高', -cashPay, memoText);
     }
@@ -1388,12 +1343,53 @@
     }
   }
 
+  function startRoulette(payAmount) {
+    const rouletteModal = document.getElementById("roulette-modal");
+    const closeBtn = document.getElementById("roulette-close-btn");
+    const subText = document.getElementById("roulette-sub");
+    const display = document.getElementById("roulette-display");
 
-  // --- 4. 取引履歴の記録と描画（元の形） ---
+    rouletteModal.classList.remove("hidden");
+    closeBtn.classList.add("hidden");
+    subText.innerText = "ポイント還元率を抽選中...";
+
+    let count = 0;
+    const rates = [0.01, 0.05, 0.1, 0.5, 1.0];
+
+    const interval = setInterval(() => {
+      playSound('tick');
+      const randomRate = rates[Math.floor(Math.random() * rates.length)];
+      display.innerText = `${Math.round(randomRate * 100)}% 還元！`;
+      count++;
+
+      if (count > 20) {
+        clearInterval(interval);
+        const finalRate = rates[Math.floor(Math.random() * rates.length)];
+        earnedPoints = Math.floor(payAmount * finalRate);
+        if (earnedPoints < 1) earnedPoints = 1;
+
+        playSound('win');
+        subText.innerText = "獲得ポイント決定！";
+        display.innerText = `🎯 ${Math.round(finalRate * 100)}% 還元!\n(+${earnedPoints}pt)`;
+        closeBtn.classList.remove("hidden");
+      }
+    }, 100);
+  }
+
+  function closeRoulette() {
+    playSound('beep');
+    points += earnedPoints;
+    addTransaction('ポイント', earnedPoints, '11Payルーレット還元');
+    updateDisplay();
+    document.getElementById("roulette-modal").classList.add("hidden");
+  }
+
+  let showAllTransactions = false;
+
   function addTransaction(type, amount, detail) {
     const now = new Date();
     const timeStr = `${now.getMonth() + 1}/${now.getDate()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-   
+  
     transactions.unshift({ type, amount, detail, time: timeStr });
     if (transactions.length > 20) transactions.pop();
   }
@@ -1436,84 +1432,7 @@
         moreBtn.classList.add("hidden");
       }
     }
-  } 
-
-
-
-  // --- 2. 電卓入力＆OKボタンの反転アニメーション処理 ---
-  let calcInputAmount = "0";
-  let targetShopForCalc = "";
-
-  function openShopCalculatorModal(shopName) {
-    targetShopForCalc = shopName;
-    calcInputAmount = "0";
-   
-    // 店舗名を表示
-    const titleEl = document.getElementById("calc-shop-title");
-    if (titleEl) titleEl.innerText = shopName ? `【${shopName}】へのお支払い` : "金額を入力してください";
-
-    // 表示エリアの反転（強調）解除
-    const boxEl = document.getElementById("calc-display-box");
-    if (boxEl) boxEl.classList.remove("inverted");
-
-    updateCalcDisplay();
-    document.getElementById("shop-calc-modal").classList.remove("hidden");
   }
-
-  function appendCalcNumber(num) {
-    playSound('tick');
-    if (calcInputAmount === "0") {
-      calcInputAmount = num;
-    } else {
-      if (calcInputAmount.length < 7) {
-        calcInputAmount += num;
-      }
-    }
-    updateCalcDisplay();
-  }
-
-  function clearCalc() {
-    playSound('beep');
-    calcInputAmount = "0";
-    const boxEl = document.getElementById("calc-display-box");
-    if (boxEl) boxEl.classList.remove("inverted");
-    updateCalcDisplay();
-  }
-
-  function updateCalcDisplay() {
-    const displayEl = document.getElementById("calc-display-amount");
-    if (displayEl) {
-      displayEl.innerText = parseInt(calcInputAmount).toLocaleString();
-    }
-  }
-
-  // OKを押したらまず反転（色変化）させ、少し待ってから確認画面に進む
-  function submitCalcAmount() {
-    playSound('win');
-    const amount = parseInt(calcInputAmount, 10);
-    if (isNaN(amount) || amount <= 0) {
-      alert("有効な金額を入力してください");
-      return;
-    }
-
-    // 金額枠だけを反転（赤・黒の目立つ見た目に変化）
-    const boxEl = document.getElementById("calc-display-box");
-    if (boxEl) boxEl.classList.add("inverted");
-
-    // 1.2秒だけ店員さんに見せる時間を作ってから次のモーダルへ
-    setTimeout(() => {
-      document.getElementById("shop-calc-modal").classList.add("hidden");
-      if (boxEl) boxEl.classList.remove("inverted");
-      currentScanAmount = amount;
-      openPayConfirmModal(targetShopForCalc);
-    }, 1200);
-  }
-
-  function cancelShopCalc() {
-    playSound('beep');
-    document.getElementById("shop-calc-modal").classList.add("hidden");
-  } 
-
 
   function toggleMoreTransactions() {
     playSound('beep');
