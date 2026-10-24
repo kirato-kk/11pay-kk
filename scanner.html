@@ -385,7 +385,7 @@
     </div>
   </div>
 
- <!-- SHOP電卓入力モーダル -->
+  <!-- SHOP電卓入力モーダル -->
   <div id="shop-calc-modal" class="modal-overlay hidden">
     <div class="modal-content" style="max-width: 380px;">
       <h3 style="margin-bottom: 5px;">お支払い金額入力</h3>
@@ -416,6 +416,7 @@
       <button class="secondary-btn" style="margin-top:0;" onclick="cancelShopCalc()">キャンセル</button>
     </div>
   </div>
+
 
 
   
@@ -1530,15 +1531,16 @@ let calcInputAmount = "0";
 
   let showAllTransactions = false;
 
-  function addTransaction(type, amount, detail) {
+// --- 1. 取引履歴の記録と描画の修正 ---
+  function addTransaction(type, amount, detail, shopName = "") {
     const now = new Date();
     const timeStr = `${now.getMonth() + 1}/${now.getDate()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-  
-    transactions.unshift({ type, amount, detail, time: timeStr });
+   
+    transactions.unshift({ type, amount, detail, shopName, time: timeStr });
     if (transactions.length > 20) transactions.pop();
   }
 
-  function renderTransactions() {
+   function renderTransactions() {
     const container = document.getElementById("transaction-list");
     const moreBtn = document.getElementById("tx-more-btn");
     if (!container) return;
@@ -1557,10 +1559,13 @@ let calcInputAmount = "0";
       const sign = isPlus ? "+" : "";
       const unit = tx.type === 'ポイント' ? 'pt' : '円';
 
+      // 【修正】店舗名がある場合は「店舗名でお支払い利用」、なければ従来のdetail（お支払い利用など）にする
+      const mainText = tx.shopName ? `${tx.shopName}でお支払い利用` : tx.detail;
+
       return `
         <div class="tx-item">
           <div>
-            <div style="font-weight:bold; font-size:14px; color:#333;">${tx.detail} (${tx.type})</div>
+            <div style="font-weight:bold; font-size:14px; color:#333;">${mainText} (${tx.type})</div>
             <div style="font-size:12px; color:#888;">${tx.time}</div>
           </div>
           <div style="font-weight:bold; font-size:15px; color:${color};">${sign}${tx.amount.toLocaleString()} ${unit}</div>
@@ -1577,6 +1582,84 @@ let calcInputAmount = "0";
       }
     }
   }
+
+
+
+
+  // --- 2. 電卓入力＆OKボタンの反転アニメーション処理 ---
+  let calcInputAmount = "0";
+  let targetShopForCalc = "";
+
+  function openShopCalculatorModal(shopName) {
+    targetShopForCalc = shopName;
+    calcInputAmount = "0";
+   
+    // 店舗名を表示
+    const titleEl = document.getElementById("calc-shop-title");
+    if (titleEl) titleEl.innerText = shopName ? `【${shopName}】へのお支払い` : "金額を入力してください";
+
+    // 表示エリアの反転（強調）解除
+    const boxEl = document.getElementById("calc-display-box");
+    if (boxEl) boxEl.classList.remove("inverted");
+
+    updateCalcDisplay();
+    document.getElementById("shop-calc-modal").classList.remove("hidden");
+  }
+
+  function appendCalcNumber(num) {
+    playSound('tick');
+    if (calcInputAmount === "0") {
+      calcInputAmount = num;
+    } else {
+      if (calcInputAmount.length < 7) {
+        calcInputAmount += num;
+      }
+    }
+    updateCalcDisplay();
+  }
+
+  function clearCalc() {
+    playSound('beep');
+    calcInputAmount = "0";
+    const boxEl = document.getElementById("calc-display-box");
+    if (boxEl) boxEl.classList.remove("inverted");
+    updateCalcDisplay();
+  }
+
+  function updateCalcDisplay() {
+    const displayEl = document.getElementById("calc-display-amount");
+    if (displayEl) {
+      displayEl.innerText = parseInt(calcInputAmount).toLocaleString();
+    }
+  }
+
+  // OKを押したらまず反転（色変化）させ、少し待ってから確認画面に進む
+  function submitCalcAmount() {
+    playSound('win');
+    const amount = parseInt(calcInputAmount, 10);
+    if (isNaN(amount) || amount <= 0) {
+      alert("有効な金額を入力してください");
+      return;
+    }
+
+    // 金額枠だけを反転（赤・黒の目立つ見た目に変化）
+    const boxEl = document.getElementById("calc-display-box");
+    if (boxEl) boxEl.classList.add("inverted");
+
+    // 1.2秒だけ店員さんに見せる時間を作ってから次のモーダルへ
+    setTimeout(() => {
+      document.getElementById("shop-calc-modal").classList.add("hidden");
+      if (boxEl) boxEl.classList.remove("inverted");
+      currentScanAmount = amount;
+      openPayConfirmModal(targetShopForCalc);
+    }, 1200);
+  }
+
+  function cancelShopCalc() {
+    playSound('beep');
+    document.getElementById("shop-calc-modal").classList.add("hidden");
+  } 
+
 
   function toggleMoreTransactions() {
     playSound('beep');
