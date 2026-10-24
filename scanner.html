@@ -1340,6 +1340,7 @@
     document.getElementById("pay-confirm-modal").classList.remove("hidden");
   }
 
+  // --- 1. 決済処理（店舗名を渡さない元の形に戻す） ---
   function executePayment() {
     let discount = 0;
     const savedCoupon = localStorage.getItem('11pay_active_coupon');
@@ -1352,7 +1353,6 @@
 
     let finalAmount = Math.max(0, currentScanAmount - discount);
 
-    // 5円以上などのパスコード認証（既存のまま）
     if (finalAmount >= 5000) {
       let savedPasscode = localStorage.getItem('11pay_security_passcode');
       if (!savedPasscode) {
@@ -1401,16 +1401,14 @@
     const usedCouponTitle = consumeActiveCouponOnPayment();
 
     if (cashPay > 0) {
-      let memoText = 'お支払い利用'; // 基本は「お支払い利用」
-      // 店舗名がある場合のみ詳細に含めるか、あるいは第4引数のshopNameに渡す
+      let memoText = 'お支払い利用';
       if (usedCouponTitle) memoText += ` (クーポン: ${usedCouponTitle})`;
-      
-      // 【ポイント】店舗名がある場合は店舗名を渡す、なければ店舗名なし
-      addTransaction('残高', -cashPay, memoText, currentPayShopName);
+      // 店舗名を渡さず、通常の「お支払い利用」として記録
+      addTransaction('残高', -cashPay, memoText);
     }
 
     if (usePt > 0) {
-      addTransaction('ポイント', -usePt, 'お支払い利用', currentPayShopName);
+      addTransaction('ポイント', -usePt, 'お支払い利用');
     }
 
     updateDisplay();
@@ -1540,7 +1538,8 @@ let calcInputAmount = "0";
     if (transactions.length > 20) transactions.pop();
   }
 
-   function renderTransactions() {
+// --- 2. 取引履歴の表示（店舗名を使わず元の形に戻す） ---
+  function renderTransactions() {
     const container = document.getElementById("transaction-list");
     const moreBtn = document.getElementById("tx-more-btn");
     if (!container) return;
@@ -1559,13 +1558,10 @@ let calcInputAmount = "0";
       const sign = isPlus ? "+" : "";
       const unit = tx.type === 'ポイント' ? 'pt' : '円';
 
-      // 【修正】店舗名がある場合は「店舗名でお支払い利用」、なければ従来のdetail（お支払い利用など）にする
-      const mainText = tx.shopName ? `${tx.shopName}でお支払い利用` : tx.detail;
-
       return `
         <div class="tx-item">
           <div>
-            <div style="font-weight:bold; font-size:14px; color:#333;">${mainText} (${tx.type})</div>
+            <div style="font-weight:bold; font-size:14px; color:#333;">${tx.detail} (${tx.type})</div>
             <div style="font-size:12px; color:#888;">${tx.time}</div>
           </div>
           <div style="font-weight:bold; font-size:15px; color:${color};">${sign}${tx.amount.toLocaleString()} ${unit}</div>
@@ -1581,8 +1577,7 @@ let calcInputAmount = "0";
         moreBtn.classList.add("hidden");
       }
     }
-  }
-
+  } 
 
 
 
