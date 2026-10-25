@@ -164,7 +164,7 @@
     <div class="header">
       <div class="user-info">
         👤 <span id="user-display">きらと</span>
-        <span style="font-size: 10px; background: #eee; color: #666; padding: 2px 6px; border-radius: 4px; margin-left: 6px; font-weight: bold;">ver.26.10.25</span>
+        <span style="font-size: 10px; background: #eee; color: #666; padding: 2px 6px; border-radius: 4px; margin-left: 6px; font-weight: bold;">ver.26.9.31</span>
       </div>
       <div class="header-btns">
         <button class="small-btn" style="background:#007bff;" onclick="openPassModal()">パスワード変更</button>
@@ -237,15 +237,12 @@
       <div style="font-size: 10px; color: #aaa; margin-top: 6px;">本日の獲得: <span id="today-earned-points">0</span> / 10,000pt</div>
     </div>
 
-   <!-- 取引履歴エリア（ホーム画面用） -->
-  <div class="tx-card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px;">
-      <div class="tx-title" style="margin: 0; border: none; padding: 0;">取引履歴</div>
-      <button class="small-btn" style="background: #007bff; font-size: 12px; padding: 4px 10px;" onclick="openTransactionsView()">履歴を見る ＞</button>
+    <!-- 取引履歴エリア -->
+    <div class="tx-card">
+      <div class="tx-title">取引履歴</div>
+      <div id="transaction-list"></div>
+      <button id="tx-more-btn" class="secondary-btn hidden" style="margin-top: 10px;" onclick="toggleMoreTransactions()">もっと見る</button>
     </div>
-    <div id="transaction-list"></div>
-  </div>
-
 
     <!-- ギフトカードボタン -->
     <div class="home-gift-btn-container">
@@ -276,68 +273,6 @@
       <span>SCRATCH</span>
     </button>
   </div>
-
-    <!-- 【NEW】高額決済パスコード入力モーダル -->
-  <div id="passcode-modal" class="modal-overlay hidden">
-    <div class="modal-content" style="max-width: 360px;">
-      <div style="font-size: 32px; margin-bottom: 5px;">🔒</div>
-      <h3 style="margin-bottom: 5px;">高額決済の確認</h3>
-      <p style="font-size: 13px; color: #666; margin-bottom: 15px;">5,000円以上のお支払いです。<br>4桁のパスコードを入力してください。</p>
-      
-      <!-- 入力されたパスコードの表示（●で隠す） -->
-      <div style="background: #f0f3f6; color: #333; padding: 15px; border-radius: 12px; font-size: 28px; font-weight: bold; letter-spacing: 8px; margin-bottom: 15px; border: 2px solid #ddd; text-align: center;">
-        <span id="passcode-display">____</span>
-      </div>
-
-      <!-- 電卓キーパッド -->
-      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px;">
-        <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendPasscode('1')">1</button>
-        <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendPasscode('2')">2</button>
-        <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendPasscode('3')">3</button>
-        <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendPasscode('4')">4</button>
-        <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendPasscode('5')">5</button>
-        <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendPasscode('6')">6</button>
-        <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendPasscode('7')">7</button>
-        <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendPasscode('8')">8</button>
-        <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendPasscode('9')">9</button>
-        <button class="secondary-btn" style="margin:0; font-size:16px; padding:12px; background:#ffeeee; color:#ff0033;" onclick="clearPasscode()">C</button>
-        <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendPasscode('0')">0</button>
-        <button class="secondary-btn" style="margin:0; font-size:16px; padding:12px;" onclick="backspacePasscode()">⌫</button>
-      </div>
-      <button class="secondary-btn" style="margin-top:0;" onclick="cancelPasscodeModal()">キャンセル</button>
-    </div>
-  </div>
-
-  <!-- 【NEW】残高不足エラーモーダル -->
-  <div id="insufficient-modal" class="modal-overlay hidden">
-    <div class="modal-content" style="max-width: 340px; text-align: center;">
-      <div style="font-size: 48px; color: #ff0033; margin-bottom: 5px;">❌</div>
-      <h3 style="margin-bottom: 8px; color: #333;">残高が不足しています</h3>
-      <p id="insufficient-desc" style="font-size: 13px; color: #666; margin-bottom: 20px; line-height: 1.5;">お支払い額: 0円 / 残高: 0円</p>
-      <button class="main-btn" style="background: #ff0033; width: 100%;" onclick="closeInsufficientModal()">OK</button>
-    </div>
-  </div>
-
-  <!-- 【NEW】取引履歴専用ページ（別ビュー） -->
-  <div id="transactions-view" class="hidden" style="max-width: 440px; margin: 0 auto; text-align: left;">
-    <!-- ヘッダー（戻るボタン ＆ タイトル ＆ 右上の絞り込み） -->
-    <div style="display: flex; justify-content: space-between; align-items: center; background: white; padding: 12px 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 15px;">
-      <button class="small-btn" style="background: #666; padding: 6px 12px;" onclick="closeTransactionsView()">＜ 戻る</button>
-      <h3 style="font-size: 16px; margin: 0; color: #333;">取引履歴一覧</h3>
-      <!-- 右上の絞り込みセレクトボックス -->
-      <select id="tx-filter-select" onchange="renderFullTransactions()" style="padding: 6px 10px; font-size: 12px; border-radius: 8px; border: 1px solid #ccc; background: #f8f9fa;">
-        <option value="all">すべて</option>
-        <option value="残高">残高</option>
-        <option value="ポイント">ポイント</option>
-      </select>
-    </div>
-
-    <!-- 履歴リスト表示エリア -->
-    <div id="full-transaction-list" style="background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
-      <!-- ここに全履歴が入ります -->
-    </div>
-  </div>
-
 
   <!-- GAMEモーダル -->
   <div id="game-modal" class="modal-overlay hidden">
@@ -1131,8 +1066,7 @@
     closeSendQrModal();
   }
 
-  
-// --- 修正版：確実に再起動できるようにしたカメラ制御コード ---
+  // --- 修正版：確実に再起動できるようにしたカメラ制御コード ---
 
   function toggleCamera() {
     playSound('beep');
@@ -1390,92 +1324,24 @@
       if (usedCouponTitle) memoText += ` (クーポン: ${usedCouponTitle})`;
       addTransaction('残高', -cashPay, memoText);
     }
-   async function executePayment() {
- let discount = 0;
- const savedCoupon = localStorage.getItem('11pay_active_coupon');
- if (savedCoupon) {
- try {
- const c = JSON.parse(savedCoupon);
- discount = c.discount || 0;
- } catch (e) {}
- }
 
- let finalAmount = Math.max(0, currentScanAmount - discount);
+    if (usePt > 0) {
+      addTransaction('ポイント', -usePt, 'お支払い利用');
+    }
 
- // 5000円以上の高額決済パスコード確認
- if (finalAmount >= 5000) {
- let savedPasscode = localStorage.getItem('11pay_security_passcode');
- if (!savedPasscode) {
- let newPass = prompt("【セキュリティ設定】\n5,000円以上のお支払いに必要な4桁のパスコードを設定してください（半角数字）:");
- if (!newPass || newPass.length < 4) {
- alert("パスコードの設定がキャンセルされたため、お支払いを中断しました。");
- return;
- }
- localStorage.setItem('11pay_security_passcode', newPass);
- savedPasscode = newPass;
- alert("パスコードが設定されました！");
- }
+    updateDisplay();
+    document.getElementById("pay-confirm-modal").classList.add("hidden");
 
- let inputPass = await promptPasscodeModal();
- if (inputPass !== savedPasscode) {
- if (inputPass !== null) {
- playSound('error');
- alert("パスコードが間違っています。お支払いをキャンセルしました。");
- }
- return;
- }
- }
+    if (usePt > 0) {
+      let msg = `お支払い完了！(割引: ${discount}円 / pt利用: ${usePt}pt)`;
+      if (usedCouponTitle) msg = `クーポン「${usedCouponTitle}」を使いました！\n${msg}`;
+      alert(msg);
+    } else {
+      if (usedCouponTitle) alert(`クーポン「${usedCouponTitle}」を使いました！`);
+      startRoulette(finalAmount);
+    }
+  }
 
- const usePtChecked = document.getElementById("use-pt-check").checked;
- let usePt = parseInt(document.getElementById("use-pt-input").value) || 0;
-
- if (usePtChecked) {
- if (usePt <= 0) return alert("利用するポイントを入力してください");
- if (usePt > points) {
- playSound('error');
- return alert("保持ポイントを超えています");
- }
- if (usePt > finalAmount) usePt = finalAmount;
- } else {
- usePt = 0;
- }
-
- const cashPay = finalAmount - usePt;
- if (cashPay > balance) {
- showInsufficientModal(cashPay, balance);
- return;
- }
-
- playSound('pay');
- balance -= cashPay;
- points -= usePt;
-
- const usedCouponTitle = consumeActiveCouponOnPayment();
-
- if (cashPay > 0) {
- let memoText = 'お支払い';
- if (usedCouponTitle) memoText += ` (クーポン: ${usedCouponTitle})`;
- addTransaction('残高', -cashPay, memoText);
- }
-
- if (usePt > 0) {
- addTransaction('ポイント', -usePt, 'お支払い利用');
- }
-
- updateDisplay();
- document.getElementById("pay-confirm-modal").classList.add("hidden");
-
- if (usePt > 0) {
- let msg = `お支払い完了！(割引: ${discount}円 / pt利用: ${usePt}pt)`;
- if (usedCouponTitle) msg = `クーポン「${usedCouponTitle}」を使いました！\n${msg}`;
- alert(msg);
- } else {
- if (usedCouponTitle) alert(`クーポン「${usedCouponTitle}」を使いました！`);
- startRoulette(finalAmount);
- }
- }
-
-  
   function startRoulette(payAmount) {
     const rouletteModal = document.getElementById("roulette-modal");
     const closeBtn = document.getElementById("roulette-close-btn");
@@ -2330,7 +2196,7 @@
   }
 
   let newsData = [
-    { id: 6, title: "アップデート実施！ ver.26.10.25", date: "2026-10-25-10:00", content: "《アップデート内容》 ver.26.10.25\n・11Pay本体の不具合を修正いたしました。\n・その他いくつかの不具合を修正いたしました" },
+    { id: 6, title: "アップデート実施！ ver.26.9.23", date: "2026-09-17-17:00", content: "《アップデート内容》 ver.26.9.23\n・お店用QRを追加、読み込み設定を追加いたしました\n・その他いくつかの不具合を修正いたしました" },
     { id: 5, title: "アップデート実施！ ver.26.9.18", date: "2026-09-16-18:30", content: "《アップデート内容》 ver.26.9.18\n・ミニゲームの不具合を修正いたしました" },
     { id: 4, title: "アップデート実施！ ver.26.9.15", date: "2026-09-16-18:20", content: "《アップデート内容》 ver.26.9.15\n・ミニゲームの不具合を修正いたしました" }
   ];
@@ -2395,127 +2261,6 @@
       </div>
     `;
   }
-
-  // --- A. 高額決済パスコードのモーダル制御 ---
-  let enteredPasscode = "";
-  let passcodeResolveCallback = null;
-
-  function promptPasscodeModal() {
-    return new Promise((resolve) => {
-      enteredPasscode = "";
-      updatePasscodeDisplay();
-      document.getElementById("passcode-modal").classList.remove("hidden");
-      passcodeResolveCallback = resolve;
-    });
-  }
-
-  function updatePasscodeDisplay() {
-    let displayStr = "";
-    for (let i = 0; i < 4; i++) {
-      displayStr += i < enteredPasscode.length ? "●" : "_";
-    }
-    document.getElementById("passcode-display").innerText = displayStr;
-  }
-
-  function appendPasscode(num) {
-    playSound('tick');
-    if (enteredPasscode.length < 4) {
-      enteredPasscode += num;
-      updatePasscodeDisplay();
-      if (enteredPasscode.length === 4) {
-        setTimeout(() => {
-          document.getElementById("passcode-modal").classList.add("hidden");
-          if (passcodeResolveCallback) passcodeResolveCallback(enteredPasscode);
-        }, 200);
-      }
-    }
-  }
-
-  function backspacePasscode() {
-    playSound('tick');
-    if (enteredPasscode.length > 0) {
-      enteredPasscode = enteredPasscode.slice(0, -1);
-      updatePasscodeDisplay();
-    }
-  }
-
-  function clearPasscode() {
-    playSound('beep');
-    enteredPasscode = "";
-    updatePasscodeDisplay();
-  }
-
-  function cancelPasscodeModal() {
-    playSound('beep');
-    document.getElementById("passcode-modal").classList.add("hidden");
-    if (passcodeResolveCallback) passcodeResolveCallback(null);
-  }
-
-
-  // --- B. 残高不足モーダル制御 ---
-  function showInsufficientModal(cashPay, balance) {
-    playSound('error');
-    document.getElementById("insufficient-desc").innerText = `お支払い額: ${cashPay.toLocaleString()}円 / 残高: ${balance.toLocaleString()}円`;
-    document.getElementById("insufficient-modal").classList.remove("hidden");
-  }
-
-  function closeInsufficientModal() {
-    playSound('beep');
-    document.getElementById("insufficient-modal").classList.add("hidden");
-  }
-
-
-  // --- C. 取引履歴専用ビューの制御（絞り込み付き） ---
-  function openTransactionsView() {
-    playSound('beep');
-    document.getElementById("main-view").classList.add("hidden");
-    document.getElementById("bottom-nav").classList.add("hidden");
-    document.getElementById("transactions-view").classList.remove("hidden");
-    renderFullTransactions();
-  }
-
-  function closeTransactionsView() {
-    playSound('beep');
-    document.getElementById("transactions-view").classList.add("hidden");
-    document.getElementById("main-view").classList.remove("hidden");
-    document.getElementById("bottom-nav").classList.remove("hidden");
-  }
-
-  function renderFullTransactions() {
-    const container = document.getElementById("full-transaction-list");
-    const filterType = document.getElementById("tx-filter-select").value;
-    if (!container) return;
-
-    // 絞り込み処理
-    let filteredList = transactions;
-    if (filterType !== "all") {
-      filteredList = transactions.filter(tx => tx.type === filterType);
-    }
-
-    if (filteredList.length === 0) {
-      container.innerHTML = "<p style='color:#888; font-size:14px; text-align:center; padding: 20px;'>該当する履歴はありません</p>";
-      return;
-    }
-
-    container.innerHTML = filteredList.map(tx => {
-      const isPlus = tx.amount > 0;
-      const color = isPlus ? "#28a745" : "#dc3545";
-      const sign = isPlus ? "+" : "";
-      const unit = tx.type === 'ポイント' ? 'pt' : '円';
-
-      return `
-        <div class="tx-item" style="padding: 12px 0; border-bottom: 1px solid #eee;">
-          <div>
-            <div style="font-weight:bold; font-size:14px; color:#333;">${tx.detail} (${tx.type})</div>
-            <div style="font-size:12px; color:#888;">${tx.time}</div>
-          </div>
-          <div style="font-weight:bold; font-size:15px; color:${color};">${sign}${tx.amount.toLocaleString()} ${unit}</div>
-        </div>
-      `;
-    }).join('');
-  }
-
-  
 </script>
 
 </body>
