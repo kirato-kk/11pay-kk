@@ -1390,94 +1390,92 @@
       if (usedCouponTitle) memoText += ` (クーポン: ${usedCouponTitle})`;
       addTransaction('残高', -cashPay, memoText);
     }
-  // executePayment 関数内の該当部分を以下のように差し替え
-  async function executePayment() {
-    let discount = 0;
-    const savedCoupon = localStorage.getItem('11pay_active_coupon');
-    if (savedCoupon) {
-      try {
-        const c = JSON.parse(savedCoupon);
-        discount = c.discount || 0;
-      } catch (e) {}
-    }
+   async function executePayment() {
+ let discount = 0;
+ const savedCoupon = localStorage.getItem('11pay_active_coupon');
+ if (savedCoupon) {
+ try {
+ const c = JSON.parse(savedCoupon);
+ discount = c.discount || 0;
+ } catch (e) {}
+ }
 
-    let finalAmount = Math.max(0, currentScanAmount - discount);
+ let finalAmount = Math.max(0, currentScanAmount - discount);
 
-    // 【NEW】5000円以上の高額決済パスコード（専用モーダルを使用）
-    if (finalAmount >= 5000) {
-      let savedPasscode = localStorage.getItem('11pay_security_passcode');
-      if (!savedPasscode) {
-        let newPass = prompt("【セキュリティ設定】\n5,000円以上のお支払いに必要な4桁のパスコードを設定してください（半角数字）:");
-        if (!newPass || newPass.length < 4) {
-          alert("パスコードの設定がキャンセルされたため、お支払いを中断しました。");
-          return;
-        }
-        localStorage.setItem('11pay_security_passcode', newPass);
-        savedPasscode = newPass;
-        alert("パスコードが設定されました！");
-      }
+ // 5000円以上の高額決済パスコード確認
+ if (finalAmount >= 5000) {
+ let savedPasscode = localStorage.getItem('11pay_security_passcode');
+ if (!savedPasscode) {
+ let newPass = prompt("【セキュリティ設定】\n5,000円以上のお支払いに必要な4桁のパスコードを設定してください（半角数字）:");
+ if (!newPass || newPass.length < 4) {
+ alert("パスコードの設定がキャンセルされたため、お支払いを中断しました。");
+ return;
+ }
+ localStorage.setItem('11pay_security_passcode', newPass);
+ savedPasscode = newPass;
+ alert("パスコードが設定されました！");
+ }
 
-      // 専用の電卓風パスコードモーダルを呼び出す
-      let inputPass = await promptPasscodeModal();
-      if (inputPass !== savedPasscode) {
-        if (inputPass !== null) {
-          playSound('error');
-          alert("パスコードが間違っています。お支払いをキャンセルしました。");
-        }
-        return;
-      }
-    }
+ let inputPass = await promptPasscodeModal();
+ if (inputPass !== savedPasscode) {
+ if (inputPass !== null) {
+ playSound('error');
+ alert("パスコードが間違っています。お支払いをキャンセルしました。");
+ }
+ return;
+ }
+ }
 
-    const usePtChecked = document.getElementById("use-pt-check").checked;
-    let usePt = parseInt(document.getElementById("use-pt-input").value) || 0;
+ const usePtChecked = document.getElementById("use-pt-check").checked;
+ let usePt = parseInt(document.getElementById("use-pt-input").value) || 0;
 
-    if (usePtChecked) {
-      if (usePt <= 0) return alert("利用するポイントを入力してください");
-      if (usePt > points) {
-        playSound('error');
-        return alert("保持ポイントを超えています");
-      }
-      if (usePt > finalAmount) usePt = finalAmount;
-    } else {
-      usePt = 0;
-    }
+ if (usePtChecked) {
+ if (usePt <= 0) return alert("利用するポイントを入力してください");
+ if (usePt > points) {
+ playSound('error');
+ return alert("保持ポイントを超えています");
+ }
+ if (usePt > finalAmount) usePt = finalAmount;
+ } else {
+ usePt = 0;
+ }
 
-    const cashPay = finalAmount - usePt;
-    if (cashPay > balance) {
-      // 【NEW】残高不足のときは❌マークの専用モーダルを表示
-      showInsufficientModal(cashPay, balance);
-      return;
-    }
+ const cashPay = finalAmount - usePt;
+ if (cashPay > balance) {
+ showInsufficientModal(cashPay, balance);
+ return;
+ }
 
-    playSound('pay');
-    balance -= cashPay;
-    points -= usePt;
+ playSound('pay');
+ balance -= cashPay;
+ points -= usePt;
 
-    const usedCouponTitle = consumeActiveCouponOnPayment();
+ const usedCouponTitle = consumeActiveCouponOnPayment();
 
-    if (cashPay > 0) {
-      let memoText = 'お支払い利用';
-      if (usedCouponTitle) memoText += ` (クーポン: ${usedCouponTitle})`;
-      addTransaction('残高', -cashPay, memoText);
-    }
+ if (cashPay > 0) {
+ let memoText = 'お支払い';
+ if (usedCouponTitle) memoText += ` (クーポン: ${usedCouponTitle})`;
+ addTransaction('残高', -cashPay, memoText);
+ }
 
-    if (usePt > 0) {
-      addTransaction('ポイント', -usePt, 'お支払い利用');
-    }
+ if (usePt > 0) {
+ addTransaction('ポイント', -usePt, 'お支払い利用');
+ }
 
-    updateDisplay();
-    document.getElementById("pay-confirm-modal").classList.add("hidden");
+ updateDisplay();
+ document.getElementById("pay-confirm-modal").classList.add("hidden");
 
-    if (usePt > 0) {
-      let msg = `お支払い完了！(割引: ${discount}円 / pt利用: ${usePt}pt)`;
-      if (usedCouponTitle) msg = `クーポン「${usedCouponTitle}」を使いました！\n${msg}`;
-      alert(msg);
-    } else {
-      if (usedCouponTitle) alert(`クーポン「${usedCouponTitle}」を使いました！`);
-      startRoulette(finalAmount);
-    }
-  }
+ if (usePt > 0) {
+ let msg = `お支払い完了！(割引: ${discount}円 / pt利用: ${usePt}pt)`;
+ if (usedCouponTitle) msg = `クーポン「${usedCouponTitle}」を使いました！\n${msg}`;
+ alert(msg);
+ } else {
+ if (usedCouponTitle) alert(`クーポン「${usedCouponTitle}」を使いました！`);
+ startRoulette(finalAmount);
+ }
+ }
 
+  
   function startRoulette(payAmount) {
     const rouletteModal = document.getElementById("roulette-modal");
     const closeBtn = document.getElementById("roulette-close-btn");
