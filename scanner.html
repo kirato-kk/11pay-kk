@@ -432,9 +432,9 @@
 
       <div id="shop-confirm-step" class="hidden">
         <p style="font-size: 13px; color: #666; margin-bottom: 8px;">店員さんにこちらの画面をお見せください</p>
-        <!-- 金額部分だけ上下反転、背景は入力時と同じ #f8f9fa に統一 -->
+        <!-- 金額部分だけ上下反転させつつ、通常の文字方向（左から右）を維持して読みやすくする -->
         <div style="background: #f8f9fa; border: 2px solid #ddd; padding: 20px 10px; border-radius: 14px; margin: 15px 0;">
-          <div style="font-size: 38px; font-weight: bold; color: #ff0033; letter-spacing: 2px; transform: scaleY(-1); display: inline-block;">
+          <div style="font-size: 38px; font-weight: bold; color: #ff0033; letter-spacing: 2px; transform: scale(1, -1); display: inline-block; direction: rtl;">
             <span id="shop-inverted-amount">0</span> 円
           </div>
         </div>
@@ -442,6 +442,8 @@
         <button class="main-btn" style="background: #28a745; margin-bottom: 8px;" onclick="finishShopConfirmStep()">完了</button>
         <button class="secondary-btn" onclick="backToShopInputStep()">金額を修正する</button>
       </div>
+
+ 
 
       <button class="secondary-btn" onclick="closeShopPayModal()">キャンセル</button>
     </div>
@@ -1805,7 +1807,7 @@ function renderTransactions() {
     localStorage.setItem('11pay_today_step_points', '0');
   }
 
-  function updateStepUI() {
+ function updateStepUI() {
     const stepDisplay = document.getElementById('current-steps');
     const todayDisplay = document.getElementById('today-earned-points');
     const claimBtn = document.getElementById('claim-btn');
@@ -1819,20 +1821,21 @@ function renderTransactions() {
     if (character) {
       const progress = Math.min(100, (currentSteps / 500) * 100);
       character.style.left = `calc(25px + (100% - 50px) * ${progress / 100})`;
-     
+    
+      // キャラクターの色は赤に固定（緑等には変化しない）
       if (characterSvg) {
-        if (currentSteps >= 500) characterSvg.style.fill = '#2ecc71';
-        else if (currentSteps >= 100) characterSvg.style.fill = '#f1c40f';
-        else characterSvg.style.fill = '#ff4757';
+        characterSvg.style.fill = '#ff4757';
       }
     }
 
+    // 100歩ごとにゲージが赤から緑へ変化するロジック（黄色は使用しない）
     const activeBoxes = Math.min(5, Math.floor(currentSteps / 100));
     for (let i = 0; i < 5; i++) {
       const box = document.getElementById(`gauge-${i}`);
       if (box) {
         if (i < activeBoxes) {
-          box.style.background = (activeBoxes === 5) ? '#2ecc71' : '#f1c40f';
+          // 貯まったゲージはすべて緑色にする
+          box.style.background = '#2ecc71';
         } else {
           box.style.background = '#e0e0e0';
         }
@@ -1866,6 +1869,9 @@ function renderTransactions() {
       }
     }
   }
+
+ 
+
 
   let lastAccel = { x: 0, y: 0, z: 0 };
   let lastStepTime = 0;
