@@ -432,16 +432,16 @@
 
       <div id="shop-confirm-step" class="hidden">
         <p style="font-size: 13px; color: #666; margin-bottom: 8px;">店員さんにこちらの画面をお見せください</p>
-        <!-- 金額部分だけ上下反転させつつ、通常の文字方向（左から右）を維持して読みやすくする -->
+        <!-- 文字の並びは変えずに、上下だけを反転させて店員さんから見やすくする -->
         <div style="background: #f8f9fa; border: 2px solid #ddd; padding: 20px 10px; border-radius: 14px; margin: 15px 0;">
-          <div style="font-size: 38px; font-weight: bold; color: #ff0033; letter-spacing: 2px; transform: scale(1, -1); display: inline-block; direction: rtl;">
+          <div style="font-size: 38px; font-weight: bold; color: #ff0033; letter-spacing: 2px; transform: scaleY(-1); display: inline-block;">
             <span id="shop-inverted-amount">0</span> 円
           </div>
         </div>
         <p style="font-size: 12px; color: #ff0033; margin-bottom: 15px;">金額にお間違いがなければ下の完了を押してください</p>
         <button class="main-btn" style="background: #28a745; margin-bottom: 8px;" onclick="finishShopConfirmStep()">完了</button>
         <button class="secondary-btn" onclick="backToShopInputStep()">金額を修正する</button>
-      </div>
+      </div> 
 
  
 
