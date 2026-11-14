@@ -241,7 +241,7 @@
     <div class="tx-card">
       <div class="tx-title">取引履歴</div>
       <div id="transaction-list"></div>
-      <button id="tx-more-btn" class="secondary-btn hidden" style="margin-top: 10px;" onclick="openAllTransactionsModal()">もっと見る</button>
+      <button id="tx-more-btn" class="secondary-btn hidden" style="margin-top: 10px;" onclick="openAllTransactionsModal()">すべて見る</button>
     </div>
 
     <!-- ギフトカードボタン -->
@@ -432,8 +432,11 @@
 
       <div id="shop-confirm-step" class="hidden">
         <p style="font-size: 13px; color: #666; margin-bottom: 8px;">店員さんにこちらの画面をお見せください</p>
-        <div style="background: #000; color: #fff; font-size: 38px; font-weight: bold; padding: 24px 12px; border-radius: 14px; margin: 15px 0; letter-spacing: 2px;">
-          <span id="shop-inverted-amount">0</span> 円
+        <!-- 金額部分だけ上下反転、背景は入力時と同じ #f8f9fa に統一 -->
+        <div style="background: #f8f9fa; border: 2px solid #ddd; padding: 20px 10px; border-radius: 14px; margin: 15px 0;">
+          <div style="font-size: 38px; font-weight: bold; color: #ff0033; letter-spacing: 2px; transform: scaleY(-1); display: inline-block;">
+            <span id="shop-inverted-amount">0</span> 円
+          </div>
         </div>
         <p style="font-size: 12px; color: #ff0033; margin-bottom: 15px;">金額にお間違いがなければ下の完了を押してください</p>
         <button class="main-btn" style="background: #28a745; margin-bottom: 8px;" onclick="finishShopConfirmStep()">完了</button>
@@ -441,6 +444,26 @@
       </div>
 
       <button class="secondary-btn" onclick="closeShopPayModal()">キャンセル</button>
+    </div>
+  </div>
+
+  <!-- 高額決済パスコード入力モーダル -->
+  <div id="high-pay-pass-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3>高額決済確認</h3>
+      <p style="font-size: 13px; color: #666; margin-bottom: 10px;">5,000円以上のお支払いです。<br>4桁のパスコードを入力してください</p>
+      <input type="password" id="high-pay-pass-input" placeholder="パスコード" maxlength="4" style="font-size: 20px; letter-spacing: 4px;">
+      <button class="main-btn" onclick="submitHighPayPasscode()">次へ</button>
+      <button class="secondary-btn" onclick="cancelHighPayPassModal()">キャンセル</button>
+    </div>
+  </div>
+
+  <!-- 汎用お知らせ・カスタムアラート用モーダル -->
+  <div id="custom-alert-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3 id="custom-alert-title" style="color: #ff0033; margin-bottom: 10px;">お知らせ</h3>
+      <p id="custom-alert-text" style="font-size: 14px; color: #333; margin-bottom: 20px; white-space: pre-wrap; line-height: 1.5;"></p>
+      <button class="main-btn" onclick="closeCustomAlert()">OK</button>
     </div>
   </div>
 
@@ -512,6 +535,19 @@
   let tofuDirection = 1;
   let tofuSpeed = 2;
   let gameActive = false;
+
+  // カスタムアラートモーダル用関数
+  function showCustomAlert(text, title = "お知らせ") {
+    playSound('beep');
+    document.getElementById("custom-alert-title").innerText = title;
+    document.getElementById("custom-alert-text").innerText = text;
+    document.getElementById("custom-alert-modal").classList.remove("hidden");
+  }
+
+  function closeCustomAlert() {
+    playSound('beep');
+    document.getElementById("custom-alert-modal").classList.add("hidden");
+  }
 
   function getUsers() {
     const users = localStorage.getItem("paypay_users");
@@ -619,12 +655,12 @@
     const userInput = document.getElementById("login-user").value.trim();
     const passInput = document.getElementById("login-pass").value;
 
-    if (!userInput) return alert("ユーザー名を入力してください");
+    if (!userInput) return showCustomAlert("ユーザー名を入力してください");
     const users = getUsers();
 
     if (!users[userInput] || users[userInput] !== passInput) {
       playSound('error');
-      return alert("ユーザー名またはパスワードが間違っています");
+      return showCustomAlert("ユーザー名またはパスワードが間違っています");
     }
 
     currentUser = userInput;
@@ -638,17 +674,17 @@
     const passInput = document.getElementById("reg-pass").value;
     const confirmInput = document.getElementById("reg-pass-confirm").value;
 
-    if (!userInput) return alert("ユーザー名を入力してください");
-    if (!passInput) return alert("パスワードを入力してください");
+    if (!userInput) return showCustomAlert("ユーザー名を入力してください");
+    if (!passInput) return showCustomAlert("パスワードを入力してください");
     if (passInput !== confirmInput) {
       playSound('error');
-      return alert("パスワードが一致しません");
+      return showCustomAlert("パスワードが一致しません");
     }
 
     const users = getUsers();
     if (users[userInput]) {
       playSound('error');
-      return alert("このユーザー名は既に使われています");
+      return showCustomAlert("このユーザー名は既に使われています");
     }
 
     users[userInput] = passInput;
@@ -659,7 +695,7 @@
 
     currentUser = userInput;
     localStorage.setItem("paypay_login_user", currentUser);
-    alert("アカウントの作成が完了しました");
+    showCustomAlert("アカウントの作成が完了しました");
     showMainScreen();
   }
 
@@ -716,7 +752,7 @@
   function playGacha() {
     if (points < 200) {
       playSound('error');
-      return alert("ポイントが足りません！ (必要: 200pt)");
+      return showCustomAlert("ポイントが足りません！ (必要: 200pt)");
     }
 
     points -= 200;
@@ -885,9 +921,9 @@
       addTransaction('ポイント', earned, '豆腐タワー報酬');
       updateDisplay();
       playSound('win');
-      alert(`ゲーム終了！\n記録: ${steps}段 (${multiplier}倍ボーナス)\n${earned} ポイントを獲得しました！`);
+      showCustomAlert(`ゲーム終了！\n記録: ${steps}段 (${multiplier}倍ボーナス)\n${earned} ポイントを獲得しました！`);
     } else {
-      alert("残念！1段も積めませんでした...");
+      showCustomAlert("残念！1段も積めませんでした...");
     }
 
     closeGameModal();
@@ -907,7 +943,7 @@
 
     if (lastScratchDate === today) {
       playSound('error');
-      return alert("毎日スクラッチ!!は一日一回です\nまた明日チャレンジしてね！");
+      return showCustomAlert("毎日スクラッチ!!は一日一回です\nまた明日チャレンジしてね！");
     }
 
     const rand = Math.random() * 100;
@@ -985,7 +1021,7 @@
     addTransaction('ポイント', scratchPointResult, 'スクラッチ報酬');
     updateDisplay();
 
-    alert(`${scratchPointResult} ポイントを獲得しました！`);
+    showCustomAlert(`${scratchPointResult} ポイントを獲得しました！`);
     closeScratchModal();
   }
 
@@ -1015,24 +1051,24 @@
     const users = getUsers();
     if (users[currentUser] !== oldPass) {
       playSound('error');
-      return alert("現在のパスワードが違います");
+      return showCustomAlert("現在のパスワードが違います");
     }
 
     if (!newPass) {
       playSound('error');
-      return alert("新しいパスワードを入力してください");
+      return showCustomAlert("新しいパスワードを入力してください");
     }
 
     if (newPass !== newPassConfirm) {
       playSound('error');
-      return alert("新しいパスワード（確認）が一致しません");
+      return showCustomAlert("新しいパスワード（確認）が一致しません");
     }
 
     users[currentUser] = newPass;
     saveUsers(users);
 
     playSound('win');
-    alert("パスワードを変更しました！");
+    showCustomAlert("パスワードを変更しました！");
     closePassModal();
   }
 
@@ -1092,12 +1128,12 @@
 
     if (isNaN(sendAmount) || sendAmount <= 0) {
       playSound('error');
-      return alert("送金金額を入力してください");
+      return showCustomAlert("送金金額を入力してください");
     }
 
     if (sendAmount > balance) {
       playSound('error');
-      return alert(`残高が不足しています！\n現在の残高: ${balance.toLocaleString()}円`);
+      return showCustomAlert(`残高が不足しています！\n現在の残高: ${balance.toLocaleString()}円`);
     }
 
     pendingSendAmount = sendAmount;
@@ -1124,12 +1160,10 @@
       updateDisplay();
       pendingSendAmount = 0;
       playSound('win');
-      alert("送金をキャンセルしました。");
+      showCustomAlert("送金をキャンセルしました。");
     }
     closeSendQrModal();
   }
-
-  // --- 修正版：確実に再起動できるようにしたカメラ制御コード ---
 
   function toggleCamera() {
     playSound('beep');
@@ -1145,24 +1179,15 @@
     const offMsg = document.getElementById("camera-off-msg");
     const btn = document.getElementById("toggle-camera-btn");
 
-    // プレースホルダーを非表示にし、リーダー領域を表示
     offMsg.classList.add("hidden");
     readerDiv.classList.remove("hidden");
 
-    // すでにインスタンスがあれば、完全にクリア・破棄する
     if (html5QrCode) {
-      try {
-        html5QrCode.clear();
-      } catch (e) {
-        console.log(e);
-      }
+      try { html5QrCode.clear(); } catch (e) {}
       html5QrCode = null;
     }
-
-    // 念のためreaderの中身を一度空にしてDOMの競合を防ぐ
     readerDiv.innerHTML = "";
 
-    // 新しくインスタンスを生成して起動
     html5QrCode = new Html5Qrcode("reader");
     html5QrCode.start(
       { facingMode: "environment" },
@@ -1174,7 +1199,7 @@
       btn.classList.add("active");
     }).catch(err => {
       console.log("カメラ起動エラー: ", err);
-      alert("カメラの起動に失敗しました。ブラウザの権限やHTTPS接続を確認してください。");
+      showCustomAlert("カメラの起動に失敗しました。ブラウザの権限やHTTPS接続を確認してください。");
       stopScanner();
     });
   }
@@ -1185,13 +1210,9 @@
     const btn = document.getElementById("toggle-camera-btn");
 
     if (html5QrCode) {
-      // 停止処理を試みる
       html5QrCode.stop().then(() => {
-        try {
-          html5QrCode.clear();
-        } catch (e) {}
+        try { html5QrCode.clear(); } catch (e) {}
         html5QrCode = null;
-       
         isCameraOn = false;
         readerDiv.classList.add("hidden");
         offMsg.classList.remove("hidden");
@@ -1199,13 +1220,8 @@
         btn.classList.remove("active");
         if (callback) callback();
       }).catch(err => {
-        // 万が一stopに失敗した場合でも強制リセットをかける
-        console.log("カメラ停止エラー（強制リセット）: ", err);
-        try {
-          html5QrCode.clear();
-        } catch (e) {}
+        try { html5QrCode.clear(); } catch (e) {}
         html5QrCode = null;
-
         isCameraOn = false;
         readerDiv.classList.add("hidden");
         offMsg.classList.remove("hidden");
@@ -1240,13 +1256,13 @@
           let coupons = JSON.parse(localStorage.getItem('11pay_coupons')) || [];
           if (coupons.some(c => c.id === coupon.id)) {
             if (typeof playSound === 'function') playSound('error');
-            alert("このクーポンはすでに登録されています");
+            showCustomAlert("このクーポンはすでに登録されています");
             return;
           }
           coupons.push(coupon);
           localStorage.setItem('11pay_coupons', JSON.stringify(coupons));
           if (typeof playSound === 'function') playSound('win');
-          alert(`クーポン「${coupon.title}」を追加しました！`);
+          showCustomAlert(`クーポン「${coupon.title}」を追加しました！`);
           return;
         }
       }
@@ -1258,7 +1274,7 @@
 
         if (senderUser === currentUser) {
           if (typeof playSound === 'function') playSound('error');
-          alert("自分の送金QRコードは読み込めません");
+          showCustomAlert("自分の送金QRコードは読み込めません");
           return;
         }
 
@@ -1266,7 +1282,7 @@
         addTransaction('残高', sendAmount, `${senderUser}から受取`);
         updateDisplay();
         if (typeof playSound === 'function') playSound('win');
-        alert(`${senderUser} さんより ${sendAmount.toLocaleString()}円 を受取りました！`);
+        showCustomAlert(`${senderUser} さんより ${sendAmount.toLocaleString()}円 を受取りました！`);
         return;
       }
 
@@ -1281,14 +1297,14 @@
         addTransaction('残高', amount, '残高チャージ');
         updateDisplay();
         if (typeof playSound === 'function') playSound('win');
-        alert(`残高に ${amount.toLocaleString()}円 チャージされました！`);
+        showCustomAlert(`残高に ${amount.toLocaleString()}円 チャージされました！`);
       } else if (isPoint) {
         const amount = parseInt(decodedText.replace("POINT_", ""), 10) || 0;
         points += amount;
         addTransaction('ポイント', amount, 'ポイント獲得');
         updateDisplay();
         if (typeof playSound === 'function') playSound('win');
-        alert(`${amount.toLocaleString()} ポイントを獲得しました！`);
+        showCustomAlert(`${amount.toLocaleString()} ポイントを獲得しました！`);
       } else if (isPay) {
         const parts = decodedText.split("_");
         currentScanAmount = parseInt(parts[1], 10) || 0;
@@ -1299,7 +1315,7 @@
         openShopPayModal(storeName);
       } else {
         if (typeof playSound === 'function') playSound('error');
-        alert("画像から有効なQRコードを検出できませんでした。");
+        showCustomAlert("画像から有効なQRコードを検出できませんでした。");
       }
     };
 
@@ -1341,7 +1357,7 @@
     const num = parseInt(typedShopAmountStr, 10) || 0;
     if (num <= 0) {
       playSound('error');
-      return alert("お支払い金額を入力してください");
+      return showCustomAlert("お支払い金額を入力してください");
     }
     playSound('beep');
     currentScanAmount = num;
@@ -1393,6 +1409,44 @@
     document.getElementById("pay-confirm-modal").classList.add("hidden");
   }
 
+  function checkHighPaymentPasscode(finalAmount, callback) {
+    if (finalAmount >= 5000) {
+      let savedPasscode = localStorage.getItem('11pay_security_passcode');
+      if (!savedPasscode) {
+        savedPasscode = "4869";
+        localStorage.setItem('11pay_security_passcode', savedPasscode);
+      }
+      document.getElementById("high-pay-pass-input").value = "";
+      document.getElementById("high-pay-pass-modal").classList.remove("hidden");
+      window.pendingHighPayCallback = callback;
+    } else {
+      callback(true);
+    }
+  }
+
+  function submitHighPayPasscode() {
+    const inputPass = document.getElementById("high-pay-pass-input").value;
+    const savedPasscode = localStorage.getItem('11pay_security_passcode') || "4869";
+    if (inputPass !== savedPasscode) {
+      playSound('error');
+      showCustomAlert("パスコードが間違っています。お支払いをキャンセルしました。");
+      document.getElementById("high-pay-pass-modal").classList.add("hidden");
+      return;
+    }
+    playSound('win');
+    document.getElementById("high-pay-pass-modal").classList.add("hidden");
+    if (window.pendingHighPayCallback) {
+      window.pendingHighPayCallback(true);
+      window.pendingHighPayCallback = null;
+    }
+  }
+
+  function cancelHighPayPassModal() {
+    playSound('beep');
+    document.getElementById("high-pay-pass-modal").classList.add("hidden");
+    showCustomAlert("お支払いをキャンセルしました。");
+  }
+
   function executePayment() {
     let discount = 0;
     const savedCoupon = localStorage.getItem('11pay_active_coupon');
@@ -1405,76 +1459,59 @@
 
     let finalAmount = Math.max(0, currentScanAmount - discount);
 
-    if (finalAmount >= 5000) {
-      let savedPasscode = localStorage.getItem('11pay_security_passcode');
-      if (!savedPasscode) {
-        let newPass = prompt("【セキュリティ設定】\n5,000円以上のお支払いに必要な4桁のパスコードを設定してください（半角数字）:");
-        if (!newPass || newPass.length < 4) {
-          alert("パスコードの設定がキャンセルされたため、お支払いを中断しました。");
-          return;
+    checkHighPaymentPasscode(finalAmount, (isPassed) => {
+      if (!isPassed) return;
+
+      const usePtChecked = document.getElementById("use-pt-check").checked;
+      let usePt = parseInt(document.getElementById("use-pt-input").value) || 0;
+
+      if (usePtChecked) {
+        if (usePt <= 0) return showCustomAlert("利用するポイントを入力してください");
+        if (usePt > points) {
+          playSound('error');
+          return showCustomAlert("保持ポイントを超えています");
         }
-        localStorage.setItem('11pay_security_passcode', newPass);
-        savedPasscode = newPass;
-        alert("パスコードが設定されました！");
+        if (usePt > finalAmount) usePt = finalAmount;
+      } else {
+        usePt = 0;
       }
 
-      let inputPass = prompt("【高額決済】\n5,000円以上のお支払いです。パスコードを入力してください:");
-      if (inputPass !== savedPasscode) {
+      const cashPay = finalAmount - usePt;
+      if (cashPay > balance) {
         playSound('error');
-        alert("パスコードが間違っています。お支払いをキャンセルしました。");
-        return;
+        return showCustomAlert(`残高が不足しています\nお支払い額: ${cashPay}円 / 残高: ${balance}円`);
       }
-    }
 
-    const usePtChecked = document.getElementById("use-pt-check").checked;
-    let usePt = parseInt(document.getElementById("use-pt-input").value) || 0;
+      playSound('pay');
+      balance -= cashPay;
+      points -= usePt;
 
-    if (usePtChecked) {
-      if (usePt <= 0) return alert("利用するポイントを入力してください");
-      if (usePt > points) {
-        playSound('error');
-        return alert("保持ポイントを超えています");
+      const usedCouponTitle = consumeActiveCouponOnPayment();
+      const baseDetail = currentStoreName ? `${currentStoreName}でお支払い利用` : 'お支払い利用';
+
+      if (cashPay > 0) {
+        let memoText = baseDetail;
+        if (usedCouponTitle) memoText += ` (クーポン: ${usedCouponTitle})`;
+        addTransaction('残高', -cashPay, memoText);
       }
-      if (usePt > finalAmount) usePt = finalAmount;
-    } else {
-      usePt = 0;
-    }
 
-    const cashPay = finalAmount - usePt;
-    if (cashPay > balance) {
-      playSound('error');
-      return alert(`残高が不足しています\nお支払い額: ${cashPay}円 / 残高: ${balance}円`);
-    }
+      if (usePt > 0) {
+        addTransaction('ポイント', -usePt, baseDetail);
+      }
 
-    playSound('pay');
-    balance -= cashPay;
-    points -= usePt;
+      currentStoreName = "";
+      updateDisplay();
+      document.getElementById("pay-confirm-modal").classList.add("hidden");
 
-    const usedCouponTitle = consumeActiveCouponOnPayment();
-    const baseDetail = currentStoreName ? `${currentStoreName}でお支払い利用` : 'お支払い利用';
-
-    if (cashPay > 0) {
-      let memoText = baseDetail;
-      if (usedCouponTitle) memoText += ` (クーポン: ${usedCouponTitle})`;
-      addTransaction('残高', -cashPay, memoText);
-    }
-
-    if (usePt > 0) {
-      addTransaction('ポイント', -usePt, baseDetail);
-    }
-
-    currentStoreName = "";
-    updateDisplay();
-    document.getElementById("pay-confirm-modal").classList.add("hidden");
-
-    if (usePt > 0) {
-      let msg = `お支払い完了！(割引: ${discount}円 / pt利用: ${usePt}pt)`;
-      if (usedCouponTitle) msg = `クーポン「${usedCouponTitle}」を使いました！\n${msg}`;
-      alert(msg);
-    } else {
-      if (usedCouponTitle) alert(`クーポン「${usedCouponTitle}」を使いました！`);
-      startRoulette(finalAmount);
-    }
+      if (usePt > 0) {
+        let msg = `お支払い完了！(割引: ${discount}円 / pt利用: ${usePt}pt)`;
+        if (usedCouponTitle) msg = `クーポン「${usedCouponTitle}」を使いました！\n${msg}`;
+        showCustomAlert(msg);
+      } else {
+        if (usedCouponTitle) showCustomAlert(`クーポン「${usedCouponTitle}」を使いました！`);
+        startRoulette(finalAmount);
+      }
+    });
   }
 
   function startRoulette(payAmount) {
@@ -1524,45 +1561,50 @@
   
     transactions.unshift({ type, amount, detail, time: timeStr });
   }
-
-  function renderTransactions() {
-    const container = document.getElementById("transaction-list");
+function renderTransactions() {
+    const listDiv = document.getElementById("transaction-list");
     const moreBtn = document.getElementById("tx-more-btn");
-    if (!container) return;
+    listDiv.innerHTML = "";
 
     if (transactions.length === 0) {
-      container.innerHTML = "<p style='color:#888; font-size:14px; text-align:center;'>履歴はありません</p>";
+      listDiv.innerHTML = '<div style="color: #888; text-align: center; font-size: 14px;">取引履歴はまだありません</div>';
       if (moreBtn) moreBtn.classList.add("hidden");
       return;
     }
 
-    const displayList = transactions.slice(0, 6);
-
-    container.innerHTML = displayList.map(tx => {
-      const isPlus = tx.amount > 0;
-      const color = isPlus ? "#28a745" : "#dc3545";
-      const sign = isPlus ? "+" : "";
-      const unit = tx.type === 'ポイント' ? 'pt' : '円';
-
-      return `
-        <div class="tx-item">
-          <div>
-            <div style="font-weight:bold; font-size:14px; color:#333;">${tx.detail} (${tx.type})</div>
-            <div style="font-size:12px; color:#888;">${tx.time}</div>
-          </div>
-          <div style="font-weight:bold; font-size:15px; color:${color};">${sign}${tx.amount.toLocaleString()} ${unit}</div>
-        </div>
-      `;
-    }).join('');
+    const displayItems = transactions.slice(0, 5);
+    displayItems.forEach(tx => {
+      listDiv.innerHTML += createTxItemHtml(tx);
+    });
 
     if (moreBtn) {
-      if (transactions.length > 6) {
+      if (transactions.length > 5) {
         moreBtn.classList.remove("hidden");
-        moreBtn.innerText = "もっと見る";
       } else {
         moreBtn.classList.add("hidden");
       }
     }
+  }
+
+  function createTxItemHtml(tx) {
+    const isPlus = tx.amount > 0;
+    const sign = isPlus ? "+" : "";
+    const color = isPlus ? "#28a745" : "#ff0033";
+    const unit = tx.type === '残高' ? "円" : "pt";
+    const badgeColor = tx.type === '残高' ? "#007bff" : "#ff9900";
+
+    return `
+      <div class="tx-item">
+        <div>
+          <span style="background:${badgeColor}; color:white; font-size:10px; padding:2px 6px; border-radius:4px; margin-right:6px;">${tx.type}</span>
+          <span style="font-weight:bold; font-size:14px; color:#333;">${tx.detail}</span>
+          <div style="font-size:11px; color:#999; margin-top:2px;">${tx.time}</div>
+        </div>
+        <div style="font-weight:bold; font-size:15px; color:${color};">
+          ${sign}${tx.amount.toLocaleString()}${unit}
+        </div>
+      </div>
+    `;
   }
 
   function openAllTransactionsModal() {
@@ -1579,871 +1621,983 @@
     document.getElementById("all-tx-modal").classList.add("hidden");
   }
 
+  // 日付フィルターのゼロ埋めなし対応＆全履歴表示バグ修正済み
   function renderAllTransactions() {
-    const container = document.getElementById("all-transaction-list");
-    if (!container) return;
-
     const typeFilter = document.getElementById("tx-filter-type").value;
     const flowFilter = document.getElementById("tx-filter-flow").value;
     const dateFilter = document.getElementById("tx-filter-date").value;
+    const container = document.getElementById("all-transaction-list");
+    container.innerHTML = "";
+
+    let formattedDateFilter = "";
+    if (dateFilter) {
+      const parts = dateFilter.split("-");
+      if (parts.length === 3) {
+        formattedDateFilter = `${parseInt(parts[1], 10)}/${parseInt(parts[2], 10)}`;
+      }
+    }
 
     const filtered = transactions.filter(tx => {
       if (typeFilter !== "all" && tx.type !== typeFilter) return false;
       if (flowFilter === "plus" && tx.amount <= 0) return false;
       if (flowFilter === "minus" && tx.amount >= 0) return false;
-      if (dateFilter) {
-        const parts = dateFilter.split("-");
-        const targetStr = `${parseInt(parts[1], 10)}/${parseInt(parts[2], 10)}`;
-        if (!tx.time.startsWith(targetStr + " ")) return false;
+      if (formattedDateFilter) {
+        const txDatePart = tx.time.split(" ")[0];
+        if (txDatePart !== formattedDateFilter) return false;
       }
       return true;
     });
 
     if (filtered.length === 0) {
-      container.innerHTML = "<p style='color:#888; font-size:13px; text-align:center; padding: 20px;'>該当する履歴はありません</p>";
+      container.innerHTML = '<div style="color: #888; text-align: center; font-size: 13px; padding: 20px;">条件に一致する履歴はありません</div>';
       return;
     }
 
-    container.innerHTML = filtered.map(tx => {
-      const isPlus = tx.amount > 0;
-      const color = isPlus ? "#28a745" : "#dc3545";
-      const sign = isPlus ? "+" : "";
-      const unit = tx.type === 'ポイント' ? 'pt' : '円';
+    filtered.forEach(tx => {
+      container.innerHTML += createTxItemHtml(tx);
+    });
+  }
 
-      return `
-        <div class="tx-item">
-          <div>
-            <div style="font-weight:bold; font-size:13px; color:#333;">${tx.detail} (${tx.type})</div>
-            <div style="font-size:11px; color:#888;">${tx.time}</div>
-          </div>
-          <div style="font-weight:bold; font-size:14px; color:${color};">${sign}${tx.amount.toLocaleString()} ${unit}</div>
+  function openCouponModal() {
+    playSound('beep');
+    let modal = document.getElementById("coupon-modal");
+    if (!modal) {
+      modal = document.createElement("div");
+      modal.id = "coupon-modal";
+      modal.className = "modal-overlay hidden";
+      modal.innerHTML = `
+        <div class="modal-content" style="max-height:80vh; overflow-y:auto;">
+          <h3>マイクーポン</h3>
+          <p style="font-size:13px; color:#666; margin-bottom:10px;">QRコードをスキャンしてクーポンを追加できます</p>
+          <div id="coupon-list" style="text-align:left; margin:15px 0;"></div>
+          <button class="secondary-btn" onclick="closeCouponModal()">閉じる</button>
         </div>
       `;
-    }).join('');
+      document.body.appendChild(modal);
+    }
+    renderCouponList();
+    modal.classList.remove("hidden");
   }
-const GAME_REWARDS = {
-    janken: 20, highlow: 30, memory: 100, moleMultiplier: 5, dice: 30,
-    just555: 150, nummem: 100, chickenMultiplier: 1, diff: 100, bomb: 50,
-    craneGift: 100, craneBear: 50, craneDiamond: 200, tapRushMultiplier: 1,
-    balloon: 50, numSequence: 80, anagram: 60
-  };
 
-  const VALID_GIFTS = {
-    "GIFT1000": { amount: 1000, type: "残高", name: "1000円ギフト" },
-    "GIFT5000": { amount: 5000, type: "残高", name: "5000円ギフト" },
-    "LUCKY100": { amount: 100, type: "ポイント", name: "100ptギフト" }
-  };
+  function closeCouponModal() {
+    const modal = document.getElementById("coupon-modal");
+    if (modal) modal.classList.add("hidden");
+  }
+
+  function renderCouponList() {
+    const listEl = document.getElementById("coupon-list");
+    const coupons = JSON.parse(localStorage.getItem('11pay_coupons')) || [];
+    const activeCoupon = JSON.parse(localStorage.getItem('11pay_active_coupon')) || null;
+
+    if (coupons.length === 0) {
+      listEl.innerHTML = "<p style='text-align:center; color:#999; font-size:14px; padding:20px 0;'>保有しているクーポンはありません</p>";
+      return;
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+    let html = "";
+
+    coupons.forEach((c, index) => {
+      const isExpired = c.expiry < today;
+      const isSelected = activeCoupon && activeCoupon.id === c.id;
+
+      html += `
+        <div style="border: 2px solid ${isSelected ? '#ff0033' : '#eee'}; border-radius: 12px; padding: 12px; margin-bottom: 10px; background: ${isExpired ? '#f5f5f5' : '#fff'}; opacity: ${isExpired ? '0.6' : '1'};">
+          <div style="font-weight:bold; font-size:16px; color:#333;">${c.title}</div>
+          <div style="color:#ff0033; font-weight:bold; font-size:18px; margin:4px 0;">${c.discount}円引き</div>
+          <div style="font-size:12px; color:#666;">条件: ${c.minPrice}円以上のお会計</div>
+          <div style="font-size:12px; color:${isExpired ? '#ff0033' : '#888'}; margin-bottom:8px;">有効期限: ${c.expiry} ${isExpired ? '(期限切れ)' : ''}</div>
+          <div style="display:flex; gap:8px;">
+            ${!isExpired ? `
+              <button class="main-btn" style="padding:8px; font-size:13px; background:${isSelected ? '#666' : '#ff0033'};" onclick="selectCouponForPayment(${index})">
+                ${isSelected ? '選択中 (解除)' : '使う'}
+              </button>
+            ` : ''}
+            <button class="secondary-btn" style="padding:8px; font-size:13px; margin-top:0;" onclick="deleteCoupon(${index})">削除</button>
+          </div>
+        </div>
+      `;
+    });
+
+    listEl.innerHTML = html;
+  }
+
+  function selectCouponForPayment(index) {
+    playSound('beep');
+    const coupons = JSON.parse(localStorage.getItem('11pay_coupons')) || [];
+    const target = coupons[index];
+    const activeCoupon = JSON.parse(localStorage.getItem('11pay_active_coupon')) || null;
+
+    if (activeCoupon && activeCoupon.id === target.id) {
+      localStorage.removeItem('11pay_active_coupon');
+      showCustomAlert("クーポンの選択を解除しました");
+    } else {
+      localStorage.setItem('11pay_active_coupon', JSON.stringify(target));
+      showCustomAlert(`「${target.title}」をセットしました。\n次回のお会計時に自動で適用されます！`);
+    }
+    renderCouponList();
+  }
+
+  function deleteCoupon(index) {
+    playSound('beep');
+    let coupons = JSON.parse(localStorage.getItem('11pay_coupons')) || [];
+    const activeCoupon = JSON.parse(localStorage.getItem('11pay_active_coupon')) || null;
+
+    if (activeCoupon && coupons[index] && activeCoupon.id === coupons[index].id) {
+      localStorage.removeItem('11pay_active_coupon');
+    }
+
+    coupons.splice(index, 1);
+    localStorage.setItem('11pay_coupons', JSON.stringify(coupons));
+    renderCouponList();
+  }
+
+  function consumeActiveCouponOnPayment() {
+    const activeCoupon = JSON.parse(localStorage.getItem('11pay_active_coupon')) || null;
+    if (!activeCoupon) return null;
+
+    const usedTitle = activeCoupon.title;
+    let coupons = JSON.parse(localStorage.getItem('11pay_coupons')) || [];
+    coupons = coupons.filter(c => c.id !== activeCoupon.id);
+    localStorage.setItem('11pay_coupons', JSON.stringify(coupons));
+    localStorage.removeItem('11pay_active_coupon');
+    return usedTitle;
+  }
+
+  function handleFileScan(input) {
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+    input.value = '';
+
+    const executeFileScan = () => {
+      const readerElem = document.getElementById("reader");
+      readerElem.innerHTML = "";
+      const fileScanner = new Html5Qrcode("reader");
+
+      fileScanner.scanFile(file, false)
+        .then(decodedText => {
+          try { fileScanner.clear(); } catch (e) {}
+          onScanSuccess(decodedText);
+        })
+        .catch(err => {
+          try { fileScanner.clear(); } catch (e) {}
+          if (typeof playSound === 'function') playSound('error');
+          showCustomAlert("画像から有効なQRコードを検出できませんでした。\n（別の画像をお試しください）");
+        });
+    };
+
+    if (isCameraOn) {
+      stopScanner(executeFileScan);
+    } else {
+      executeFileScan();
+    }
+  }
+
+  let currentSteps = parseInt(localStorage.getItem('11pay_current_steps') || '0');
+  let todayEarnedStepPoints = parseInt(localStorage.getItem('11pay_today_step_points') || '0');
+  let lastStepDate = localStorage.getItem('11pay_step_date') || new Date().toDateString();
+
+  if (lastStepDate !== new Date().toDateString()) {
+    currentSteps = 0;
+    todayEarnedStepPoints = 0;
+    localStorage.setItem('11pay_step_date', new Date().toDateString());
+    localStorage.setItem('11pay_current_steps', '0');
+    localStorage.setItem('11pay_today_step_points', '0');
+  }
+
+  function updateStepUI() {
+    const stepDisplay = document.getElementById('current-steps');
+    const todayDisplay = document.getElementById('today-earned-points');
+    const claimBtn = document.getElementById('claim-btn');
+    const statusText = document.getElementById('step-status-text');
+    const character = document.getElementById('walking-character');
+    const characterSvg = document.getElementById('character-svg');
+
+    if (stepDisplay) stepDisplay.innerText = currentSteps;
+    if (todayDisplay) todayDisplay.innerText = todayEarnedStepPoints.toLocaleString();
+
+    if (character) {
+      const progress = Math.min(100, (currentSteps / 500) * 100);
+      character.style.left = `calc(25px + (100% - 50px) * ${progress / 100})`;
+     
+      if (characterSvg) {
+        if (currentSteps >= 500) characterSvg.style.fill = '#2ecc71';
+        else if (currentSteps >= 100) characterSvg.style.fill = '#f1c40f';
+        else characterSvg.style.fill = '#ff4757';
+      }
+    }
+
+    const activeBoxes = Math.min(5, Math.floor(currentSteps / 100));
+    for (let i = 0; i < 5; i++) {
+      const box = document.getElementById(`gauge-${i}`);
+      if (box) {
+        if (i < activeBoxes) {
+          box.style.background = (activeBoxes === 5) ? '#2ecc71' : '#f1c40f';
+        } else {
+          box.style.background = '#e0e0e0';
+        }
+      }
+    }
+
+    if (todayEarnedStepPoints >= 10000) {
+      if (claimBtn) {
+        claimBtn.innerText = '本日の上限に達しました';
+        claimBtn.style.background = '#95a5a6';
+        claimBtn.disabled = true;
+      }
+    } else if (activeBoxes > 0) {
+      const reward = (activeBoxes === 5) ? 500 : activeBoxes * 100;
+      if (claimBtn) {
+        claimBtn.innerText = `${reward}pt を受け取る！`;
+        claimBtn.style.background = (activeBoxes === 5) ? '#2ecc71' : '#ff4757';
+        claimBtn.disabled = false;
+      }
+      if (statusText) {
+        statusText.innerText = (activeBoxes === 5) ? '500歩達成！500pt獲得できます！' : `現在 ${reward}pt 獲得可能です！`;
+      }
+    } else {
+      if (claimBtn) {
+        claimBtn.innerText = '100歩ごとに受け取り可能';
+        claimBtn.style.background = '#bdc3c7';
+        claimBtn.disabled = true;
+      }
+      if (statusText) {
+        statusText.innerText = '100歩ごとに100pt、5つ貯まると500pt！';
+      }
+    }
+  }
+
+  let lastAccel = { x: 0, y: 0, z: 0 };
+  let lastStepTime = 0;
+
+  function handleMotion(event) {
+    const acc = event.accelerationIncludingGravity;
+    if (!acc) return;
+
+    const deltaX = Math.abs(acc.x - lastAccel.x);
+    const deltaY = Math.abs(acc.y - lastAccel.y);
+    const deltaZ = Math.abs(acc.z - lastAccel.z);
+
+    if (deltaX + deltaY + deltaZ > 15) {
+      const now = Date.now();
+      if (now - lastStepTime > 400) {
+        lastStepTime = now;
+        if (currentSteps < 500 && todayEarnedStepPoints < 10000) {
+          currentSteps++;
+          localStorage.setItem('11pay_current_steps', currentSteps);
+          updateStepUI();
+        }
+      }
+    }
+    lastAccel = { x: acc.x, y: acc.y, z: acc.z };
+  }
+
+  function requestMotionPermission() {
+    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+      DeviceMotionEvent.requestPermission()
+        .then(permissionState => {
+          if (permissionState === 'granted') {
+            window.addEventListener('devicemotion', handleMotion);
+            showCustomAlert('歩数センサーが有効になりました！スマホを持って歩いてみてください。');
+          } else {
+            showCustomAlert('センサーの許可が拒否されました。');
+          }
+        })
+        .catch(console.error);
+    } else {
+      window.addEventListener('devicemotion', handleMotion);
+      showCustomAlert('歩数センサーが有効になりました！スマホを持って歩いてみてください。');
+    }
+  }
+
+  function claimStepPoints() {
+    const activeBoxes = Math.min(5, Math.floor(currentSteps / 100));
+    if (activeBoxes === 0) return;
+
+    let reward = (activeBoxes === 5) ? 500 : activeBoxes * 100;
+
+    if (todayEarnedStepPoints + reward > 10000) {
+      reward = 10000 - todayEarnedStepPoints;
+    }
+
+    if (reward > 0) {
+      points += reward;
+      todayEarnedStepPoints += reward;
+      currentSteps = 0;
+
+      localStorage.setItem('11pay_current_steps', currentSteps);
+      localStorage.setItem('11pay_today_step_points', todayEarnedStepPoints);
+
+      if (typeof addTransaction === 'function') {
+        addTransaction('ポイント', reward, '歩数ボーナス');
+      }
+      if (typeof updateDisplay === 'function') {
+        updateDisplay();
+      }
+      if (typeof playSound === 'function') {
+        playSound('win');
+      }
+      showCustomAlert(`おめでとうございます！歩数ボーナスとして ${reward} ポイントを獲得しました！`);
+      updateStepUI();
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    updateStepUI();
+  });
+
+  function showToastNotification(message) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.innerHTML = `<span style="font-size: 18px;">🔔</span><span>${message}</span>`;
+
+    container.appendChild(toast);
+
+    if (typeof playSound === 'function') {
+      playSound('beep');
+    }
+
+    setTimeout(() => {
+      if (toast && toast.parentElement) {
+        toast.remove();
+      }
+    }, 3000);
+  }
+
+  const newsDataList = [
+    {
+      date: "ver.26.10.25",
+      title: "アップデート実施！",
+      body: "11Payをver.26.10.25にアップデートしました！\n・取引履歴絞り込み不具合を解消しました\n・見やすく統一感のある画面デザインへ改善しました\n・5,000円以上のお支払い時に専用セキュリティ確認画面を追加しました"
+    },
+    {
+      date: "2026.07.15",
+      title: "新ミニゲーム15種類を一挙追加！",
+      body: "GAMEメニューに新しいミニゲームを15種類追加しました！クリアすると11Payポイントがもらえます。"
+    },
+    {
+      date: "2026.04.12",
+      title: "【重要】11Pay利用規約改定のお知らせ",
+      body: "いつも11Payをご利用いただきありがとうございます。ギフトカード機能および歩数ポイント機能の追加に伴い、利用規約を改定いたしました。"
+    }
+  ];
+
+  function openNewsDetail(index) {
+    const item = newsDataList[index];
+    if (!item) return;
+
+    const modalHtml = `
+      <div id="news-detail-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 9999;">
+        <div style="background: #fff; padding: 24px; border-radius: 16px; width: 85%; max-width: 380px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); text-align: left;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+            <span style="background: #e65100; color: #fff; font-size: 11px; padding: 3px 8px; border-radius: 4px; font-weight: bold;">NEWS</span>
+            <span style="color: #888; font-size: 12px;">${item.date}</span>
+          </div>
+          <h3 style="margin: 0 0 12px 0; font-size: 17px; color: #222; border-bottom: 1px solid #eee; padding-bottom: 8px;">${item.title}</h3>
+          <p style="font-size: 14px; color: #444; line-height: 1.6; white-space: pre-wrap; margin: 0 0 20px 0;">${item.body}</p>
+          <button onclick="document.getElementById('news-detail-modal').remove()" style="width: 100%; padding: 12px; background: #ff0033; color: #fff; border: none; border-radius: 10px; font-weight: bold; font-size: 14px; cursor: pointer;">閉じる</button>
+        </div>
+      </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+  }
+
+  function openNewsList() {
+    let listItemsHtml = newsDataList.map((item, idx) => `
+      <div onclick="document.getElementById('news-list-modal').remove(); openNewsDetail(${idx});" style="padding: 12px 0; border-bottom: 1px solid #eee; cursor: pointer; text-align: left;">
+        <div style="font-size: 11px; color: #888; margin-bottom: 4px;">${item.date}</div>
+        <div style="font-size: 14px; font-weight: bold; color: #222;">${item.title}</div>
+      </div>
+    `).join('');
+
+    const modalHtml = `
+      <div id="news-list-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 9998;">
+        <div style="background: #fff; padding: 20px; border-radius: 16px; width: 85%; max-width: 380px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
+          <h3 style="margin: 0 0 10px 0; font-size: 18px; color: #222; text-align: center;">お知らせ一覧</h3>
+          <div style="max-height: 300px; overflow-y: auto; margin-bottom: 16px;">
+            ${listItemsHtml}
+          </div>
+          <button onclick="document.getElementById('news-list-modal').remove()" style="width: 100%; padding: 12px; background: #666; color: #fff; border: none; border-radius: 10px; font-weight: bold; font-size: 14px; cursor: pointer;">閉じる</button>
+        </div>
+      </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+  }
+
+  let currentNewsIdx = 0;
+  setInterval(() => {
+    const titleEl = document.getElementById('news-title-text');
+    const bannerClickEl = document.getElementById('news-banner-click');
+    if (titleEl && bannerClickEl) {
+      currentNewsIdx = (currentNewsIdx + 1) % newsDataList.length;
+      titleEl.innerText = newsDataList[currentNewsIdx].title;
+      bannerClickEl.onclick = () => openNewsDetail(currentNewsIdx);
+    }
+  }, 4000);
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const titleEl = document.getElementById('news-title-text');
+    const bannerClickEl = document.getElementById('news-banner-click');
+    if (titleEl && bannerClickEl) {
+      titleEl.innerText = newsDataList[0].title;
+      bannerClickEl.onclick = () => openNewsDetail(0);
+    }
+  });
 
   function openGiftModal() {
-    playSound('beep');
+    if (typeof playSound === 'function') playSound('beep');
     document.getElementById("gift-code-input").value = "";
     document.getElementById("gift-modal").classList.remove("hidden");
   }
 
   function closeGiftModal() {
-    playSound('beep');
+    if (typeof playSound === 'function') playSound('beep');
     document.getElementById("gift-modal").classList.add("hidden");
   }
 
   function redeemGiftCode() {
-    const input = document.getElementById("gift-code-input").value.trim().toUpperCase();
-    if (!input) return alert("ギフトコードを入力してください");
-    const usedGifts = JSON.parse(localStorage.getItem(`used_gifts_${currentUser}`) || "[]");
-    if (usedGifts.includes(input)) {
-      playSound('error');
-      return alert("このギフトコードは使用済みです");
+    const code = document.getElementById("gift-code-input").value.trim().toUpperCase();
+    if (!code) {
+      showCustomAlert("ギフトコードを入力してください");
+      return;
     }
 
-    const giftData = VALID_GIFTS[input];
-    if (giftData) {
-      usedGifts.push(input);
-      localStorage.setItem(`used_gifts_${currentUser}`, JSON.stringify(usedGifts));
-      if (giftData.type === "残高") {
-        balance += giftData.amount;
-        addTransaction('残高', giftData.amount, `ギフト: ${giftData.name}`);
-      } else {
-        points += giftData.amount;
-        addTransaction('ポイント', giftData.amount, `ギフト: ${giftData.name}`);
-      }
-      updateDisplay();
-      playSound('win');
-      alert(`チャージ成功！\n${giftData.name} を受取りました！`);
-      closeGiftModal();
-    } else {
-      playSound('error');
-      alert("無効なギフトコードです");
+    const usedCodes = JSON.parse(localStorage.getItem('11pay_used_gifts') || "[]");
+    if (usedCodes.includes(code)) {
+      if (typeof playSound === 'function') playSound('error');
+      showCustomAlert("このギフトコードは既に使用済みです！");
+      return;
     }
+
+    const validCodes = {
+      "11PAY1000": { type: 'balance', value: 1000, label: '1,000円 チャージ' },
+      "11PAY5000": { type: 'balance', value: 5000, label: '5,000円 チャージ' },
+      "11PAY10000": { type: 'balance', value: 10000, label: '10,000円 チャージ' },
+      "11PAY30000": { type: 'balance', value: 30000, label: '30,000円 チャージ' },
+      "11PAY50000": { type: 'balance', value: 50000, label: '50,000円 チャージ' },
+      "POINT500":  { type: 'point', value: 500, label: '500pt プレゼント' },
+      "WELCOME":   { type: 'balance', value: 300, label: '初回特典 300円' },
+      "KIRATO777": { type: 'point', value: 777, label: '特別ボーナス 777pt' },
+      "LUCKY2026": { type: 'balance', value: 2026, label: 'お年玉 2,026円' }
+    };
+
+    const gift = validCodes[code];
+    if (!gift) {
+      if (typeof playSound === 'function') playSound('error');
+      showCustomAlert("無効なギフトコードです。正しいコードを入力してください。");
+      return;
+    }
+
+    usedCodes.push(code);
+    localStorage.setItem('11pay_used_gifts', JSON.stringify(usedCodes));
+
+    if (gift.type === 'balance') {
+      balance += gift.value;
+      if (typeof addTransaction === 'function') addTransaction('残高', gift.value, `ギフトカード (${code})`);
+    } else {
+      points += gift.value;
+      if (typeof addTransaction === 'function') addTransaction('ポイント', gift.value, `ギフトカード (${code})`);
+    }
+
+    if (typeof updateDisplay === 'function') updateDisplay();
+    if (typeof playSound === 'function') playSound('win');
+    showCustomAlert(`ギフトコード適用完了！\n「${gift.label}」を獲得しました！`);
+    closeGiftModal();
   }
 
   function openMiniGameMenu() {
-    playSound('beep');
-    document.getElementById("game-category-content").style.display = "none";
+    if (typeof playSound === 'function') playSound('beep');
+    document.getElementById("game-category-content").classList.add("hidden");
     document.getElementById("minigame-menu-select").classList.remove("hidden");
   }
 
   function backToGameCategory() {
-    playSound('beep');
-    document.getElementById("game-category-content").style.display = "block";
+    if (typeof playSound === 'function') playSound('beep');
     document.getElementById("minigame-menu-select").classList.add("hidden");
-  }
-
-  function closeMiniGamePlayModal() {
-    playSound('beep');
-    document.getElementById("minigame-play-modal").classList.add("hidden");
+    document.getElementById("game-category-content").classList.remove("hidden");
   }
 
   function triggerTofuGame() {
-    playSound('beep');
-    startTofuGameSelect();
+    if (typeof startTofuGameSelect === 'function') startTofuGameSelect();
   }
 
-  function startCraneGame() {
-    playSound('beep');
-    const modal = document.getElementById("minigame-play-modal");
-    document.getElementById("minigame-title").innerText = "クレーンゲーム";
-    const stage = document.getElementById("minigame-stage");
-    modal.classList.remove("hidden");
+  let miniGameTimer = null;
 
-    stage.innerHTML = `
-      <div class="crane-box" id="crane-box">
-        <div class="crane-hole"></div>
-        <div class="crane-arm" id="crane-arm">🏗️</div>
-        <div class="crane-prize" style="left: 70px;">🎁</div>
-        <div class="crane-prize" style="left: 130px;">🧸</div>
-        <div class="crane-prize" style="left: 190px;">💎</div>
-      </div>
-      <p style="font-size:12px; color:#666;">ボタンを押してアームを移動・キャッチ！</p>
-      <div style="display:flex; gap:10px; width:100%;">
-        <button class="main-btn" id="crane-move-btn" style="flex:1; background:#007bff;">右へ移動</button>
-        <button class="main-btn" id="crane-catch-btn" style="flex:1; background:#28a745;" disabled>キャッチ！</button>
-      </div>
-    `;
+  function closeMiniGamePlayModal() {
+    if (miniGameTimer) clearInterval(miniGameTimer);
+    document.getElementById("minigame-play-modal").classList.add("hidden");
+    document.getElementById("game-modal").classList.remove("hidden");
+  }
 
-    let armX = 10;
-    let moveInterval = null;
-    const arm = document.getElementById("crane-arm");
-    const moveBtn = document.getElementById("crane-move-btn");
-    const catchBtn = document.getElementById("crane-catch-btn");
-
-    moveBtn.onmousedown = moveBtn.ontouchstart = function(e) {
-      e.preventDefault();
-      catchBtn.disabled = false;
-      if (moveInterval) return;
-      moveInterval = setInterval(() => {
-        if (armX < 210) { armX += 12; arm.style.left = armX + "px"; }
-      }, 5);
-    };
-
-    const stopMove = function() { clearInterval(moveInterval); moveInterval = null; };
-    moveBtn.onmouseup = moveBtn.ontouchend = stopMove;
-
-    catchBtn.onclick = function() {
-      moveBtn.disabled = true;
-      catchBtn.disabled = true;
-      let armY = 0;
-
-      const downInterval = setInterval(() => {
-        armY += 4;
-        arm.style.top = armY + "px";
-        if (armY >= 120) {
-          clearInterval(downInterval);
-          let caught = false, prizeName = "ポイント", rewardPt = 0;
-
-          if (armX >= 55 && armX <= 95) { caught = true; prizeName = "🎁 ギフト箱"; rewardPt = GAME_REWARDS.craneGift; }
-          else if (armX >= 115 && armX <= 155) { caught = true; prizeName = "🧸 くまのぬいぐるみ"; rewardPt = GAME_REWARDS.craneBear; }
-          else if (armX >= 175 && armX <= 205) { caught = true; prizeName = "💎 ダイヤ"; rewardPt = GAME_REWARDS.craneDiamond; }
-
-          const upInterval = setInterval(() => {
-            armY -= 4;
-            arm.style.top = armY + "px";
-            if (armY <= 0) {
-              clearInterval(upInterval);
-              if (caught) {
-                points += rewardPt;
-                addTransaction('ポイント', rewardPt, `クレーンゲーム: ${prizeName}`);
-                updateDisplay();
-                playSound('win');
-                alert(`ゲット！ ${prizeName} (${rewardPt}pt) を獲得しました！`);
-              } else {
-                playSound('error');
-                alert("残念！何も掴めませんでした...");
-              }
-              closeMiniGamePlayModal();
-            }
-          }, 30);
-        }
-      }, 30);
-    };
+  function awardMiniGamePoints(pt, gameName) {
+    points += pt;
+    if (typeof addTransaction === 'function') addTransaction('ポイント', pt, gameName);
+    if (typeof updateDisplay === 'function') updateDisplay();
+    if (typeof playSound === 'function') playSound('win');
+    showCustomAlert(`おめでとうございます！\n「${gameName}」で ${pt}pt を獲得しました！`);
   }
 
   function playGame(type) {
-    playSound('beep');
-    const modal = document.getElementById("minigame-play-modal");
-    const title = document.getElementById("minigame-title");
-    const stage = document.getElementById("minigame-stage");
-    modal.classList.remove("hidden");
+    if (typeof playSound === 'function') playSound('beep');
+    if (miniGameTimer) clearInterval(miniGameTimer);
 
-    if (type === 'memory') {
-      title.innerText = "神経衰弱";
-      const icons = ['🍎','🍎','🐶','🐶','⚽','⚽','🚗','🚗','🎁','🎁','💎','💎'].sort(() => Math.random() - 0.5);
-      let openCards = [], matched = 0;
-      stage.innerHTML = `<div class="memory-grid">${icons.map((ic, i) => `<div class="memory-card" id="mc-${i}" onclick="flipCard(${i}, '${ic}')">❓</div>`).join('')}</div>`;
-      window.flipCard = function(i, ic) {
-        const card = document.getElementById(`mc-${i}`);
-        if (card.classList.contains("open") || openCards.length >= 2) return;
-        card.classList.add("open"); card.innerText = ic;
-        openCards.push({ idx: i, icon: ic });
-        if (openCards.length === 2) {
-          if (openCards[0].icon === openCards[1].icon) {
-            matched++; openCards = [];
-            if (matched === 6) {
-              const pt = GAME_REWARDS.memory;
-              points += pt;
-              addTransaction('ポイント', pt, '神経衰弱クリア');
-              updateDisplay();
-              playSound('win');
-              alert(`全ペア獲得！ ${pt}pt ゲット！`);
-              closeMiniGamePlayModal();
-            }
-          } else {
-            setTimeout(() => {
-              document.getElementById(`mc-${openCards[0].idx}`).classList.remove("open");
-              document.getElementById(`mc-${openCards[0].idx}`).innerText = "❓";
-              document.getElementById(`mc-${openCards[1].idx}`).classList.remove("open");
-              document.getElementById(`mc-${openCards[1].idx}`).innerText = "❓";
-              openCards = [];
-            }, 800);
-          }
-        }
-      };
+    document.getElementById("game-modal").classList.add("hidden");
+    const playModal = document.getElementById("minigame-play-modal");
+    const titleEl = document.getElementById("minigame-title");
+    const stageEl = document.getElementById("minigame-stage");
+    playModal.classList.remove("hidden");
+
+    if (type === 'janken') {
+      titleEl.innerText = "✊ じゃんけんバトル";
+      stageEl.innerHTML = `
+        <p style="font-size:14px; margin-bottom:15px;">出す手を選んでね！(勝ったら 50pt)</p>
+        <div style="display:flex; gap:10px;">
+          <button class="main-btn" style="padding:12px 18px;" onclick="resolveJanken('✊')">✊</button>
+          <button class="main-btn" style="padding:12px 18px;" onclick="resolveJanken('✌️')">✌️</button>
+          <button class="main-btn" style="padding:12px 18px;" onclick="resolveJanken('✋')">✋</button>
+        </div>
+        <div id="janken-result" style="margin-top:15px; font-weight:bold; font-size:16px;"></div>
+      `;
     } else if (type === 'highlow') {
-      title.innerText = "ハイ＆ロー";
-      const baseNum = Math.floor(Math.random() * 8) + 2;
-      stage.innerHTML = `<p>現在の数字: <b style="font-size:24px;">${baseNum}</b></p><p>次の数字はこれより大きい？小さい？</p><div style="display:flex; gap:10px;"><button class="main-btn" onclick="runHL(${baseNum},'H')">HIGH</button><button class="main-btn" onclick="runHL(${baseNum},'L')">LOW</button></div>`;
-      window.runHL = function(b, c) {
-        const n = Math.floor(Math.random() * 9) + 1;
-        if ((c === 'H' && n > b) || (c === 'L' && n < b)) {
-          const pt = GAME_REWARDS.highlow;
-          points += pt;
-          addTransaction('ポイント', pt, 'ハイ＆ロー勝利');
-          updateDisplay();
-          playSound('win');
-          alert(`次: ${n} で当たり！ ${pt}pt獲得！`);
-        } else {
-          alert(`次: ${n} で残念！`);
-        }
-        closeMiniGamePlayModal();
-      };
-    } else if (type === 'janken') {
-      title.innerText = "じゃんけん";
-      stage.innerHTML = `<div style="display:flex; gap:10px;"><button class="main-btn" onclick="runJK('✊')">✊</button><button class="main-btn" onclick="runJK('✌️')">✌️</button><button class="main-btn" onclick="runJK('✋')">✋</button></div>`;
-      window.runJK = function(u) {
-        const c = ['✊','✌️','✋'][Math.floor(Math.random()*3)];
-        if ((u==='✊'&&c==='✌️')||(u==='✌️'&&c==='✋')||(u==='✋'&&c==='✊')) {
-          const pt = GAME_REWARDS.janken;
-          points += pt;
-          addTransaction('ポイント', pt, 'じゃんけん勝利');
-          updateDisplay();
-          playSound('win');
-          alert(`相手: ${c}\n勝ち！ ${pt}pt獲得！`);
-        } else {
-          alert(`相手: ${c}\n${u===c?'あいこ':'負け'}`);
-        }
-        closeMiniGamePlayModal();
-      };
-    } else if (type === 'mole') {
-      title.innerText = "モグラ叩き";
-      let score = 0, interval = null;
-      stage.innerHTML = `<h3 id="mole-score">スコア: 0</h3><div class="mole-grid">${[0,1,2,3,4,5].map(i=>`<div class="mole-hole" id="mh-${i}" onclick="hitMole(${i})">🕳️</div>`).join('')}</div>`;
-      let activeHole = -1;
-      interval = setInterval(() => {
-        if(activeHole !== -1) document.getElementById(`mh-${activeHole}`).innerText = "🕳️";
-        activeHole = Math.floor(Math.random()*6);
-        document.getElementById(`mh-${activeHole}`).innerText = "🐹";
-      }, 700);
-      setTimeout(() => {
-        clearInterval(interval);
-        const pt = score * GAME_REWARDS.moleMultiplier;
-        points += pt;
-        addTransaction('ポイント', pt, 'モグラ叩き報酬');
-        updateDisplay();
-        playSound('win');
-        alert(`タイムアップ！${score}匹叩いて ${pt}pt 獲得！`);
-        closeMiniGamePlayModal();
-      }, 10000);
-      window.hitMole = function(i) {
-        if(i === activeHole) { score++; playSound('tick'); document.getElementById("mole-score").innerText = `スコア: ${score}`; activeHole = -1; document.getElementById(`mh-${i}`).innerText = "💥"; }
-      };
-    } else if (type === 'dice') {
-      title.innerText = "サイコロ";
-      stage.innerHTML = `<p>出目は奇数？偶数？</p><div style="display:flex; gap:10px;"><button class="main-btn" onclick="runDiceEx('奇数')">奇数 (1,3,5)</button><button class="main-btn" onclick="runDiceEx('偶数')">偶数 (2,4,6)</button></div>`;
-      window.runDiceEx = function(u) {
-        const v = Math.floor(Math.random()*6)+1; const res = v % 2 === 0 ? '偶数' : '奇数';
-        if (u === res) {
-          const pt = GAME_REWARDS.dice;
-          points += pt;
-          addTransaction('ポイント', pt, 'サイコロ的中');
-          updateDisplay();
-          playSound('win');
-          alert(`出目: ${v} (${res})！ ${pt}pt獲得！`);
-        } else {
-          alert(`出目: ${v} (${res}) でハズレ！`);
-        }
-        closeMiniGamePlayModal();
-      };
-    } else if (type === 'just555') {
-      title.innerText = "5.55秒ストップ";
-      let start = 0;
-      stage.innerHTML = `<p id="p-msg">5.55秒ピッタリで止めよう！</p><button class="main-btn" id="p-btn" onclick="runP()">スタート</button>`;
-      window.runP = function() {
-        if (!start) { start = Date.now(); document.getElementById("p-btn").innerText = "ストップ！"; document.getElementById("p-msg").innerText = "計測中..."; }
-        else {
-          const diff = Math.abs((Date.now() - start) / 1000 - 5.55);
-          if (diff < 0.2) {
-            const pt = GAME_REWARDS.just555;
-            points += pt;
-            addTransaction('ポイント', pt, 'ピッタリ成功');
-            updateDisplay();
-            playSound('win');
-            alert(`神業！誤差 ${diff.toFixed(2)}秒！ ${pt}pt獲得！`);
-          } else {
-            alert(`結果: 誤差 ${diff.toFixed(2)}秒でした`);
-          }
-          closeMiniGamePlayModal();
-        }
-      };
-    } else if (type === 'nummem') {
-      title.innerText = "数字記憶";
-      const target = Math.floor(1000 + Math.random() * 9000).toString();
-      stage.innerHTML = `<p style="color:red; font-weight:bold;">覚えてね！</p><h1 id="mem-num" style="font-size:36px;">${target}</h1>`;
-      setTimeout(() => {
-        stage.innerHTML = `<p>覚えた4桁の数字を入力してね！</p><input type="number" id="mem-in" style="font-size:22px; text-align:center; padding:8px; width:120px;"><br><br><button class="main-btn" onclick="checkMem('${target}')">回答する</button>`;
-      }, 1200);
-      window.checkMem = function(ans) {
-        const val = document.getElementById("mem-in").value;
-        if(val === ans) {
-          const pt = GAME_REWARDS.nummem;
-          points += pt;
-          addTransaction('ポイント', pt, '数字記憶クリア');
-          updateDisplay();
-          playSound('win');
-          alert(`正解！ ${pt}pt獲得！`);
-        } else {
-          alert(`不正解！正解は ${ans} でした`);
-        }
-        closeMiniGamePlayModal();
-      };
-    } else if (type === 'chicken') {
-      title.innerText = "チキンレース";
-      let num = 0, timer = null;
-      stage.innerHTML = `<h1 id="chk-num">0</h1><p>100に達する前にストップ！(100超えで爆発)</p><button class="main-btn" id="chk-btn" onclick="stopChk()">ストップ！</button>`;
-      timer = setInterval(() => {
-        num += Math.floor(Math.random() * 5) + 2;
-        if(document.getElementById("chk-num")) document.getElementById("chk-num").innerText = num;
-        if(num > 100) {
-          clearInterval(timer);
-          playSound('error');
-          alert("💥 100を超えて爆発しました！");
-          closeMiniGamePlayModal();
-        }
-      }, 150);
-      window.stopChk = function() {
-        clearInterval(timer);
-        if(num <= 100) {
-          const pt = num * GAME_REWARDS.chickenMultiplier;
-          points += pt;
-          addTransaction('ポイント', pt, 'チキンレース成功');
-          updateDisplay();
-          playSound('win');
-          alert(`記録: ${num}！ ${pt}pt 獲得！`);
-        }
-        closeMiniGamePlayModal();
-      };
-    } else if (type === 'diff') {
-      title.innerText = "間違い探し";
-      const setList = [{ normal: '😀', diff: '😃' }, { normal: '⭐', diff: '🌟' }, { normal: '🍎', diff: '🍅' }, { normal: '🐱', diff: '😸' }];
-      const currentSet = setList[Math.floor(Math.random() * setList.length)];
-      const targetIdx = Math.floor(Math.random() * 16);
-    
-      let html = `<p>1つだけ違う顔・マークを探してね！</p><div class="diff-grid">`;
-      for(let i=0; i<16; i++) {
-        const icon = (i === targetIdx) ? currentSet.diff : currentSet.normal;
-        html += `<button class="main-btn" style="font-size:22px; padding:10px 0;" onclick="runDiff(${i === targetIdx})">${icon}</button>`;
-      }
-      html += `</div>`;
-      stage.innerHTML = html;
-
-      window.runDiff = function(win) {
-        if(win) {
-          const pt = GAME_REWARDS.diff;
-          points += pt;
-          addTransaction('ポイント', pt, '間違い探しクリア');
-          updateDisplay();
-          playSound('win');
-          alert(`大正解！ ${pt}pt獲得！`);
-        } else {
-          alert("ハズレ！よく見て探してね！");
-        }
-        closeMiniGamePlayModal();
-      };
-    } else if (type === 'bomb') {
-      title.innerText = "爆弾処理";
-      let safeCutCount = 0;
-      const wires = ['🔴 赤', '🔵 青', '🟢 緑', '🟡 黄'];
-      const boomIndex = Math.floor(Math.random() * 4);
-
-      stage.innerHTML = `
-        <p>線を<b>【2本】</b>安全に切れば解除成功！<br>(1本だけドカン！)</p>
-        <p id="bomb-status" style="font-weight:bold; color:#007bff;">成功数: 0 / 2</p>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%;">
-          ${wires.map((w, i) => `<button class="main-btn" id="wb-${i}" onclick="runB(${i}, ${boomIndex})">${w}</button>`).join('')}
-        </div>
-      `;
-
-      window.runB = function(cutIndex, boomIdx) {
-        const btn = document.getElementById(`wb-${cutIndex}`);
-        if (!btn || btn.disabled) return;
-        btn.disabled = true;
-        btn.style.opacity = "0.3";
-
-        if (cutIndex === boomIdx) {
-          playSound('error');
-          alert("💣 💥 ボカン！！爆弾が爆発しました！");
-          closeMiniGamePlayModal();
-        } else {
-          safeCutCount++;
-          playSound('tick');
-          document.getElementById("bomb-status").innerText = `成功数: ${safeCutCount} / 2`;
-          if (safeCutCount >= 2) {
-            const pt = GAME_REWARDS.bomb;
-            points += pt;
-            addTransaction('ポイント', pt, '爆弾処理成功');
-            updateDisplay();
-            playSound('win');
-            alert(`見事に2本切断成功！爆弾解除完了！ ${pt}pt獲得！`);
-            closeMiniGamePlayModal();
-          }
-        }
-      };
-    } else if (type === 'tap') {
-      title.innerText = "5秒連打ラッシュ";
-      let count = 0, started = false;
-      stage.innerHTML = `
-        <h2 id="tap-count" style="font-size:32px;">0 回</h2>
-        <p id="tap-timer">ボタンを押してスタート！(5秒間)</p>
-        <button class="main-btn" id="tap-btn" style="height:80px; font-size:20px; background:#e83e8c;">連打！！</button>
-      `;
-      const btn = document.getElementById("tap-btn");
-      btn.onclick = function() {
-        if (!started) {
-          started = true;
-          let timeLeft = 5;
-          const t = setInterval(() => {
-            timeLeft--;
-            document.getElementById("tap-timer").innerText = `残り時間: ${timeLeft}秒`;
-            if (timeLeft <= 0) {
-              clearInterval(t);
-              btn.disabled = true;
-              const pt = count * GAME_REWARDS.tapRushMultiplier;
-              points += pt;
-              addTransaction('ポイント', pt, '連打ラッシュ報酬');
-              updateDisplay();
-              playSound('win');
-              alert(`タイムアップ！ ${count}回タップで ${pt}pt 獲得！`);
-              closeMiniGamePlayModal();
-            }
-          }, 1000);
-        }
-        count++;
-        playSound('tick');
-        document.getElementById("tap-count").innerText = `${count} 回`;
-      };
-    } else if (type === 'balloon') {
-      title.innerText = "風船ギリギリ勝負";
-      let size = 30;
-      const limit = 90 + Math.floor(Math.random() * 30);
-      stage.innerHTML = `
-        <div id="balloon-obj" style="font-size:${size}px; transition:0.1s;">🎈</div>
-        <p>空気を入れまくれ！割れる前にストップ！</p>
+      const currentNum = Math.floor(Math.random() * 9) + 1;
+      titleEl.innerText = "🎴 ハイ＆ロー";
+      stageEl.innerHTML = `
+        <p style="font-size:14px;">現在のカード: <strong style="font-size:28px; color:#ff0033;">${currentNum}</strong></p>
+        <p style="font-size:13px; color:#666; margin-bottom:12px;">次の数字(1〜10)は大きい？小さい？(正解で 50pt)</p>
         <div style="display:flex; gap:10px; width:100%;">
-          <button class="main-btn" id="pump-btn" style="background:#ff5722;">空気を入れる</button>
-          <button class="main-btn" id="stop-balloon-btn" style="background:#28a745;">ここでストップ</button>
+          <button class="main-btn" style="background:#ff0033;" onclick="resolveHighLow(${currentNum}, 'high')">HIGH (大きい)</button>
+          <button class="main-btn" style="background:#007bff;" onclick="resolveHighLow(${currentNum}, 'low')">LOW (小さい)</button>
         </div>
       `;
-      document.getElementById("pump-btn").onclick = function() {
-        size += 8;
-        playSound('tick');
-        document.getElementById("balloon-obj").style.fontSize = size + "px";
-        if (size >= limit) {
-          document.getElementById("balloon-obj").innerText = "💥";
-          playSound('error');
-          alert("💥 パンッ！！風船が割れてしまいました！");
+    } else if (type === 'memory') {
+      titleEl.innerText = "🃏 神経衰弱";
+      const icons = ['🍎','🍎','🍌','🍌','🍇','🍇','🍓','🍓'];
+      icons.sort(() => Math.random() - 0.5);
+      window.memCards = icons;
+      window.memOpened = [];
+      window.memMatched = 0;
+      let html = `<p style="font-size:13px; margin-bottom:8px;">ペアを全部見つけよう！(クリアで 100pt)</p><div class="memory-grid">`;
+      icons.forEach((_, idx) => {
+        html += `<div class="memory-card" id="mem-${idx}" onclick="flipMemoryCard(${idx})">?</div>`;
+      });
+      html += `</div>`;
+      stageEl.innerHTML = html;
+    } else if (type === 'mole') {
+      titleEl.innerText = "🕳️ モグラ叩き";
+      window.moleScore = 0;
+      let timeLeft = 10;
+      stageEl.innerHTML = `
+        <div style="display:flex; justify-content:space-between; width:100%; font-weight:bold; margin-bottom:8px;">
+          <span>残り: <span id="mole-time">10</span>秒</span>
+          <span>スコア: <span id="mole-score">0</span>匹</span>
+        </div>
+        <div class="mole-grid">
+          ${Array(9).fill(0).map((_, i) => `<div class="mole-hole" id="hole-${i}" onclick="whackMole(${i})"></div>`).join('')}
+        </div>
+      `;
+      miniGameTimer = setInterval(() => {
+        timeLeft--;
+        const timeEl = document.getElementById("mole-time");
+        if (timeEl) timeEl.innerText = timeLeft;
+        document.querySelectorAll('.mole-hole').forEach(h => h.innerText = '');
+        const randHole = Math.floor(Math.random() * 9);
+        const holeEl = document.getElementById(`hole-${randHole}`);
+        if (holeEl) holeEl.innerText = '🐹';
+        if (timeLeft <= 0) {
+          clearInterval(miniGameTimer);
+          const pt = window.moleScore * 10;
+          if (pt > 0) awardMiniGamePoints(pt, "モグラ叩き");
+          else showCustomAlert("残念！0匹でした...");
           closeMiniGamePlayModal();
         }
-      };
-      document.getElementById("stop-balloon-btn").onclick = function() {
-        const pt = GAME_REWARDS.balloon;
-        points += pt;
-        addTransaction('ポイント', pt, '風船成功');
-        updateDisplay();
-        playSound('win');
-        alert(`ナイスチキン回避！ ${pt}pt 獲得！`);
-        closeMiniGamePlayModal();
-      };
+      }, 800);
+    } else if (type === 'dice') {
+      titleEl.innerText = "🎲 サイコロ予想";
+      stageEl.innerHTML = `
+        <p style="font-size:14px; margin-bottom:12px;">出る目は偶数？奇数？(的中 40pt)</p>
+        <div style="display:flex; gap:10px; width:100%;">
+          <button class="main-btn" style="background:#28a745;" onclick="resolveDice('even')">偶数 (2,4,6)</button>
+          <button class="main-btn" style="background:#fd7e14;" onclick="resolveDice('odd')">奇数 (1,3,5)</button>
+        </div>
+      `;
+    } else if (type === 'just555') {
+      titleEl.innerText = "⏳ 5.55秒ストップ";
+      window.justStart = Date.now();
+      stageEl.innerHTML = `
+        <p style="font-size:14px; margin-bottom:10px;">心の中で数えて <strong>5.55秒</strong> で止めろ！(誤差0.3秒以内で 150pt)</p>
+        <div id="just-display" style="font-size:28px; font-weight:bold; color:#007bff; margin:15px 0;">計測中... ⏱️</div>
+        <button class="main-btn" onclick="stopJust555()">ストップ！</button>
+      `;
+    } else if (type === 'nummem') {
+      titleEl.innerText = "🧠 数字記憶テスト";
+      const code = Math.floor(1000 + Math.random() * 9000).toString();
+      stageEl.innerHTML = `<p style="font-size:14px;">この4桁の数字を覚えて！</p><div style="font-size:36px; font-weight:bold; color:#ff0033; letter-spacing:4px; margin:15px 0;">${code}</div>`;
+      setTimeout(() => {
+        if (!document.getElementById("minigame-play-modal").classList.contains("hidden")) {
+          stageEl.innerHTML = `
+            <p style="font-size:14px; margin-bottom:10px;">覚えた数字を入力してください (正解で 80pt)</p>
+            <input type="number" id="nummem-input" style="width:80%; padding:10px; font-size:20px; text-align:center; border-radius:8px; border:1px solid #ccc; margin-bottom:10px;">
+            <button class="main-btn" onclick="checkNumMem('${code}')">回答する</button>
+          `;
+        }
+      }, 2000);
+    } else if (type === 'chicken') {
+      titleEl.innerText = "🐔 チキンレース";
+      window.chickenDist = 0;
+      stageEl.innerHTML = `
+        <p style="font-size:13px; margin-bottom:8px;">100mの崖ギリギリで止めろ！超えると失格！</p>
+        <div style="font-size:28px; font-weight:bold; margin:10px 0;">現在: <span id="chicken-dist">0</span> m</div>
+        <div style="display:flex; gap:10px; width:100%;">
+          <button class="main-btn" style="background:#dc3545;" onclick="advanceChicken()">進む (+10〜25m)</button>
+          <button class="main-btn" style="background:#28a745;" onclick="stopChicken()">ここで止める</button>
+        </div>
+      `;
+    } else if (type === 'diff') {
+      titleEl.innerText = "😃 間違い探し";
+      const targetIdx = Math.floor(Math.random() * 16);
+      let gridHtml = `<p style="font-size:13px; margin-bottom:10px;">1つだけ違う絵文字をタップ！(正解 50pt)</p><div class="diff-grid">`;
+      for (let i = 0; i < 16; i++) {
+        gridHtml += `<button style="font-size:24px; padding:8px; background:#fff; border:1px solid #ddd; border-radius:8px; cursor:pointer;" onclick="resolveDiff(${i === targetIdx})">${i === targetIdx ? '😄' : '😃'}</button>`;
+      }
+      gridHtml += `</div>`;
+      stageEl.innerHTML = gridHtml;
+    } else if (type === 'bomb') {
+      titleEl.innerText = "💣 爆弾解除";
+      const safeWire = Math.floor(Math.random() * 3);
+      stageEl.innerHTML = `
+        <p style="font-size:14px; margin-bottom:15px;">解除するコードを1本選べ！(成功 80pt)</p>
+        <div style="display:flex; flex-direction:column; gap:8px; width:80%;">
+          <button class="main-btn" style="background:#dc3545;" onclick="resolveBomb(${safeWire === 0})">赤いコード</button>
+          <button class="main-btn" style="background:#007bff;" onclick="resolveBomb(${safeWire === 1})">青いコード</button>
+          <button class="main-btn" style="background:#ffc107; color:#000;" onclick="resolveBomb(${safeWire === 2})">黄色いコード</button>
+        </div>
+      `;
+    } else if (type === 'tap') {
+      titleEl.innerText = "🫵 連打ラッシュ";
+      window.tapCount = 0;
+      let timeLeft = 5;
+      stageEl.innerHTML = `
+        <p style="font-size:14px;">5秒間ボタンを連打しろ！(1回 = 2pt)</p>
+        <div style="font-size:20px; font-weight:bold; margin:8px 0;">残り: <span id="tap-time">5</span>秒 / <span id="tap-cnt">0</span>回</div>
+        <button class="main-btn" style="height:80px; font-size:22px; background:#e83e8c;" onclick="window.tapCount++; document.getElementById('tap-cnt').innerText=window.tapCount;">連打！！</button>
+      `;
+      miniGameTimer = setInterval(() => {
+        timeLeft--;
+        const tEl = document.getElementById("tap-time");
+        if (tEl) tEl.innerText = timeLeft;
+        if (timeLeft <= 0) {
+          clearInterval(miniGameTimer);
+          const pt = window.tapCount * 2;
+          if (pt > 0) awardMiniGamePoints(pt, "連打ラッシュ");
+          closeMiniGamePlayModal();
+        }
+      }, 1000);
+    } else if (type === 'balloon') {
+      titleEl.innerText = "🎈 風船膨らまし";
+      window.balloonSize = 0;
+      window.balloonLimit = Math.floor(Math.random() * 5) + 4;
+      stageEl.innerHTML = `
+        <p style="font-size:13px;">割れる前に空気を止めろ！(1プッシュ = 20pt)</p>
+        <div id="balloon-icon" style="font-size:40px; margin:15px 0; transition:0.2s;">🎈</div>
+        <div style="display:flex; gap:10px; width:100%;">
+          <button class="main-btn" style="background:#ff5722;" onclick="pumpBalloon()">空気を入れる</button>
+          <button class="main-btn" style="background:#28a745;" onclick="cashoutBalloon()">確定する</button>
+        </div>
+      `;
     } else if (type === 'seq') {
-      title.innerText = "1から順にタップ！";
-      let nextNum = 1;
-      const nums = [1,2,3,4,5,6].sort(() => Math.random() - 0.5);
-      stage.innerHTML = `
-        <p>1から順番にタップしてね！</p>
-        <div class="num-grid">
-          ${nums.map(n => `<button class="main-btn" id="nb-${n}" onclick="pressSeq(${n})">${n}</button>`).join('')}
-        </div>
-      `;
-      window.pressSeq = function(n) {
-        if (n === nextNum) {
-          playSound('tick');
-          document.getElementById(`nb-${n}`).disabled = true;
-          document.getElementById(`nb-${n}`).style.opacity = "0.3";
-          nextNum++;
-          if (nextNum > 6) {
-            const pt = GAME_REWARDS.numSequence;
-            points += pt;
-            addTransaction('ポイント', pt, '順番タップクリア');
-            updateDisplay();
-            playSound('win');
-            alert(`クリア！ ${pt}pt 獲得！`);
-            closeMiniGamePlayModal();
-          }
-        } else {
-          playSound('error');
-          alert("順番が違います！");
-        }
-      };
+      titleEl.innerText = "🔢 順番タップ";
+      window.seqNext = 1;
+      const nums = [1,2,3,4,5,6,7,8,9].sort(() => Math.random() - 0.5);
+      let html = `<p style="font-size:13px; margin-bottom:8px;">1から9まで順番にタップ！(クリア 60pt)</p><div class="num-grid">`;
+      nums.forEach(n => {
+        html += `<button class="main-btn" id="seq-btn-${n}" style="padding:12px; background:#00bcd4;" onclick="tapSeqNum(${n})">${n}</button>`;
+      });
+      html += `</div>`;
+      stageEl.innerHTML = html;
     } else if (type === 'anagram') {
-      title.innerText = "単語並び替え";
-      const questions = [
-        { quiz: "い・す・か", ans: "すいか" },
-        { quiz: "に・う・ち・よ・び", ans: "にちようび" },
-        { quiz: "ん・ご・り", ans: "りんご" },
-        { quiz: "り・ん・お・さ", ans: "さんりお" },
-        { quiz: "し・そ・み・る", ans: "みそしる" },
-        { quiz: "み・く・ろ", ans: "くろみ" },
-        { quiz: "ら・く・ま", ans: "まくら" }
+      titleEl.innerText = "📝 文字並べ替え";
+      const words = [
+        { q: "い ぺ ん ぶ い れ", a: "いれぶんぺい" },
+        { q: "と ん い ぽ", a: "ぽいんと" },
+        { q: "ち っ ら く す", a: "すくらっち" }
       ];
-      const item = questions[Math.floor(Math.random() * questions.length)];
-      stage.innerHTML = `
-        <p style="font-size:12px; color:#666;">並び替えて正しい単語にしてね</p>
-        <h2 style="font-size:28px; letter-spacing:4px; color:#6f42c1;">${item.quiz}</h2>
-        <input type="text" id="ana-in" placeholder="ひらがなで入力" style="font-size:18px; text-align:center; padding:8px; width:80%; margin-bottom:10px;">
-        <button class="main-btn" onclick="checkAna('${item.ans}')">回答する</button>
+      const item = words[Math.floor(Math.random() * words.length)];
+      stageEl.innerHTML = `
+        <p style="font-size:13px;">ひらがなを並べ替えて言葉を作ろう！(正解 70pt)</p>
+        <div style="font-size:22px; font-weight:bold; color:#8bc34a; margin:12px 0;">${item.q}</div>
+        <input type="text" id="anagram-ans" placeholder="ひらがなで入力" style="width:80%; padding:10px; border-radius:8px; border:1px solid #ccc; margin-bottom:10px;">
+        <button class="main-btn" onclick="checkAnagram('${item.a}')">回答する</button>
       `;
-      window.checkAna = function(ans) {
-        const input = document.getElementById("ana-in").value.trim();
-        if (input === ans) {
-          const pt = GAME_REWARDS.anagram;
-          points += pt;
-          addTransaction('ポイント', pt, 'アナグラム正解');
-          updateDisplay();
-          playSound('win');
-          alert(`正解 (${ans})！ ${pt}pt 獲得！`);
-          closeMiniGamePlayModal();
-        } else {
-          playSound('error');
-          alert("残念！違います");
-        }
-      };
     }
   }
 
-  function openCouponModal() {
-    playSound('beep');
-    const modal = document.getElementById("minigame-play-modal");
-    document.getElementById("minigame-title").innerText = "COUPON";
-    modal.classList.remove("hidden");
-    updateCouponDisplay();
-
-    setTimeout(() => {
-      const buttons = modal.querySelectorAll("button");
-      buttons.forEach(btn => {
-        if (btn.innerText.includes("メニューに戻る") || btn.innerText.includes("戻る")) {
-          btn.innerText = "閉じる";
-          btn.onclick = function() {
-            playSound('beep');
-            modal.classList.add("hidden");
-          };
-        }
-      });
-    }, 10);
-  }
-
-  function updateCouponDisplay() {
-    const stage = document.getElementById("minigame-stage");
-    if (!stage) return;
-
-    let coupons = JSON.parse(localStorage.getItem('11pay_coupons')) || [];
-    const todayStr = new Date().toISOString().split('T')[0];
-    const validCoupons = coupons.filter(c => !c.expiry || c.expiry >= todayStr);
-    localStorage.setItem('11pay_coupons', JSON.stringify(validCoupons));
-
-    const activeCoupon = JSON.parse(localStorage.getItem('11pay_active_coupon'));
-
-    let couponsHtml = "";
-    if (validCoupons.length === 0) {
-      couponsHtml = `<p style="font-size: 13px; color: #666; text-align: center; padding: 30px;">利用可能なクーポンはありません。</p>`;
+  function resolveJanken(userHand) {
+    const hands = ['✊', '✌️', '✋'];
+    const cpuHand = hands[Math.floor(Math.random() * 3)];
+    if (userHand === cpuHand) {
+      document.getElementById("janken-result").innerText = `相手は ${cpuHand}！あいこ！もう一回！`;
+    } else if ((userHand === '✊' && cpuHand === '✌️') || (userHand === '✌️' && cpuHand === '✋') || (userHand === '✋' && cpuHand === '✊')) {
+      awardMiniGamePoints(50, "じゃんけん");
+      closeMiniGamePlayModal();
     } else {
-      couponsHtml = validCoupons.map(c => {
-        const isActive = activeCoupon && activeCoupon.id === c.id;
-        const bgStyle = isActive ? "#f1f8e9" : "#fff8e1";
-        const borderStyle = isActive ? "2px solid #66bb6a" : "1px solid #ffe082";
-
-        return `
-          <div style="background: ${bgStyle}; padding: 16px; border-radius: 12px; border: ${borderStyle}; display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; width: 100%; box-sizing: border-box; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-            <div>
-              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                <span style="font-weight: bold; font-size: 15px; color: #e65100;">${c.title}</span>
-                ${isActive ? '<span style="background: #4caf50; color: #fff; font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: bold;">✨ 適用中</span>' : ''}
-              </div>
-              <p style="font-size: 12px; color: #444; margin: 3px 0;">割引: <b>${c.discount}円</b> (${c.minPrice}円以上)</p>
-              <p style="font-size: 11px; color: #777; margin: 2px 0;">有効期限: ${c.expiry}</p>
-            </div>
-            <div style="display: flex; gap: 8px; justify-content: flex-end; border-top: 1px dashed rgba(0,0,0,0.1); padding-top: 10px;">
-              ${isActive
-                ? `<button class="main-btn" style="background: #ffa726; color: #fff; font-size: 11px; padding: 6px 14px; border-radius: 6px;" onclick="cancelCoupon('${c.id}')">解除</button>`
-                : `<button class="main-btn" style="background: #4caf50; color: #fff; font-size: 11px; padding: 6px 14px; border-radius: 6px;" onclick="useCoupon('${c.id}')">使う</button>`
-              }
-              <button class="main-btn" style="background: #e53935; color: #fff; font-size: 11px; padding: 6px 14px; border-radius: 6px;" onclick="promptDeleteCoupon('${c.id}')">削除</button>
-            </div>
-          </div>
-        `;
-      }).join('');
+      showCustomAlert(`相手は ${cpuHand}！残念、負けました...`);
+      closeMiniGamePlayModal();
     }
-
-    stage.innerHTML = `<div style="text-align: left; padding: 8px; display: flex; flex-direction: column; gap: 4px; max-height: 70vh; overflow-y: auto; width: 100%; box-sizing: border-box;">${couponsHtml}</div>`;
   }
 
-  function useCoupon(couponId) {
-    let coupons = JSON.parse(localStorage.getItem('11pay_coupons')) || [];
-    const coupon = coupons.find(c => c.id === couponId);
-    if (!coupon) return alert("クーポンが見つかりません。");
-
-    localStorage.setItem('11pay_active_coupon', JSON.stringify(coupon));
-    playSound('win');
-    alert(`クーポン「${coupon.title}」を適用しました！（${coupon.discount}円引き）`);
-    updateCouponDisplay();
-  }
-
-  function cancelCoupon() {
-    localStorage.removeItem('11pay_active_coupon');
-    playSound('beep');
-    alert("クーポンの適用を解除しました。");
-    updateCouponDisplay();
-  }
-
-  function consumeActiveCouponOnPayment() {
-    const activeCoupon = JSON.parse(localStorage.getItem('11pay_active_coupon'));
-    if (!activeCoupon) return "";
-
-    let coupons = JSON.parse(localStorage.getItem('11pay_coupons')) || [];
-    const newCoupons = coupons.filter(c => c.id !== activeCoupon.id);
-    localStorage.setItem('11pay_coupons', JSON.stringify(newCoupons));
-   
-    const couponTitle = activeCoupon.title;
-    localStorage.removeItem('11pay_active_coupon');
-    return couponTitle;
-  }
-
-  function promptDeleteCoupon(couponId) {
-    const passcode = prompt("クーポンを削除するためのパスコードを入力してください：");
-    if (passcode !== "4869") return alert("パスコードが間違っています！");
-
-    let coupons = JSON.parse(localStorage.getItem('11pay_coupons')) || [];
-    const newCoupons = coupons.filter(c => c.id !== couponId);
-    localStorage.setItem('11pay_coupons', JSON.stringify(newCoupons));
-
-    const activeCoupon = JSON.parse(localStorage.getItem('11pay_active_coupon'));
-    if (activeCoupon && activeCoupon.id === couponId) {
-      localStorage.removeItem('11pay_active_coupon');
+  function resolveHighLow(curr, choice) {
+    const next = Math.floor(Math.random() * 10) + 1;
+    if ((choice === 'high' && next > curr) || (choice === 'low' && next < curr)) {
+      awardMiniGamePoints(50, "ハイ＆ロー");
+    } else {
+      showCustomAlert(`次の数字は「${next}」でした！残念！`);
     }
-
-    playSound('beep');
-    alert("クーポンを削除しました。");
-    updateCouponDisplay();
+    closeMiniGamePlayModal();
   }
 
-  function handleFileScan(input) {
-    if (input.files.length === 0) return;
-    const file = input.files[0];
-    const html5QrCodeForFile = new Html5Qrcode("reader");
- 
-    html5QrCodeForFile.scanFile(file, true)
-      .then(decodedText => { onScanSuccess(decodedText); })
-      .catch(err => {
-        playSound('error');
-        alert("画像からQRコードを検出できませんでした");
-      });
-  }
-
-  function getStepData() {
-    const data = JSON.parse(localStorage.getItem('11pay_step_data')) || { steps: 0, todayPoints: 0, lastDate: new Date().toDateString() };
-    if (data.lastDate !== new Date().toDateString()) {
-      data.todayPoints = 0;
-      data.lastDate = new Date().toDateString();
-    }
-    return data;
-  }
-
-  function saveStepData(data) {
-    localStorage.setItem('11pay_step_data', JSON.stringify(data));
-  }
-
-  function updateStepUI() {
-    const data = getStepData();
-    document.getElementById('current-steps').innerText = data.steps;
-    document.getElementById('today-earned-points').innerText = data.todayPoints.toLocaleString();
-
-    for (let i = 0; i < 5; i++) {
-      const gauge = document.getElementById(`gauge-${i}`);
-      if (gauge) {
-        if (data.steps >= (i + 1) * 100) gauge.style.background = '#27ae60';
-        else if (data.steps >= i * 100) gauge.style.background = '#ff4757';
-        else gauge.style.background = '#e0e0e0';
+  function flipMemoryCard(idx) {
+    if (window.memOpened.length >= 2) return;
+    const card = document.getElementById(`mem-${idx}`);
+    if (card.classList.contains("open")) return;
+    card.classList.add("open");
+    card.innerText = window.memCards[idx];
+    window.memOpened.push(idx);
+    if (window.memOpened.length === 2) {
+      const [i1, i2] = window.memOpened;
+      if (window.memCards[i1] === window.memCards[i2]) {
+        window.memMatched++;
+        window.memOpened = [];
+        if (window.memMatched === 4) {
+          setTimeout(() => { awardMiniGamePoints(100, "神経衰弱"); closeMiniGamePlayModal(); }, 300);
+        }
+      } else {
+        setTimeout(() => {
+          document.getElementById(`mem-${i1}`).classList.remove("open");
+          document.getElementById(`mem-${i1}`).innerText = "?";
+          document.getElementById(`mem-${i2}`).classList.remove("open");
+          document.getElementById(`mem-${i2}`).innerText = "?";
+          window.memOpened = [];
+        }, 600);
       }
     }
+  }
 
-    const character = document.getElementById('walking-character');
-    const svgElem = document.getElementById('character-svg');
-    if (character) {
-      const percentage = Math.min(data.steps / 500, 1);
-      const containerWidth = character.parentElement.clientWidth - 30;
-      character.style.left = `${Math.max(25, percentage * containerWidth)}px`;
-      if (svgElem) svgElem.setAttribute('fill', data.steps >= 500 ? '#27ae60' : '#ff4757');
+  function whackMole(idx) {
+    const hole = document.getElementById(`hole-${idx}`);
+    if (hole && hole.innerText === '🐹') {
+      hole.innerText = '💥';
+      window.moleScore++;
+      document.getElementById("mole-score").innerText = window.moleScore;
     }
   }
 
-  function requestMotionPermission() {
-    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-      DeviceMotionEvent.requestPermission().then(state => {
-        if (state === 'granted') {
-          window.addEventListener('devicemotion', handleMotionEvent);
-          alert("歩数センサーが有効になりました！");
-        } else {
-          alert("センサーの利用が許可されませんでした。");
-        }
-      }).catch(console.error);
+  function resolveDice(choice) {
+    const roll = Math.floor(Math.random() * 6) + 1;
+    const isEven = roll % 2 === 0;
+    if ((choice === 'even' && isEven) || (choice === 'odd' && !isEven)) {
+      awardMiniGamePoints(40, "サイコロ予想");
     } else {
-      window.addEventListener('devicemotion', handleMotionEvent);
-      alert("歩数センサーが有効になりました！");
+      showCustomAlert(`出た目は「${roll}」でした！ハズレ...`);
+    }
+    closeMiniGamePlayModal();
+  }
+
+  function stopJust555() {
+    const elapsed = (Date.now() - window.justStart) / 1000;
+    const diff = Math.abs(elapsed - 5.55);
+    if (diff <= 0.3) {
+      awardMiniGamePoints(150, "5.55秒ストップ");
+    } else {
+      showCustomAlert(`記録: ${elapsed.toFixed(2)}秒！惜しい！`);
+    }
+    closeMiniGamePlayModal();
+  }
+
+  function checkNumMem(code) {
+    const val = document.getElementById("nummem-input").value;
+    if (val === code) awardMiniGamePoints(80, "数字記憶テスト");
+    else showCustomAlert(`不正解！正解は ${code} でした。`);
+    closeMiniGamePlayModal();
+  }
+
+  function advanceChicken() {
+    window.chickenDist += Math.floor(Math.random() * 16) + 10;
+    if (window.chickenDist > 100) {
+      showCustomAlert(`記録 ${window.chickenDist}m！崖から落ちました！失格！`);
+      closeMiniGamePlayModal();
+    } else {
+      document.getElementById("chicken-dist").innerText = window.chickenDist;
     }
   }
 
-  let lastAcceleration = { x: 0, y: 0, z: 0 };
-  let lastStepTime = 0;
-  const threshold = 12;
+  function stopChicken() {
+    if (window.chickenDist >= 70) {
+      awardMiniGamePoints(window.chickenDist, "チキンレース");
+    } else {
+      showCustomAlert(`${window.chickenDist}mでストップ。70m以上でポイント獲得です！`);
+    }
+    closeMiniGamePlayModal();
+  }
 
-  function handleMotionEvent(event) {
-    const acc = event.accelerationIncludingGravity;
-    if (!acc) return;
+  function resolveDiff(isCorrect) {
+    if (isCorrect) awardMiniGamePoints(50, "間違い探し");
+    else showCustomAlert("ハズレ！違う絵文字を探してね。");
+    closeMiniGamePlayModal();
+  }
 
-    const delta = Math.abs((acc.x || 0) - lastAcceleration.x) + Math.abs((acc.y || 0) - lastAcceleration.y) + Math.abs((acc.z || 0) - lastAcceleration.z);
-    const currentTime = new Date().getTime();
+  function resolveBomb(isSafe) {
+    if (isSafe) awardMiniGamePoints(80, "爆弾処理");
+    else showCustomAlert("ドカーン！！爆発しました...");
+    closeMiniGamePlayModal();
+  }
 
-    if (delta > threshold && (currentTime - lastStepTime) > 300) {
-      let data = getStepData();
-      if (data.todayPoints < 10000 && data.steps < 500) {
-        data.steps += 1;
-        saveStepData(data);
-        updateStepUI();
+  function pumpBalloon() {
+    window.balloonSize++;
+    if (window.balloonSize >= window.balloonLimit) {
+      showCustomAlert("パーン！！風船が割れてしまいました！");
+      closeMiniGamePlayModal();
+    } else {
+      const icon = document.getElementById("balloon-icon");
+      icon.style.fontSize = `${40 + window.balloonSize * 12}px`;
+    }
+  }
+
+  function cashoutBalloon() {
+    if (window.balloonSize > 0) awardMiniGamePoints(window.balloonSize * 20, "風船膨らまし");
+    else showCustomAlert("1回以上空気を入れてね！");
+    closeMiniGamePlayModal();
+  }
+
+  function tapSeqNum(n) {
+    if (n === window.seqNext) {
+      document.getElementById(`seq-btn-${n}`).style.visibility = "hidden";
+      window.seqNext++;
+      if (window.seqNext > 9) {
+        awardMiniGamePoints(60, "順番タップ");
+        closeMiniGamePlayModal();
       }
-      lastStepTime = currentTime;
     }
-    lastAcceleration = { x: acc.x || 0, y: acc.y || 0, z: acc.z || 0 };
   }
 
-  function claimStepPoints() {
-    let data = getStepData();
-    const earnedPoints = data.steps;
-
-    if (earnedPoints <= 0) return alert("受け取れるポイントがありません");
-
-    points += earnedPoints;
-    addTransaction('ポイント', earnedPoints, `歩数ポイント獲得`);
-    data.todayPoints += earnedPoints;
-    data.steps = 0;
-    saveStepData(data);
-    updateStepUI();
-    updateDisplay();
-    playSound('win');
-    alert(`${earnedPoints.toLocaleString()}ポイントを獲得しました！`);
+  function checkAnagram(ans) {
+    const val = document.getElementById("anagram-ans").value.trim();
+    if (val === ans) awardMiniGamePoints(70, "文字並べ替え");
+    else showCustomAlert(`不正解！正解は「${ans}」でした。`);
+    closeMiniGamePlayModal();
   }
 
-  let newsData = [
-    { id: 6, title: "アップデート実施！ ver.26.10.25", date: "2026-10-25-15:00", content: "《アップデート内容》 ver.26.10.25\n・11Pay本体の不具合を修正いたしました\n・カメラの不具合を修正いたしました" },
-    { id: 5, title: "アップデート実施！ ver.26.9.18", date: "2026-09-16-18:30", content: "《アップデート内容》 ver.26.9.18\n・ミニゲームの不具合を修正いたしました" },
-    { id: 4, title: "アップデート実施！ ver.26.9.15", date: "2026-09-16-18:20", content: "《アップデート内容》 ver.26.9.15\n・ミニゲームの不具合を修正いたしました" }
+  let cranePosX = 10;
+  let craneTimer = null;
+  let craneGrabbing = false;
+
+  const cranePrizes = [
+    { icon: "🧸", name: "くまのぬいぐるみ", pt: 50, x: 85 },
+    { icon: "🎮", name: "ゲーム機", pt: 150, x: 165 },
+    { icon: "💎", name: "ダイヤモンド", pt: 300, x: 235 }
   ];
 
-  window.addEventListener('DOMContentLoaded', () => {
-    updateStepUI();
-    const titleTextEl = document.getElementById('news-title-text');
-    const bannerClickEl = document.getElementById('news-banner-click');
-    if (titleTextEl && newsData.length > 0) {
-      titleTextEl.innerText = newsData[0].title;
-      if (bannerClickEl) bannerClickEl.onclick = () => openNewsDetail(newsData[0].id);
-    }
-  });
+  function startCraneGame() {
+    if (typeof playSound === 'function') playSound('beep');
+    if (craneTimer) clearInterval(craneTimer);
+    cranePosX = 10;
+    craneGrabbing = false;
 
-  function openNewsList() {
-    playSound('beep');
-    const modal = document.getElementById("minigame-play-modal");
-    document.getElementById("minigame-title").innerText = "NEWS";
-    modal.classList.remove("hidden");
+    document.getElementById("game-modal").classList.add("hidden");
+    const playModal = document.getElementById("minigame-play-modal");
+    const titleEl = document.getElementById("minigame-title");
+    const stageEl = document.getElementById("minigame-stage");
+    playModal.classList.remove("hidden");
 
-    let listHtml = newsData.map(n => `
-      <div style="background: #fff8e1; padding: 14px; border-radius: 10px; border: 1px solid #ffe082; margin-bottom: 10px; cursor: pointer; text-align: left;" onclick="openNewsDetail(${n.id})">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-          <span style="background: #e65100; color: #fff; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: bold;">NEWS</span>
-          <span style="font-size: 11px; color: #777;">${n.date}</span>
-        </div>
-        <div style="font-size: 14px; font-weight: bold; color: #333;">${n.title}</div>
+    titleEl.innerText = "🏗️ クレーンゲーム";
+    stageEl.innerHTML = `
+      <p style="font-size:12px; color:#555; margin-bottom:8px;">「右へ移動」を押し続けて景品の上で「キャッチ！」を押そう</p>
+      <div class="crane-box" id="crane-stage-box">
+        <div class="crane-arm" id="crane-arm">🏗️</div>
+        <div class="crane-hole" title="取り出し口"></div>
+        ${cranePrizes.map((p, idx) => `<div class="crane-prize" id="c-prize-${idx}" style="left:${p.x}px;">${p.icon}</div>`).join('')}
       </div>
-    `).join('');
-
-    document.getElementById("minigame-stage").innerHTML = `<div style="text-align: left; padding: 4px; max-height: 70vh; overflow-y: auto; width: 100%; box-sizing: border-box;">${listHtml}</div>`;
-
-    setTimeout(() => {
-      const closeButtons = modal.querySelectorAll("button");
-      closeButtons.forEach(btn => {
-        if (btn.innerText.includes("メニューに戻る") || btn.innerText.includes("戻る")) {
-          btn.innerText = "閉じる";
-          btn.onclick = function() {
-            playSound('beep');
-            modal.classList.add("hidden");
-          };
-        }
-      });
-    }, 10);
-  }
-
-  function openNewsDetail(newsId) {
-    playSound('beep');
-    const item = newsData.find(n => n.id === Number(newsId));
-    if (!item) return;
-
-    const modal = document.getElementById("minigame-play-modal");
-    document.getElementById("minigame-title").innerText = "お知らせ詳細";
-    modal.classList.remove("hidden");
-
-    document.getElementById("minigame-stage").innerHTML = `
-      <div style="text-align: left; padding: 12px; display: flex; flex-direction: column; gap: 12px; max-height: 70vh; overflow-y: auto; width: 100%; box-sizing: border-box;">
-        <p style="font-size: 11px; color: #e65100; font-weight: bold; margin: 0;">${item.date}</p>
-        <h3 style="font-size: 16px; color: #e65100; margin: 0;">${item.title}</h3>
-        <p style="font-size: 13px; color: #444; line-height: 1.6; margin: 0; white-space: pre-wrap; background: #fff8e1; padding: 10px; border-radius: 6px; border: 1px solid #ffe082;">${item.content}</p>
-        <button class="main-btn" style="width: 100%; background: #f5f5f5; color: #333; font-size: 14px; font-weight: bold; padding: 12px; border-radius: 8px; border: 1px solid #ddd; margin-top: 10px; cursor: pointer;" onclick="openNewsList()">← NEWS一覧に戻る</button>
+      <div style="display:flex; gap:10px; width:100%;">
+        <button class="main-btn" style="background:#007bff; flex:1;" onmousedown="startCraneMove()" onmouseup="stopCraneMove()" ontouchstart="startCraneMove()" ontouchend="stopCraneMove()">右へ移動</button>
+        <button class="main-btn" style="background:#28a745; flex:1;" onclick="dropCrane()">キャッチ！</button>
       </div>
     `;
   }
-</script>
 
+  function startCraneMove() {
+    if (craneGrabbing) return;
+    if (craneTimer) clearInterval(craneTimer);
+    craneTimer = setInterval(() => {
+      const box = document.getElementById("crane-stage-box");
+      const maxW = box ? box.clientWidth - 40 : 250;
+      if (cranePosX < maxW) {
+        cranePosX += 6;
+        const arm = document.getElementById("crane-arm");
+        if (arm) arm.style.left = cranePosX + "px";
+      }
+    }, 30);
+  }
+
+  function stopCraneMove() {
+    if (craneTimer) clearInterval(craneTimer);
+  }
+
+  function dropCrane() {
+    if (craneGrabbing) return;
+    stopCraneMove();
+    craneGrabbing = true;
+
+    const arm = document.getElementById("crane-arm");
+    if (!arm) return;
+
+    arm.style.top = "135px";
+
+    setTimeout(() => {
+      let caughtIdx = -1;
+      cranePrizes.forEach((p, idx) => {
+        if (Math.abs(cranePosX - p.x) <= 24) {
+          caughtIdx = idx;
+        }
+      });
+
+      arm.style.top = "0px";
+
+      if (caughtIdx !== -1) {
+        const prizeEl = document.getElementById(`c-prize-${caughtIdx}`);
+        if (prizeEl) {
+          prizeEl.style.transition = "bottom 0.4s linear, left 0.6s linear";
+          prizeEl.style.bottom = "135px";
+        }
+
+        setTimeout(() => {
+          arm.style.transition = "left 0.6s linear";
+          arm.style.left = "15px";
+          if (prizeEl) prizeEl.style.left = "15px";
+
+          setTimeout(() => {
+            if (prizeEl) prizeEl.style.bottom = "5px";
+            setTimeout(() => {
+              const prize = cranePrizes[caughtIdx];
+              points += prize.pt;
+              if (typeof addTransaction === 'function') addTransaction('ポイント', prize.pt, `クレーンゲーム(${prize.name})`);
+              if (typeof updateDisplay === 'function') updateDisplay();
+              if (typeof playSound === 'function') playSound('win');
+              showCustomAlert(`ゲット！ ${prize.icon} ${prize.name} (${prize.pt}pt) を獲得しました！`);
+              closeMiniGamePlayModal();
+            }, 400);
+          }, 650);
+        }, 450);
+      } else {
+        setTimeout(() => {
+          if (typeof playSound === 'function') playSound('error');
+          showCustomAlert("残念！アームが空振りしました...");
+          closeMiniGamePlayModal();
+        }, 500);
+      }
+    }, 450);
+  }
+</script>
 </body>
 </html>
