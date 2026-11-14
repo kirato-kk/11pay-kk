@@ -454,11 +454,31 @@
     <div class="modal-content">
       <h3>高額決済確認</h3>
       <p style="font-size: 13px; color: #666; margin-bottom: 10px;">5,000円以上のお支払いです。<br>4桁のパスコードを入力してください</p>
-      <input type="password" id="high-pay-pass-input" placeholder="パスコード" maxlength="4" style="font-size: 20px; letter-spacing: 4px;">
+     
+      <!-- スマホのデフォルトキーボードが出ないように readonly を設定 -->
+      <input type="password" id="high-pay-pass-input" placeholder="----" maxlength="4" readonly style="font-size: 24px; letter-spacing: 8px; background: #f8f9fa; cursor: pointer;">
+     
+      <!-- 専用テンキー -->
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0;">
+        <button class="main-btn" style="background: #333; padding: 12px; font-size: 20px;" onclick="inputHighPayDigit('1')">1</button>
+        <button class="main-btn" style="background: #333; padding: 12px; font-size: 20px;" onclick="inputHighPayDigit('2')">2</button>
+        <button class="main-btn" style="background: #333; padding: 12px; font-size: 20px;" onclick="inputHighPayDigit('3')">3</button>
+        <button class="main-btn" style="background: #333; padding: 12px; font-size: 20px;" onclick="inputHighPayDigit('4')">4</button>
+        <button class="main-btn" style="background: #333; padding: 12px; font-size: 20px;" onclick="inputHighPayDigit('5')">5</button>
+        <button class="main-btn" style="background: #333; padding: 12px; font-size: 20px;" onclick="inputHighPayDigit('6')">6</button>
+        <button class="main-btn" style="background: #333; padding: 12px; font-size: 20px;" onclick="inputHighPayDigit('7')">7</button>
+        <button class="main-btn" style="background: #333; padding: 12px; font-size: 20px;" onclick="inputHighPayDigit('8')">8</button>
+        <button class="main-btn" style="background: #333; padding: 12px; font-size: 20px;" onclick="inputHighPayDigit('9')">9</button>
+        <button class="main-btn" style="background: #666; padding: 12px; font-size: 16px;" onclick="inputHighPayDigit('clear')">クリア</button>
+        <button class="main-btn" style="background: #333; padding: 12px; font-size: 20px;" onclick="inputHighPayDigit('0')">0</button>
+        <button class="main-btn" style="background: #666; padding: 12px; font-size: 16px;" onclick="inputHighPayDigit('back')">←</button>
+      </div>
+
       <button class="main-btn" onclick="submitHighPayPasscode()">次へ</button>
       <button class="secondary-btn" onclick="cancelHighPayPassModal()">キャンセル</button>
     </div>
-  </div>
+  </div> 
+
 
   <!-- 汎用お知らせ・カスタムアラート用モーダル -->
   <div id="custom-alert-modal" class="modal-overlay hidden">
@@ -1411,6 +1431,8 @@
     document.getElementById("pay-confirm-modal").classList.add("hidden");
   }
 
+   let typedHighPayPassStr = "";
+
   function checkHighPaymentPasscode(finalAmount, callback) {
     if (finalAmount >= 5000) {
       let savedPasscode = localStorage.getItem('11pay_security_passcode');
@@ -1418,6 +1440,7 @@
         savedPasscode = "4869";
         localStorage.setItem('11pay_security_passcode', savedPasscode);
       }
+      typedHighPayPassStr = "";
       document.getElementById("high-pay-pass-input").value = "";
       document.getElementById("high-pay-pass-modal").classList.remove("hidden");
       window.pendingHighPayCallback = callback;
@@ -1426,22 +1449,37 @@
     }
   }
 
+  function inputHighPayDigit(val) {
+    if (typeof playSound === 'function') playSound('tick');
+    if (val === 'clear') {
+      typedHighPayPassStr = "";
+    } else if (val === 'back') {
+      typedHighPayPassStr = typedHighPayPassStr.slice(0, -1);
+    } else {
+      if (typedHighPayPassStr.length < 4) {
+        typedHighPayPassStr += val;
+      }
+    }
+    document.getElementById("high-pay-pass-input").value = typedHighPayPassStr;
+  }
+
   function submitHighPayPasscode() {
-    const inputPass = document.getElementById("high-pay-pass-input").value;
+    const inputPass = typedHighPayPassStr;
     const savedPasscode = localStorage.getItem('11pay_security_passcode') || "4869";
     if (inputPass !== savedPasscode) {
-      playSound('error');
+      if (typeof playSound === 'function') playSound('error');
       showCustomAlert("パスコードが間違っています。お支払いをキャンセルしました。");
       document.getElementById("high-pay-pass-modal").classList.add("hidden");
       return;
     }
-    playSound('win');
+    if (typeof playSound === 'function') playSound('win');
     document.getElementById("high-pay-pass-modal").classList.add("hidden");
     if (window.pendingHighPayCallback) {
       window.pendingHighPayCallback(true);
       window.pendingHighPayCallback = null;
     }
-  }
+  } 
+
 
   function cancelHighPayPassModal() {
     playSound('beep');
