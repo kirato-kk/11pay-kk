@@ -430,11 +430,11 @@
         <button class="main-btn" id="shop-input-done-btn" onclick="showShopConfirmStep()">入力完了</button>
       </div>
 
-      <div id="shop-confirm-step" class="hidden">
+       <div id="shop-confirm-step" class="hidden">
         <p style="font-size: 13px; color: #666; margin-bottom: 8px;">店員さんにこちらの画面をお見せください</p>
-        <!-- 文字の並びは変えずに、上下だけを反転させて店員さんから見やすくする -->
+        <!-- 画面全体を180度回転させて、文字の形を崩さずに店員さんから正しく読めるようにする -->
         <div style="background: #f8f9fa; border: 2px solid #ddd; padding: 20px 10px; border-radius: 14px; margin: 15px 0;">
-          <div style="font-size: 38px; font-weight: bold; color: #ff0033; letter-spacing: 2px; transform: scaleY(-1); display: inline-block;">
+          <div style="font-size: 38px; font-weight: bold; color: #ff0033; letter-spacing: 2px; transform: rotate(180deg); display: inline-block;">
             <span id="shop-inverted-amount">0</span> 円
           </div>
         </div>
