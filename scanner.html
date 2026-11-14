@@ -241,7 +241,7 @@
     <div class="tx-card">
       <div class="tx-title">取引履歴</div>
       <div id="transaction-list"></div>
-      <button id="tx-more-btn" class="secondary-btn hidden" style="margin-top: 10px;" onclick="toggleMoreTransactions()">もっと見る</button>
+      <button id="tx-more-btn" class="secondary-btn hidden" style="margin-top: 10px;" onclick="openAllTransactionsModal()">もっと見る</button>
     </div>
 
     <!-- ギフトカードボタン -->
@@ -389,6 +389,7 @@
   <div id="pay-confirm-modal" class="modal-overlay hidden">
     <div class="modal-content">
       <h3>お支払い確認</h3>
+      <p id="confirm-store-name-row" style="font-size: 14px; color: #666; margin: 5px 0; display: none;">店舗名: <span id="confirm-store-name" style="font-weight: bold; color: #333;"></span></p>
       <p style="font-size: 18px; font-weight: bold; margin: 10px 0;">お支払い額: <span id="confirm-pay-amount" style="color:#ff0033;">0</span> 円</p>
       <div style="background: #f8f9fa; padding: 12px; border-radius: 10px; margin-bottom: 15px; text-align: left;">
         <label style="font-weight: bold; display: block; margin-bottom: 5px;">
@@ -402,6 +403,68 @@
       </div>
       <button class="main-btn" onclick="executePayment()">お支払いを確定する</button>
       <button class="secondary-btn" onclick="cancelPayment()">キャンセル</button>
+    </div>
+  </div>
+
+  <!-- SHOP用テンキー・金額確認モーダル -->
+  <div id="shop-pay-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3 id="shop-pay-title">店舗にお支払い</h3>
+      <div id="shop-input-step">
+        <p style="font-size: 13px; color: #666; margin-bottom: 10px;">お支払い金額を入力してください</p>
+        <div id="shop-amount-display" style="font-size: 32px; font-weight: bold; color: #ff0033; background: #f8f9fa; padding: 12px; border-radius: 12px; border: 2px solid #ddd; margin-bottom: 12px;">0 円</div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px;">
+          <button class="main-btn" style="background: #333; padding: 12px; font-size: 20px;" onclick="inputShopDigit('1')">1</button>
+          <button class="main-btn" style="background: #333; padding: 12px; font-size: 20px;" onclick="inputShopDigit('2')">2</button>
+          <button class="main-btn" style="background: #333; padding: 12px; font-size: 20px;" onclick="inputShopDigit('3')">3</button>
+          <button class="main-btn" style="background: #333; padding: 12px; font-size: 20px;" onclick="inputShopDigit('4')">4</button>
+          <button class="main-btn" style="background: #333; padding: 12px; font-size: 20px;" onclick="inputShopDigit('5')">5</button>
+          <button class="main-btn" style="background: #333; padding: 12px; font-size: 20px;" onclick="inputShopDigit('6')">6</button>
+          <button class="main-btn" style="background: #333; padding: 12px; font-size: 20px;" onclick="inputShopDigit('7')">7</button>
+          <button class="main-btn" style="background: #333; padding: 12px; font-size: 20px;" onclick="inputShopDigit('8')">8</button>
+          <button class="main-btn" style="background: #333; padding: 12px; font-size: 20px;" onclick="inputShopDigit('9')">9</button>
+          <button class="main-btn" style="background: #666; padding: 12px; font-size: 16px;" onclick="inputShopDigit('clear')">クリア</button>
+          <button class="main-btn" style="background: #333; padding: 12px; font-size: 20px;" onclick="inputShopDigit('0')">0</button>
+          <button class="main-btn" style="background: #666; padding: 12px; font-size: 16px;" onclick="inputShopDigit('back')">←</button>
+        </div>
+        <button class="main-btn" id="shop-input-done-btn" onclick="showShopConfirmStep()">入力完了</button>
+      </div>
+
+      <div id="shop-confirm-step" class="hidden">
+        <p style="font-size: 13px; color: #666; margin-bottom: 8px;">店員さんにこちらの画面をお見せください</p>
+        <div style="background: #000; color: #fff; font-size: 38px; font-weight: bold; padding: 24px 12px; border-radius: 14px; margin: 15px 0; letter-spacing: 2px;">
+          <span id="shop-inverted-amount">0</span> 円
+        </div>
+        <p style="font-size: 12px; color: #ff0033; margin-bottom: 15px;">金額にお間違いがなければ下の完了を押してください</p>
+        <button class="main-btn" style="background: #28a745; margin-bottom: 8px;" onclick="finishShopConfirmStep()">完了</button>
+        <button class="secondary-btn" onclick="backToShopInputStep()">金額を修正する</button>
+      </div>
+
+      <button class="secondary-btn" onclick="closeShopPayModal()">キャンセル</button>
+    </div>
+  </div>
+
+  <!-- すべての取引履歴＆絞り込みモーダル -->
+  <div id="all-tx-modal" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width: 400px; width: 92%;">
+      <h3>すべての取引履歴</h3>
+      <div style="background: #f8f9fa; padding: 10px; border-radius: 10px; margin: 10px 0; display: flex; flex-direction: column; gap: 6px; text-align: left;">
+        <div style="display: flex; gap: 6px;">
+          <select id="tx-filter-type" style="flex: 1; padding: 6px; border-radius: 6px; border: 1px solid #ccc; font-size: 12px;" onchange="renderAllTransactions()">
+            <option value="all">すべて (種別)</option>
+            <option value="残高">残高のみ</option>
+            <option value="ポイント">ポイントのみ</option>
+          </select>
+          <select id="tx-filter-flow" style="flex: 1; padding: 6px; border-radius: 6px; border: 1px solid #ccc; font-size: 12px;" onchange="renderAllTransactions()">
+            <option value="all">すべて (利用/追加)</option>
+            <option value="plus">追加・獲得 (＋)</option>
+            <option value="minus">利用・お支払い (－)</option>
+          </select>
+        </div>
+        <input type="date" id="tx-filter-date" style="padding: 6px; border-radius: 6px; border: 1px solid #ccc; width: 100%;" onchange="renderAllTransactions()">
+      </div>
+      <div id="all-transaction-list" style="max-height: 300px; overflow-y: auto; text-align: left; border-top: 1px solid #eee; border-bottom: 1px solid #eee; padding: 6px 0; margin-bottom: 10px;"></div>
+      <button class="secondary-btn" onclick="closeAllTransactionsModal()">閉じる</button>
     </div>
   </div>
 
@@ -426,13 +489,13 @@
     </div>
   </div>
 </div>
-
 <script>
   let currentUser = localStorage.getItem("paypay_login_user") || "";
   let balance = 0;
   let points = 0;
   let transactions = [];
   let currentScanAmount = 0;
+  let currentStoreName = "";
   let earnedPoints = 0;
   let pendingSendAmount = 0;
   let html5QrCode = null;
@@ -1210,6 +1273,7 @@
       const isCharge = decodedText.startsWith("CHARGE_");
       const isPoint  = decodedText.startsWith("POINT_");
       const isPay    = decodedText.startsWith("PAY_");
+      const isShop   = decodedText.startsWith("SHOP_");
 
       if (isCharge) {
         const amount = parseInt(decodedText.replace("CHARGE_", ""), 10) || 0;
@@ -1228,7 +1292,11 @@
       } else if (isPay) {
         const parts = decodedText.split("_");
         currentScanAmount = parseInt(parts[1], 10) || 0;
+        currentStoreName = parts.slice(2).join("_") || "";
         openPayConfirmModal();
+      } else if (isShop) {
+        const storeName = decodedText.slice(5) || "店舗";
+        openShopPayModal(storeName);
       } else {
         if (typeof playSound === 'function') playSound('error');
         alert("画像から有効なQRコードを検出できませんでした。");
@@ -1238,8 +1306,72 @@
     stopScanner(handleSuccess);
   }
 
+  let typedShopAmountStr = "";
+
+  function openShopPayModal(storeName) {
+    currentStoreName = storeName;
+    typedShopAmountStr = "";
+    document.getElementById("shop-pay-title").innerText = `${storeName} お支払い`;
+    document.getElementById("shop-amount-display").innerText = "0 円";
+    document.getElementById("shop-input-step").classList.remove("hidden");
+    document.getElementById("shop-confirm-step").classList.add("hidden");
+    document.getElementById("shop-pay-modal").classList.remove("hidden");
+  }
+
+  function closeShopPayModal() {
+    playSound('beep');
+    document.getElementById("shop-pay-modal").classList.add("hidden");
+  }
+
+  function inputShopDigit(val) {
+    playSound('tick');
+    if (val === 'clear') {
+      typedShopAmountStr = "";
+    } else if (val === 'back') {
+      typedShopAmountStr = typedShopAmountStr.slice(0, -1);
+    } else {
+      if (typedShopAmountStr === "" && val === "0") return;
+      if (typedShopAmountStr.length < 7) typedShopAmountStr += val;
+    }
+    const num = parseInt(typedShopAmountStr, 10) || 0;
+    document.getElementById("shop-amount-display").innerText = `${num.toLocaleString()} 円`;
+  }
+
+  function showShopConfirmStep() {
+    const num = parseInt(typedShopAmountStr, 10) || 0;
+    if (num <= 0) {
+      playSound('error');
+      return alert("お支払い金額を入力してください");
+    }
+    playSound('beep');
+    currentScanAmount = num;
+    document.getElementById("shop-inverted-amount").innerText = num.toLocaleString();
+    document.getElementById("shop-input-step").classList.add("hidden");
+    document.getElementById("shop-confirm-step").classList.remove("hidden");
+  }
+
+  function backToShopInputStep() {
+    playSound('beep');
+    document.getElementById("shop-confirm-step").classList.add("hidden");
+    document.getElementById("shop-input-step").classList.remove("hidden");
+  }
+
+  function finishShopConfirmStep() {
+    playSound('beep');
+    document.getElementById("shop-pay-modal").classList.add("hidden");
+    openPayConfirmModal();
+  }
+
   function openPayConfirmModal() {
     currentScanAmount = currentScanAmount || 0;
+    const storeRow = document.getElementById("confirm-store-name-row");
+    const storeSpan = document.getElementById("confirm-store-name");
+    if (currentStoreName) {
+      storeSpan.innerText = currentStoreName;
+      storeRow.style.display = "block";
+    } else {
+      storeRow.style.display = "none";
+    }
     document.getElementById("confirm-pay-amount").innerText = currentScanAmount.toLocaleString();
     document.getElementById("max-pt-display").innerText = points.toLocaleString();
     document.getElementById("use-pt-check").checked = false;
@@ -1257,6 +1389,7 @@
 
   function cancelPayment() {
     playSound('beep');
+    currentStoreName = "";
     document.getElementById("pay-confirm-modal").classList.add("hidden");
   }
 
@@ -1318,17 +1451,19 @@
     points -= usePt;
 
     const usedCouponTitle = consumeActiveCouponOnPayment();
+    const baseDetail = currentStoreName ? `${currentStoreName}でお支払い利用` : 'お支払い利用';
 
     if (cashPay > 0) {
-      let memoText = 'お支払い';
+      let memoText = baseDetail;
       if (usedCouponTitle) memoText += ` (クーポン: ${usedCouponTitle})`;
       addTransaction('残高', -cashPay, memoText);
     }
 
     if (usePt > 0) {
-      addTransaction('ポイント', -usePt, 'お支払い利用');
+      addTransaction('ポイント', -usePt, baseDetail);
     }
 
+    currentStoreName = "";
     updateDisplay();
     document.getElementById("pay-confirm-modal").classList.add("hidden");
 
@@ -1378,19 +1513,16 @@
   function closeRoulette() {
     playSound('beep');
     points += earnedPoints;
-    addTransaction('ポイント', earnedPoints, '11Payルーレット還元');
+    addTransaction('ポイント', earnedPoints, '11Payルーレット');
     updateDisplay();
     document.getElementById("roulette-modal").classList.add("hidden");
   }
-
-  let showAllTransactions = false;
 
   function addTransaction(type, amount, detail) {
     const now = new Date();
     const timeStr = `${now.getMonth() + 1}/${now.getDate()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
   
     transactions.unshift({ type, amount, detail, time: timeStr });
-    if (transactions.length > 20) transactions.pop();
   }
 
   function renderTransactions() {
@@ -1404,7 +1536,7 @@
       return;
     }
 
-    const displayList = showAllTransactions ? transactions : transactions.slice(0, 6);
+    const displayList = transactions.slice(0, 6);
 
     container.innerHTML = displayList.map(tx => {
       const isPlus = tx.amount > 0;
@@ -1426,20 +1558,70 @@
     if (moreBtn) {
       if (transactions.length > 6) {
         moreBtn.classList.remove("hidden");
-        moreBtn.innerText = showAllTransactions ? "閉じる" : "もっと見る";
+        moreBtn.innerText = "もっと見る";
       } else {
         moreBtn.classList.add("hidden");
       }
     }
   }
 
-  function toggleMoreTransactions() {
+  function openAllTransactionsModal() {
     playSound('beep');
-    showAllTransactions = !showAllTransactions;
-    renderTransactions();
+    document.getElementById("tx-filter-type").value = "all";
+    document.getElementById("tx-filter-flow").value = "all";
+    document.getElementById("tx-filter-date").value = "";
+    renderAllTransactions();
+    document.getElementById("all-tx-modal").classList.remove("hidden");
   }
 
-  const GAME_REWARDS = {
+  function closeAllTransactionsModal() {
+    playSound('beep');
+    document.getElementById("all-tx-modal").classList.add("hidden");
+  }
+
+  function renderAllTransactions() {
+    const container = document.getElementById("all-transaction-list");
+    if (!container) return;
+
+    const typeFilter = document.getElementById("tx-filter-type").value;
+    const flowFilter = document.getElementById("tx-filter-flow").value;
+    const dateFilter = document.getElementById("tx-filter-date").value;
+
+    const filtered = transactions.filter(tx => {
+      if (typeFilter !== "all" && tx.type !== typeFilter) return false;
+      if (flowFilter === "plus" && tx.amount <= 0) return false;
+      if (flowFilter === "minus" && tx.amount >= 0) return false;
+      if (dateFilter) {
+        const parts = dateFilter.split("-");
+        const targetStr = `${parseInt(parts[1], 10)}/${parseInt(parts[2], 10)}`;
+        if (!tx.time.startsWith(targetStr + " ")) return false;
+      }
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      container.innerHTML = "<p style='color:#888; font-size:13px; text-align:center; padding: 20px;'>該当する履歴はありません</p>";
+      return;
+    }
+
+    container.innerHTML = filtered.map(tx => {
+      const isPlus = tx.amount > 0;
+      const color = isPlus ? "#28a745" : "#dc3545";
+      const sign = isPlus ? "+" : "";
+      const unit = tx.type === 'ポイント' ? 'pt' : '円';
+
+      return `
+        <div class="tx-item">
+          <div>
+            <div style="font-weight:bold; font-size:13px; color:#333;">${tx.detail} (${tx.type})</div>
+            <div style="font-size:11px; color:#888;">${tx.time}</div>
+          </div>
+          <div style="font-weight:bold; font-size:14px; color:${color};">${sign}${tx.amount.toLocaleString()} ${unit}</div>
+        </div>
+      `;
+    }).join('');
+  }
+const GAME_REWARDS = {
     janken: 20, highlow: 30, memory: 100, moleMultiplier: 5, dice: 30,
     just555: 150, nummem: 100, chickenMultiplier: 1, diff: 100, bomb: 50,
     craneGift: 100, craneBear: 50, craneDiamond: 200, tapRushMultiplier: 1,
@@ -2264,4 +2446,4 @@
 </script>
 
 </body>
-</html> 
+</html>
